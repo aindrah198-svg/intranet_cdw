@@ -24,25 +24,25 @@ class Database extends Config
      *
      * @var array<string, mixed>
      */
-   public $default = [
-    'DSN'      => '',
-    'hostname' => 'localhost',
-    'username' => 'root',
-    'password' => '', // sesuaikan jika ada password
-    'database' => 'cdwengin_intranet', // NAMA DATABASE YANG BENAR
-    'DBDriver' => 'MySQLi',
-    'DBPrefix' => '',
-    'pConnect' => false,
-    'DBDebug'  => (ENVIRONMENT !== 'production'),
-    'charset'  => 'utf8mb4',
-    'DBCollat' => 'utf8mb4_unicode_ci',
-    'swapPre'  => '',
-    'encrypt'  => false,
-    'compress' => false,
-    'strictOn' => false,
-    'failover' => [],
-    'port'     => 3306,
-];
+    public $default = [
+        'DSN'      => '',
+        'hostname' => 'localhost',
+        'username' => '',
+        'password' => '',
+        'database' => '',
+        'DBDriver' => 'MySQLi',
+        'DBPrefix' => '',
+        'pConnect' => false,
+        'DBDebug'  => (ENVIRONMENT !== 'production'),
+        'charset'  => 'utf8mb4',
+        'DBCollat' => 'utf8mb4_unicode_ci',
+        'swapPre'  => '',
+        'encrypt'  => false,
+        'compress' => false,
+        'strictOn' => false,
+        'failover' => [],
+        'port'     => 3306,
+    ];
 
     //    /**
     //     * Sample database connection for SQLite3.
