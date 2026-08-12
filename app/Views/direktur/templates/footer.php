@@ -2,13 +2,15 @@
 // app/Views/direktur/templates/footer.php
 $scripts = $scripts ?? [];
 ?>
-    </div> <!-- Penutup untuk main-content yang dibuka di navbar.php -->
+    </div> <!-- Penutup untuk container-fluid yang dibuka di navbar.php -->
+</div> <!-- Penutup untuk main-content yang dibuka di navbar.php -->
 
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Custom JavaScript -->
     <script>
@@ -100,14 +102,18 @@ $scripts = $scripts ?? [];
                 const sidebar = $('.sidebar');
                 const mainContent = $('.main-content');
                 
-                if (window.innerWidth <= 768) {
-                    sidebar.css('left', '-250px');
+                if (window.innerWidth < 992) {
+                    sidebar.css('left', '-260px');
                     mainContent.css('marginLeft', '0');
                     sidebar.removeClass('show');
                     mainContent.removeClass('expanded');
+                    $('#sidebarOverlay').fadeOut(150, function() { $(this).remove(); });
                 } else {
                     sidebar.css('left', '0');
                     mainContent.css('marginLeft', 'var(--sidebar-width)');
+                    sidebar.addClass('show');
+                    mainContent.addClass('expanded');
+                    $('#sidebarOverlay').remove();
                 }
             }
             
@@ -123,22 +129,37 @@ $scripts = $scripts ?? [];
                 }, 250);
             });
             
-            // Toggle sidebar on mobile
+            // Toggle sidebar drawer on mobile and desktop
             window.toggleSidebar = function() {
                 const sidebar = $('.sidebar');
                 const mainContent = $('.main-content');
                 
-                if (window.innerWidth <= 768) {
-                    if (sidebar.css('left') === '0px') {
-                        sidebar.css('left', '-250px');
-                        mainContent.css('marginLeft', '0');
-                        sidebar.removeClass('show');
+                if (window.innerWidth < 992) {
+                    const isVisible = sidebar.hasClass('show') || sidebar.css('left') === '0px';
+                    if (isVisible) {
+                        sidebar.css('left', '-260px').removeClass('show');
                         mainContent.removeClass('expanded');
+                        $('#sidebarOverlay').fadeOut(200, function() { $(this).remove(); });
                     } else {
-                        sidebar.css('left', '0');
-                        mainContent.css('marginLeft', '0');
-                        sidebar.addClass('show');
+                        sidebar.css('left', '0').addClass('show');
                         mainContent.addClass('expanded');
+                        if (!$('#sidebarOverlay').length) {
+                            $('body').append('<div id="sidebarOverlay" style="position:fixed !important;top:0 !important;left:0 !important;right:0 !important;bottom:0 !important;width:100% !important;height:100% !important;min-height:100dvh !important;background:rgba(0,0,0,0.65) !important;backdrop-filter:blur(3px) !important;-webkit-backdrop-filter:blur(3px) !important;z-index:1040 !important;margin:0 !important;padding:0 !important;display:none;"></div>');
+                            $('#sidebarOverlay').fadeIn(200);
+                            $('#sidebarOverlay').off('click').on('click', function() {
+                                window.toggleSidebar();
+                            });
+                        }
+                    }
+                } else {
+                    // Desktop behavior
+                    const isVisible = sidebar.css('left') === '0px' || !sidebar.hasClass('closed');
+                    if (isVisible) {
+                        sidebar.css('left', '-260px').addClass('closed').removeClass('show');
+                        mainContent.css('marginLeft', '0');
+                    } else {
+                        sidebar.css('left', '0').removeClass('closed').addClass('show');
+                        mainContent.css('marginLeft', 'var(--sidebar-width)');
                     }
                 }
             };
@@ -161,13 +182,7 @@ $scripts = $scripts ?? [];
                 }
             });
             
-            // Tambahkan tombol toggle untuk mobile
-            if ($('.sidebar-toggle').length === 0) {
-                const toggleBtn = $('<button class="btn btn-primary sidebar-toggle d-md-none" style="position: fixed; bottom: 20px; right: 20px; z-index: 1001; border-radius: 50%; width: 50px; height: 50px; padding: 0;">' +
-                                   '<i class="fas fa-bars"></i>' +
-                                   '</button>');
-                $('body').append(toggleBtn);
-            }
+
             
             // Tutup modal saat escape ditekan
             $(document).keydown(function(e) {

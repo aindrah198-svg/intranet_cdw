@@ -27,28 +27,37 @@ class TimelineModel extends Model
     public function getTimelineData($tahun = null)
     {
         if (!$tahun) $tahun = date('Y');
+        $db = \Config\Database::connect();
         
+        $clientSelect = $db->fieldExists('client_nama', 'spk_instalasi') ? 'spk_instalasi.client_nama' : 'COALESCE(client.nama_perusahaan, "-") as client_nama';
+        $targetSelesaiCol = $db->fieldExists('target_selesai', 'spk_instalasi') ? 'spk_instalasi.target_selesai' : ($db->fieldExists('tanggal_selesai', 'spk_instalasi') ? 'spk_instalasi.tanggal_selesai' : 'spk_instalasi.tanggal_mulai');
+        $selesaiAktualCol = $db->fieldExists('tanggal_selesai_aktual', 'spk_instalasi') ? 'spk_instalasi.tanggal_selesai_aktual' : 'NULL';
+        $progressCol = $db->fieldExists('progress_persen', 'spk_instalasi') ? 'spk_instalasi.progress_persen' : '0';
+        $prioritasCol = $db->fieldExists('prioritas', 'spk_instalasi') ? 'spk_instalasi.prioritas' : '"Normal" as prioritas';
+        $statusCol = $db->fieldExists('status', 'spk_instalasi') ? 'spk_instalasi.status' : '"Dijadwalkan" as status';
+
         return $this->select('
-                id,
-                nomor_spk,
-                judul_pekerjaan,
-                client_nama,
-                tanggal_mulai,
-                target_selesai as tanggal_selesai,
-                tanggal_selesai_aktual,
-                progress_persen,
-                prioritas,
-                status,
-                DATEDIFF(target_selesai, tanggal_mulai) as durasi_hari,
+                spk_instalasi.id,
+                spk_instalasi.nomor_spk,
+                spk_instalasi.judul_pekerjaan,
+                ' . $clientSelect . ',
+                spk_instalasi.tanggal_mulai,
+                ' . $targetSelesaiCol . ' as tanggal_selesai,
+                ' . $selesaiAktualCol . ' as tanggal_selesai_aktual,
+                ' . $progressCol . ' as progress_persen,
+                ' . $prioritasCol . ',
+                ' . $statusCol . ',
+                DATEDIFF(' . $targetSelesaiCol . ', spk_instalasi.tanggal_mulai) as durasi_hari,
                 CASE 
-                    WHEN tanggal_selesai_aktual IS NOT NULL 
-                    THEN DATEDIFF(tanggal_selesai_aktual, tanggal_mulai)
-                    ELSE DATEDIFF(CURDATE(), tanggal_mulai)
+                    WHEN ' . $selesaiAktualCol . ' IS NOT NULL 
+                    THEN DATEDIFF(' . $selesaiAktualCol . ', spk_instalasi.tanggal_mulai)
+                    ELSE DATEDIFF(CURDATE(), spk_instalasi.tanggal_mulai)
                 END as hari_berjalan
             ')
-            ->where('YEAR(tanggal_mulai)', $tahun)
-            ->where('deleted_at IS NULL')
-            ->orderBy('tanggal_mulai', 'ASC')
+            ->join('client', 'client.id = spk_instalasi.client_id', 'left')
+            ->where('YEAR(spk_instalasi.tanggal_mulai)', $tahun)
+            ->where('spk_instalasi.deleted_at IS NULL')
+            ->orderBy('spk_instalasi.tanggal_mulai', 'ASC')
             ->findAll();
     }
 

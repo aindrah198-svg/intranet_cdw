@@ -32,6 +32,15 @@ class PembelianModel extends Model
         'alasan_penolakan_direktur',
         'total_estimasi',
         'supplier',
+        'tipe_pembelian',
+        'platform_pembelian',
+        'metode_pembayaran',
+        'status_pembayaran',
+        'link_produk',
+        'no_resi_transaksi',
+        'bukti_pembelian',
+        'bukti_pembayaran',
+        'bukti_barang',
         'no_po_dibuat',
         'tanggal_pemesanan',
         'tanggal_terima',
@@ -46,6 +55,112 @@ class PembelianModel extends Model
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
     protected $deletedField = 'deleted_at';
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->ensureColumnsExist();
+    }
+
+    public function ensureColumnsExist()
+    {
+        if (!$this->db->tableExists('form_pembelian')) {
+            return;
+        }
+
+        $fields = $this->db->getFieldNames('form_pembelian');
+        $forge = \Config\Database::forge();
+        $newFields = [];
+
+        if (!in_array('tanggal_pengajuan', $fields)) {
+            $newFields['tanggal_pengajuan'] = ['type' => 'DATE', 'null' => true, 'after' => 'karyawan_id'];
+        }
+        if (!in_array('tanggal_dibutuhkan', $fields)) {
+            $newFields['tanggal_dibutuhkan'] = ['type' => 'DATE', 'null' => true, 'after' => 'tanggal_pengajuan'];
+        }
+        if (!in_array('tipe_pembelian', $fields)) {
+            $newFields['tipe_pembelian'] = ['type' => 'VARCHAR', 'constraint' => '50', 'default' => 'Online', 'after' => 'supplier'];
+        }
+        if (!in_array('platform_pembelian', $fields)) {
+            $newFields['platform_pembelian'] = ['type' => 'VARCHAR', 'constraint' => '100', 'null' => true, 'after' => 'tipe_pembelian'];
+        }
+        if (!in_array('metode_pembayaran', $fields)) {
+            $newFields['metode_pembayaran'] = ['type' => 'VARCHAR', 'constraint' => '100', 'null' => true, 'after' => 'platform_pembelian'];
+        }
+        if (!in_array('link_produk', $fields)) {
+            $newFields['link_produk'] = ['type' => 'TEXT', 'null' => true, 'after' => 'metode_pembayaran'];
+        }
+        if (!in_array('no_resi_transaksi', $fields)) {
+            $newFields['no_resi_transaksi'] = ['type' => 'VARCHAR', 'constraint' => '100', 'null' => true, 'after' => 'link_produk'];
+        }
+        if (!in_array('status_pembayaran', $fields)) {
+            $newFields['status_pembayaran'] = ['type' => 'VARCHAR', 'constraint' => '50', 'default' => 'Belum Dibayar', 'after' => 'status_direktur'];
+        }
+        if (!in_array('status_penerimaan', $fields)) {
+            $newFields['status_penerimaan'] = ['type' => 'VARCHAR', 'constraint' => '50', 'default' => 'Belum', 'after' => 'status_pembayaran'];
+        }
+        if (!in_array('bukti_pembelian', $fields)) {
+            $newFields['bukti_pembelian'] = ['type' => 'VARCHAR', 'constraint' => '255', 'null' => true, 'after' => 'no_resi_transaksi'];
+        }
+        if (!in_array('bukti_pembayaran', $fields)) {
+            $newFields['bukti_pembayaran'] = ['type' => 'VARCHAR', 'constraint' => '255', 'null' => true, 'after' => 'bukti_pembelian'];
+        }
+        if (!in_array('bukti_barang', $fields)) {
+            $newFields['bukti_barang'] = ['type' => 'VARCHAR', 'constraint' => '255', 'null' => true, 'after' => 'bukti_pembayaran'];
+        }
+
+        if (!empty($newFields)) {
+            $forge->addColumn('form_pembelian', $newFields);
+        }
+
+        if ($this->db->tableExists('form_pembelian_item')) {
+            $itemFields = $this->db->getFieldNames('form_pembelian_item');
+            $newItemFields = [];
+            if (!in_array('jumlah', $itemFields) && !in_array('qty', $itemFields) && !in_array('quantity', $itemFields)) {
+                $newItemFields['jumlah'] = ['type' => 'INT', 'constraint' => 11, 'default' => 1];
+            }
+            if (!in_array('satuan', $itemFields)) {
+                $newItemFields['satuan'] = ['type' => 'VARCHAR', 'constraint' => 50, 'default' => 'Pcs'];
+            }
+            if (!in_array('spesifikasi', $itemFields)) {
+                $newItemFields['spesifikasi'] = ['type' => 'TEXT', 'null' => true];
+            }
+            if (!in_array('harga_estimasi', $itemFields) && !in_array('harga_satuan', $itemFields)) {
+                $newItemFields['harga_estimasi'] = ['type' => 'DECIMAL', 'constraint' => '15,2', 'default' => 0];
+            }
+            if (!in_array('total_estimasi', $itemFields) && !in_array('total_harga', $itemFields) && !in_array('subtotal', $itemFields)) {
+                $newItemFields['total_estimasi'] = ['type' => 'DECIMAL', 'constraint' => '15,2', 'default' => 0];
+            }
+            if (!empty($newItemFields)) {
+                $forge->addColumn('form_pembelian_item', $newItemFields);
+            }
+        }
+
+        // Auto-correct any small nominal values or empty dates stored incorrectly
+        try {
+            $this->db->query("UPDATE form_pembelian SET tanggal_pengajuan = DATE(created_at) WHERE tanggal_pengajuan IS NULL OR tanggal_pengajuan = '0000-00-00'");
+            $this->db->query("UPDATE form_pembelian SET tanggal_dibutuhkan = DATE(created_at) WHERE tanggal_dibutuhkan IS NULL OR tanggal_dibutuhkan = '0000-00-00'");
+            $this->db->query("UPDATE form_pembelian SET total_estimasi = total_estimasi * 1000 WHERE total_estimasi > 0 AND total_estimasi < 1000");
+            if ($this->db->tableExists('form_pembelian_item')) {
+                $itemCols = $this->db->getFieldNames('form_pembelian_item');
+                if (in_array('harga_estimasi', $itemCols)) {
+                    $this->db->query("UPDATE form_pembelian_item SET harga_estimasi = harga_estimasi * 1000 WHERE harga_estimasi > 0 AND harga_estimasi < 1000");
+                }
+                if (in_array('harga_satuan', $itemCols)) {
+                    $this->db->query("UPDATE form_pembelian_item SET harga_satuan = harga_satuan * 1000 WHERE harga_satuan > 0 AND harga_satuan < 1000");
+                }
+                if (in_array('total_estimasi', $itemCols)) {
+                    $this->db->query("UPDATE form_pembelian_item SET total_estimasi = total_estimasi * 1000 WHERE total_estimasi > 0 AND total_estimasi < 1000");
+                }
+                if (in_array('total_harga', $itemCols)) {
+                    $this->db->query("UPDATE form_pembelian_item SET total_harga = total_harga * 1000 WHERE total_harga > 0 AND total_harga < 1000");
+                }
+                if (in_array('subtotal', $itemCols)) {
+                    $this->db->query("UPDATE form_pembelian_item SET subtotal = subtotal * 1000 WHERE subtotal > 0 AND subtotal < 1000");
+                }
+            }
+        } catch (\Throwable $th) {}
+    }
     
     protected $validationRules = [
         'karyawan_id' => 'required|integer',

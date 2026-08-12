@@ -1,10 +1,4 @@
-<?php
-// app/Views/accounting/penggajian/slip-gaji-laporan/index.php
-$data['active'] = 'slip-gaji-laporan';
-$this->extend('accounting/templates/header');
-?>
-
-<?php $this->section('content'); ?>
+<div class="main-content">
 <div class="container-fluid px-4">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -248,7 +242,7 @@ $this->extend('accounting/templates/header');
                     <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
                     <h5>Tidak Ada Slip Gaji</h5>
                     <p class="mb-0">Tidak ditemukan slip gaji dengan status "Disetujui" untuk periode 
-                        <strong><?= $bulanOptions[$bulan] ?> <?= $tahun ?></strong>.</p>
+                        <strong><?= $bulanOptions[$bulan] ?? $bulanOptions[(int)$bulan] ?? $bulan ?> <?= $tahun ?></strong>.</p>
                     <hr>
                     <a href="<?= site_url('accounting/penggajian/perhitungan-gaji?bulan=' . $bulan . '&tahun=' . $tahun . '&status=Disetujui') ?>" 
                        class="btn btn-accounting mt-2">
@@ -288,7 +282,7 @@ $this->extend('accounting/templates/header');
                                 </td>
                                 <td><?= $item['jabatan'] ?></td>
                                 <td class="text-center">
-                                    <?= $bulanOptions[$item['periode_bulan']] ?> <?= $item['periode_tahun'] ?>
+                                    <?= $bulanOptions[$item['periode_bulan']] ?? $bulanOptions[(int)$item['periode_bulan']] ?? $item['periode_bulan'] ?> <?= $item['periode_tahun'] ?>
                                 </td>
                                 <td class="text-end text-primary">
                                     <strong>Rp <?= number_format($item['gaji_bersih'], 0, ',', '.') ?></strong>
@@ -430,4 +424,4 @@ $(document).ready(function() {
 });
 </script>
 
-<?php $this->endSection(); ?>
+</div>

@@ -34,6 +34,49 @@ class PengeluaranPribadi extends BaseController
 
     public function __construct()
     {
+        $this->db = \Config\Database::connect();
+        if (!$this->db->tableExists('pengeluaran_pribadi')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `pengeluaran_pribadi` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `tanggal` DATE NOT NULL,
+                  `kode_pengeluaran` VARCHAR(50) NOT NULL,
+                  `karyawan_id` INT DEFAULT NULL,
+                  `nama_karyawan` VARCHAR(150) DEFAULT NULL,
+                  `jenis` VARCHAR(100) DEFAULT NULL,
+                  `jumlah` DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+                  `keterangan` TEXT DEFAULT NULL,
+                  `tujuan_penggunaan` TEXT DEFAULT NULL,
+                  `coa_id_debit` INT DEFAULT NULL,
+                  `coa_debit_kode` VARCHAR(50) DEFAULT NULL,
+                  `coa_debit_nama` VARCHAR(150) DEFAULT NULL,
+                  `coa_id_kredit` INT DEFAULT NULL,
+                  `coa_kredit_kode` VARCHAR(50) DEFAULT NULL,
+                  `coa_kredit_nama` VARCHAR(150) DEFAULT NULL,
+                  `spk_id` INT DEFAULT NULL,
+                  `nomor_spk` VARCHAR(50) DEFAULT NULL,
+                  `no_bukti` VARCHAR(100) DEFAULT NULL,
+                  `lampiran` VARCHAR(255) DEFAULT NULL,
+                  `status_hutang` VARCHAR(50) DEFAULT 'Belum Lunas',
+                  `tanggal_jatuh_tempo` DATE DEFAULT NULL,
+                  `tanggal_pelunasan` DATE DEFAULT NULL,
+                  `mutasi_bank_id` INT DEFAULT NULL,
+                  `kas_kecil_id` INT DEFAULT NULL,
+                  `jumlah_dibayar` DECIMAL(15,2) DEFAULT 0.00,
+                  `status` ENUM('Draft','Posted','Dibatalkan') DEFAULT 'Draft',
+                  `posted_at` DATETIME DEFAULT NULL,
+                  `jurnal_id` INT DEFAULT NULL,
+                  `jurnal_pelunasan_id` INT DEFAULT NULL,
+                  `nomor_jurnal` VARCHAR(50) DEFAULT NULL,
+                  `catatan_internal` TEXT DEFAULT NULL,
+                  `created_by` INT DEFAULT NULL,
+                  `updated_by` INT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL,
+                  `deleted_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
         $this->pengeluaranPribadiModel = new PengeluaranPribadiModel();
         $this->coaModel = new CoaModel();
         $this->jurnalModel = new JurnalModel();
@@ -42,7 +85,6 @@ class PengeluaranPribadi extends BaseController
         $this->spkModel = new SpkInstalasiModel();
         $this->mutasiBankModel = new MutasiBankModel();
         $this->kasKecilModel = new KasKecilModel();
-        $this->db = \Config\Database::connect();
         
         helper(['form', 'url', 'text', 'number']);
         

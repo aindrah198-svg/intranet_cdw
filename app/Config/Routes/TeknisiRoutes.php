@@ -1,149 +1,97 @@
 <?php
-// C:\xampp\htdocs\intranet_cdw\app\Config\Routes\TeknisiRoutes.php
+// app/Config/Routes/TeknisiRoutes.php
 
 /**
  * @var \CodeIgniter\Router\RouteCollection $routes
- * 
- * File ini berisi semua routes untuk Teknisi:
- * - Dashboard
- * - Absensi
- * - Tugas & Proyek (SPK Instalasi, Tambahan Barang, Timeline)
- * - Tambah Client
- * - Gudang & Penyimpanan
- * - Pengajuan
- * - Cuti
- * - Laporan
- * - Profile
  */
 
-// ============================================
-// TEKNISI ROUTES (Dengan Filter Auth)
-// ============================================
-
 $routes->group('teknisi', ['filter' => 'auth'], function($routes) {
-    
-    // ============================================
-    // DASHBOARD
-    // ============================================
+    // Dashboard
     $routes->get('/', 'Teknisi\Dashboard::index', ['as' => 'teknisi']);
     $routes->get('dashboard', 'Teknisi\Dashboard::index', ['as' => 'teknisi.dashboard']);
-    
-    // ============================================
-    // ABSENSI TEKNISI
-    // ============================================
+
+    // Absensi
     $routes->group('absensi', function($routes) {
         $routes->get('/', 'Teknisi\Absensi::index', ['as' => 'teknisi.absensi']);
         $routes->post('checkin', 'Teknisi\Absensi::checkin', ['as' => 'teknisi.absensi.checkin']);
         $routes->post('checkout', 'Teknisi\Absensi::checkout', ['as' => 'teknisi.absensi.checkout']);
         $routes->get('history', 'Teknisi\Absensi::history', ['as' => 'teknisi.absensi.history']);
     });
-    
-    // ============================================
-    // TUGAS & PROYEK
-    // ============================================
+
+    // Tugas & Proyek
     $routes->group('tugas-proyek', function($routes) {
-        $routes->get('/', 'Teknisi\TugasProyek::index', ['as' => 'teknisi.tugas_proyek']);
+        $routes->get('/', 'Teknisi\SpkInstalasi::index', ['as' => 'teknisi.tugas_proyek']);
         
-        // SPK / Tugas Instalasi Routes
+        // SPK / Tugas Instalasi
         $routes->group('spk', function($routes) {
             $routes->get('/', 'Teknisi\SpkInstalasi::index', ['as' => 'teknisi.spk']);
             $routes->get('create', 'Teknisi\SpkInstalasi::create', ['as' => 'teknisi.spk.create']);
             $routes->post('store', 'Teknisi\SpkInstalasi::store', ['as' => 'teknisi.spk.store']);
             $routes->get('detail/(:num)', 'Teknisi\SpkInstalasi::detail/$1', ['as' => 'teknisi.spk.detail']);
-            $routes->get('edit/(:num)', 'Teknisi\SpkInstalasi::edit/$1', ['as' => 'teknisi.spk.edit']);
-            $routes->post('update/(:num)', 'Teknisi\SpkInstalasi::update/$1', ['as' => 'teknisi.spk.update']);
-            $routes->post('delete/(:num)', 'Teknisi\SpkInstalasi::delete/$1', ['as' => 'teknisi.spk.delete']);
-            $routes->post('update-progress', 'Teknisi\SpkInstalasi::updateProgress', ['as' => 'teknisi.spk.updateProgress']);
             $routes->post('selesaikan/(:num)', 'Teknisi\SpkInstalasi::selesaikan/$1', ['as' => 'teknisi.spk.selesaikan']);
-            $routes->get('get-client/(:num)', 'Teknisi\SpkInstalasi::getClient/$1', ['as' => 'teknisi.spk.getClient']);
         });
+
+        // Timeline
+        $routes->get('timeline', 'Teknisi\Timeline::index', ['as' => 'teknisi.tugas_proyek.timeline']);
         
-        // Tambahan Barang Routes
+        // Tambahan Barang
         $routes->group('tambahan-barang', function($routes) {
             $routes->get('/', 'Teknisi\TambahanBarang::index', ['as' => 'teknisi.tambahan_barang']);
             $routes->get('create', 'Teknisi\TambahanBarang::create', ['as' => 'teknisi.tambahan_barang.create']);
-            $routes->get('create/(:num)', 'Teknisi\TambahanBarang::createWithSpk/$1', ['as' => 'teknisi.tambahan_barang.create_with_spk']);
             $routes->post('store', 'Teknisi\TambahanBarang::store', ['as' => 'teknisi.tambahan_barang.store']);
-            $routes->get('detail/(:num)', 'Teknisi\TambahanBarang::detail/$1', ['as' => 'teknisi.tambahan_barang.detail']);
-            $routes->get('edit/(:num)', 'Teknisi\TambahanBarang::edit/$1', ['as' => 'teknisi.tambahan_barang.edit']);
-            $routes->post('update/(:num)', 'Teknisi\TambahanBarang::update/$1', ['as' => 'teknisi.tambahan_barang.update']);
-            $routes->post('delete/(:num)', 'Teknisi\TambahanBarang::delete/$1', ['as' => 'teknisi.tambahan_barang.delete']);
-            $routes->get('get-by-spk/(:num)', 'Teknisi\TambahanBarang::getBySpk/$1', ['as' => 'teknisi.tambahan_barang.getBySpk']);
-            $routes->get('total-by-spk/(:num)', 'Teknisi\TambahanBarang::getTotalBySpk/$1', ['as' => 'teknisi.tambahan_barang.totalBySpk']);
-            $routes->get('export-excel/(:num)', 'Teknisi\TambahanBarang::exportExcel/$1', ['as' => 'teknisi.tambahan_barang.export_excel']);
-            $routes->post('set-uang-akomodasi', 'Teknisi\TambahanBarang::setUangAkomodasi', ['as' => 'teknisi.tambahan_barang.set_uang_akomodasi']);
+        });
+
+        // Info Client (Centralized Read-Only Client Data for Assigned Projects)
+        $routes->group('info-client', function($routes) {
+            $routes->get('/', 'Teknisi\InfoClient::index', ['as' => 'teknisi.info_client']);
+            $routes->get('detail/(:num)', 'Teknisi\InfoClient::detail/$1', ['as' => 'teknisi.info_client.detail']);
         });
         
-        // Timeline Routes
-        $routes->get('timeline', 'Teknisi\Timeline::index', ['as' => 'teknisi.tugas_proyek.timeline']);
-        $routes->get('timeline/data', 'Teknisi\Timeline::getTimelineData', ['as' => 'teknisi.timeline.data']);
-        $routes->get('timeline/detail/(:num)', 'Teknisi\Timeline::detail/$1', ['as' => 'teknisi.timeline.detail']);
-        
-        // Tambahan Waktu
-        $routes->get('tambahan-waktu', 'Teknisi\TugasProyek::tambahanWaktu', ['as' => 'teknisi.tugas_proyek.tambahan_waktu']);
+        // Alias legacy route untuk compatibility
+        $routes->get('tambah-client', 'Teknisi\InfoClient::index');
     });
-    
-    // ============================================
-    // TAMBAH CLIENT
-    // ============================================
-    $routes->group('tambah-client', function($routes) {
-        $routes->get('/', 'Teknisi\TambahClient::index', ['as' => 'teknisi.tambah_client']);
-        $routes->get('create', 'Teknisi\TambahClient::create', ['as' => 'teknisi.tambah_client.create']);
-        $routes->post('store', 'Teknisi\TambahClient::store', ['as' => 'teknisi.tambah_client.store']);
-        $routes->get('edit/(:num)', 'Teknisi\TambahClient::edit/$1', ['as' => 'teknisi.tambah_client.edit']);
-        $routes->post('update/(:num)', 'Teknisi\TambahClient::update/$1', ['as' => 'teknisi.tambah_client.update']);
-        $routes->post('delete/(:num)', 'Teknisi\TambahClient::delete/$1', ['as' => 'teknisi.tambah_client.delete']);
-        $routes->get('detail/(:num)', 'Teknisi\TambahClient::detail/$1', ['as' => 'teknisi.tambah_client.detail']);
-        $routes->post('ajax-store', 'Teknisi\TambahClient::ajaxStore', ['as' => 'teknisi.tambah_client.ajax_store']);
-        $routes->get('get-list', 'Teknisi\TambahClient::getList', ['as' => 'teknisi.tambah_client.get_list']);
-        $routes->post('ubah-status/(:num)', 'Teknisi\TambahClient::ubahStatus/$1', ['as' => 'teknisi.tambah_client.ubah_status']);
-    });
-    
-    // ============================================
-    // GUDANG & PENYIMPANAN
-    // ============================================
+
+    // Gudang & Penyimpanan
     $routes->group('gudang', function($routes) {
         $routes->get('/', 'Teknisi\Gudang::index', ['as' => 'teknisi.gudang']);
         $routes->get('penyimpanan', 'Teknisi\Gudang::penyimpanan', ['as' => 'teknisi.gudang.penyimpanan']);
         $routes->get('peralatan-dipinjam', 'Teknisi\Gudang::peralatanDipinjam', ['as' => 'teknisi.gudang.peralatan_dipinjam']);
+        $routes->post('pinjam-alat', 'Teknisi\Gudang::pinjamAlat', ['as' => 'teknisi.gudang.pinjam_alat']);
+        $routes->post('kembalikan-alat/(:num)', 'Teknisi\Gudang::kembalikanAlat/$1', ['as' => 'teknisi.gudang.kembalikan_alat']);
         $routes->get('perawatan-alat', 'Teknisi\Gudang::perawatanAlat', ['as' => 'teknisi.gudang.perawatan_alat']);
     });
-    
-    // ============================================
-    // PENGAJUAN
-    // ============================================
+
+    // Pengajuan
     $routes->group('pengajuan', function($routes) {
         $routes->get('/', 'Teknisi\Pengajuan::index', ['as' => 'teknisi.pengajuan']);
         $routes->get('permintaan-pembelian', 'Teknisi\Pengajuan::permintaanPembelian', ['as' => 'teknisi.pengajuan.permintaan_pembelian']);
         $routes->get('biaya-lapangan', 'Teknisi\Pengajuan::biayaLapangan', ['as' => 'teknisi.pengajuan.biaya_lapangan']);
+        $routes->post('store-biaya-lapangan', 'Teknisi\Pengajuan::storeBiayaLapangan', ['as' => 'teknisi.pengajuan.store_biaya_lapangan']);
+        $routes->get('cuti', 'Teknisi\Pengajuan::cuti', ['as' => 'teknisi.pengajuan.cuti']);
     });
-    
-    // ============================================
-    // CUTI TEKNISI
-    // ============================================
-    $routes->group('cuti', function($routes) {
-        $routes->get('/', 'Teknisi\Cuti::index', ['as' => 'teknisi.cuti']);
-        $routes->get('create', 'Teknisi\Cuti::create', ['as' => 'teknisi.cuti.create']);
-        $routes->post('store', 'Teknisi\Cuti::store', ['as' => 'teknisi.cuti.store']);
-        $routes->get('history', 'Teknisi\Cuti::history', ['as' => 'teknisi.cuti.history']);
-    });
-    
-    // ============================================
-    // LAPORAN TEKNISI
-    // ============================================
+
+    // Laporan (FITUR WAJIB)
     $routes->group('laporan', function($routes) {
         $routes->get('/', 'Teknisi\Laporan::index', ['as' => 'teknisi.laporan']);
         $routes->get('lapangan', 'Teknisi\Laporan::lapangan', ['as' => 'teknisi.laporan.lapangan']);
+        $routes->get('harian', 'Teknisi\Laporan::lapangan'); // alias
+        $routes->post('store-lapangan', 'Teknisi\Laporan::storeLapangan', ['as' => 'teknisi.laporan.store_lapangan']);
+        $routes->get('keluhan', 'Teknisi\Laporan::keluhan', ['as' => 'teknisi.laporan.keluhan']);
+        $routes->post('store-keluhan', 'Teknisi\Laporan::storeKeluhan', ['as' => 'teknisi.laporan.store_keluhan']);
         $routes->get('inventory', 'Teknisi\Laporan::inventory', ['as' => 'teknisi.laporan.inventory']);
     });
-    
-    // ============================================
-    // PROFILE TEKNISI
-    // ============================================
-    $routes->group('profile', function($routes) {
-        $routes->get('/', 'Teknisi\Profile::index', ['as' => 'teknisi.profile']);
-        $routes->post('update', 'Teknisi\Profile::update', ['as' => 'teknisi.profile.update']);
-        $routes->post('change-password', 'Teknisi\Profile::changePassword', ['as' => 'teknisi.profile.change_password']);
+
+    // Menu Pribadi
+    $routes->group('pribadi', function($routes) {
+        $routes->get('absensi', 'Teknisi\Pribadi::absensi', ['as' => 'teknisi.pribadi.absensi']);
+        $routes->get('tugas', 'Teknisi\Pribadi::tugas', ['as' => 'teknisi.pribadi.tugas']);
+        $routes->get('laporan-harian', 'Teknisi\Pribadi::laporanHarian', ['as' => 'teknisi.pribadi.laporan-harian']);
+        $routes->get('keluhan', 'Teknisi\Pribadi::keluhan', ['as' => 'teknisi.pribadi.keluhan']);
+        $routes->get('pengajuan', 'Teknisi\Pribadi::pengajuan', ['as' => 'teknisi.pribadi.pengajuan']);
+        $routes->get('slip-gaji', 'Teknisi\Pribadi::slipGaji', ['as' => 'teknisi.pribadi.slip-gaji']);
+        $routes->get('profil', 'Teknisi\Pribadi::profil', ['as' => 'teknisi.pribadi.profil']);
     });
-    
-}); // END OF TEKNISI GROUP
+
+    // Profile Legacy Route
+    $routes->get('profile', 'Teknisi\Pribadi::profil');
+});

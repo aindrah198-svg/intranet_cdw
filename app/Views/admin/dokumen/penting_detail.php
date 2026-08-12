@@ -1,0 +1,128 @@
+<?php
+$title = $title ?? 'Detail Dokumen Penting';
+$data = [
+    'title'  => $title,
+    'user'   => ['name' => session()->get('name') ?? 'Admin', 'role' => 'admin'],
+    'active' => 'dokumen'
+];
+
+echo view('admin/templates/header', $data);
+echo view('admin/templates/sidebar', $data);
+echo view('admin/templates/navbar', $data);
+?>
+
+<div class="container-fluid px-3 px-md-4 py-4">
+    <!-- Header Page -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 text-xs">
+                    <li class="breadcrumb-item"><a href="<?= base_url('admin/dokumen/penting') ?>" class="text-decoration-none text-muted">Dokumen Penting</a></li>
+                    <li class="breadcrumb-item active text-primary fw-bold" aria-current="page">Detail Dokumen</li>
+                </ol>
+            </nav>
+            <h4 class="fw-bold text-dark mb-0"><i class="fas fa-file-alt text-info me-2"></i> Rincian Dokumen Penting</h4>
+            <small class="text-muted">Pratinjau detail informasi, status masa berlaku, dan unduhan berkas.</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="<?= base_url('admin/dokumen/penting') ?>" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm text-sm font-semibold">
+                <i class="fas fa-arrow-left me-1.5"></i> Kembali
+            </a>
+            <a href="<?= base_url('admin/dokumen/penting/edit/'.$d['id']) ?>" class="btn btn-warning text-white rounded-pill px-3 shadow-sm text-sm font-semibold">
+                <i class="fas fa-edit me-1.5"></i> Edit Dokumen
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Detail Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 rounded-4 shadow-lg overflow-hidden mb-4">
+                <div class="card-header bg-primary text-white py-3.5 px-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title fs-5 fw-bold mb-1"><?= esc($d['judul_dokumen']) ?></h5>
+                        <small class="text-white-50"><i class="fas fa-barcode me-1"></i> Nomor: <?= esc($d['nomor_dokumen'] ?: '-') ?></small>
+                    </div>
+                    <span class="badge bg-white text-primary rounded-pill px-3 py-1.5 fs-6 fw-bold shadow-sm">
+                        <?= esc($d['kategori']) ?>
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6 col-md-4">
+                            <div class="p-3 bg-light rounded-4 border h-100">
+                                <small class="text-muted text-xs uppercase d-block fw-bold mb-1"><i class="fas fa-tag me-1 text-primary"></i> Kategori Berkas</small>
+                                <h6 class="fw-bold text-dark mb-0 mt-1"><?= esc($d['kategori']) ?></h6>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-md-4">
+                            <div class="p-3 bg-light rounded-4 border h-100">
+                                <small class="text-muted text-xs uppercase d-block fw-bold mb-1"><i class="fas fa-calendar-check me-1 text-info"></i> Tanggal Terbit</small>
+                                <h6 class="fw-bold text-dark mb-0 mt-1"><?= !empty($d['tanggal_terbit']) ? date('d F Y', strtotime($d['tanggal_terbit'])) : '-' ?></h6>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6 col-md-4">
+                            <div class="p-3 bg-light rounded-4 border h-100">
+                                <small class="text-muted text-xs uppercase d-block fw-bold mb-1"><i class="fas fa-clock me-1 text-warning"></i> Masa Berlaku</small>
+                                <div class="mt-1">
+                                    <?php if(!empty($d['tanggal_kadaluarsa'])): ?>
+                                        <span class="badge bg-warning text-dark rounded-pill px-2.5 py-1 text-xs fw-bold">
+                                            s/d <?= date('d F Y', strtotime($d['tanggal_kadaluarsa'])) ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="badge bg-success text-white rounded-pill px-2.5 py-1 text-xs fw-bold">
+                                            <i class="fas fa-infinity me-1"></i> Seumur Hidup / Permanen
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark mb-2"><i class="fas fa-align-left text-primary me-2"></i> Keterangan / Catatan Dokumen</h6>
+                        <div class="p-3 bg-light rounded-3 border text-muted text-sm">
+                            <?= nl2br(esc($d['keterangan'] ?: 'Tidak ada keterangan khusus untuk dokumen ini.')) ?>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-dark mb-2"><i class="fas fa-paperclip text-primary me-2"></i> Lampiran Berkas Digital</h6>
+                        <?php if(!empty($d['file_path'])): ?>
+                            <div class="p-3 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-file-pdf fs-2 text-danger me-3"></i>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0"><?= esc($d['file_path']) ?></h6>
+                                        <small class="text-muted text-xs">Diunggah pada: <?= date('d F Y, H:i', strtotime($d['created_at'] ?? 'now')) ?> WIB</small>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a href="<?= base_url('uploads/dokumen/'.$d['file_path']) ?>" target="_blank" class="btn btn-primary rounded-pill px-4 font-semibold shadow-sm">
+                                        <i class="fas fa-download me-1.5"></i> Unduh / Buka Berkas
+                                    </a>
+                                </div>
+                            </div>
+                        <?php else: ?>
+                            <div class="alert alert-secondary rounded-4 border-0 p-3 mb-0 text-muted">
+                                <i class="fas fa-exclamation-circle me-2"></i> Belum ada file fisik yang diunggah untuk dokumen ini.
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                </div>
+                <div class="card-footer bg-light px-4 py-3 text-end rounded-bottom-4">
+                    <a href="<?= base_url('admin/dokumen/penting') ?>" class="btn btn-secondary rounded-pill px-4 font-semibold me-2">Kembali</a>
+                    <a href="<?= base_url('admin/dokumen/penting/edit/'.$d['id']) ?>" class="btn btn-warning text-white rounded-pill px-4 font-semibold shadow-sm">
+                        <i class="fas fa-edit me-1.5"></i> Edit Dokumen Ini
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?= view('admin/templates/footer', $data) ?>

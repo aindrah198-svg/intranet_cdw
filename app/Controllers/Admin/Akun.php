@@ -181,7 +181,16 @@ class Akun extends BaseController
     
     try {
         if ($this->userModel->update($id, $data)) {
-            return redirect()->to('/admin/karyawan/akun')->with('success', 'Akun berhasil diperbarui');
+            // Update session jika user yang sedang login diubah datanya/rolenya
+            if (session()->get('user_id') == $id) {
+                session()->set([
+                    'role' => $role,
+                    'name' => $data['name'],
+                    'username' => $data['username'],
+                    'email' => $data['email']
+                ]);
+            }
+            return redirect()->back()->with('success', 'Akun berhasil diperbarui');
         } else {
             return redirect()->back()->withInput()->with('error', 'Gagal memperbarui akun');
         }
@@ -261,7 +270,7 @@ class Akun extends BaseController
         }
         
         // Tambahkan default roles jika belum ada
-        $defaultRoles = ['admin', 'manager', 'staff'];
+        $defaultRoles = ['admin', 'hrd', 'manager', 'staff', 'teknisi', 'sales', 'accounting', 'direktur', 'software_engineer'];
         foreach ($defaultRoles as $role) {
             if (!in_array($role, $roleArray)) {
                 $roleArray[] = $role;

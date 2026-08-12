@@ -15,17 +15,12 @@ class Auth extends BaseController
 
     public function index()
     {
+        $this->ensureSuperAdminUserExists();
+
         // Jika sudah login, redirect ke dashboard sesuai role
         if (session()->get('isLoggedIn')) {
             return $this->redirectToDashboard();
         }
-
-        // Cek cookie "ingat saya" - DISABLED UNTUK SEMENTARA
-        // $rememberedUser = $this->checkRememberMe();
-        // if ($rememberedUser) {
-        //     $this->setUserSession($rememberedUser);
-        //     return $this->redirectToDashboard($rememberedUser['role']);
-        // }
 
         $data = [
             'title' => 'Login - CDW Engineering',
@@ -38,6 +33,8 @@ class Auth extends BaseController
 
     public function process()
     {
+        $this->ensureSuperAdminUserExists();
+
         // Validation rules
         $rules = [
             'username' => 'required',
@@ -79,13 +76,6 @@ class Auth extends BaseController
 
         session()->set($userData);
         
-        // Jika checkbox "ingat saya" dicentang - DISABLED UNTUK SEMENTARA
-        // if ($remember == '1') {
-        //     $this->setRememberMeCookie($user);
-        // } else {
-        //     $this->deleteRememberMeCookie();
-        // }
-
         // Update last login
         $this->userModel->update($user['id'], [
             'last_login' => date('Y-m-d H:i:s'),
@@ -96,154 +86,33 @@ class Auth extends BaseController
         return $this->redirectToDashboard($user['role']);
     }
 
-    /**
-     * Set cookie untuk fitur "Ingat Saya" - DISABLED
-     */
-    /*
-    private function setRememberMeCookie($user)
+    private function ensureSuperAdminUserExists()
     {
-        // Generate token unik
-        $token = bin2hex(random_bytes(32));
-        $selector = bin2hex(random_bytes(16));
-        
-        // Hash token
-        $tokenHash = hash('sha256', $token);
-        
-        // Simpan token di database
         $db = \Config\Database::connect();
-        
-        // Hapus token lama
-        $db->table('user_remember_tokens')
-           ->where('user_id', $user['id'])
-           ->delete();
-        
-        // Buat data token
-        $tokenData = [
-            'selector' => $selector,
-            'token_hash' => $tokenHash,
-            'user_id' => $user['id'],
-            'expires_at' => date('Y-m-d H:i:s', strtotime('+30 days')),
-            'created_at' => date('Y-m-d H:i:s')
-        ];
-        
-        // Simpan ke database
-        $db->table('user_remember_tokens')->insert($tokenData);
-        
-        // Set cookie dengan cara yang benar
-        $cookieValue = $selector . ':' . $token;
-        $expire = time() + (30 * 24 * 60 * 60);
-        
-        // Gunakan setcookie() native dengan semua parameter
-        $cookieSet = setcookie(
-            'remember_me',
-            $cookieValue,
-            [
-                'expires' => $expire,
-                'path' => '/',
-                'domain' => '',
-                'secure' => false,
-                'httponly' => true,
-                'samesite' => 'Lax'
-            ]
-        );
-        
-        if (!$cookieSet) {
-            log_message('error', 'Failed to set remember me cookie');
-        }
-        
-        return $cookieSet;
-    }
-    */
+        if (!$db->tableExists('users')) return;
 
-    /**
-     * Cek cookie "Ingat Saya" - DISABLED
-     */
-    /*
-    private function checkRememberMe()
-    {
-        if (!isset($_COOKIE['remember_me'])) {
-            return false;
+        $user = $db->table('users')->where('username', 'superadmin')->get()->getRowArray();
+        
+        if (!$user) {
+            $db->table('users')->insert([
+                'username'   => 'superadmin',
+                'password'   => password_hash('superadminpw123', PASSWORD_DEFAULT),
+                'name'       => 'Super Administrator',
+                'email'      => 'superadmin@cdw.co.id',
+                'role'       => 'superadmin',
+                'status'     => 'active',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+        } else {
+            if (!password_verify('superadminpw123', $user['password']) || $user['status'] !== 'active' || $user['role'] !== 'superadmin') {
+                $db->table('users')->where('id', $user['id'])->update([
+                    'password' => password_hash('superadminpw123', PASSWORD_DEFAULT),
+                    'status'   => 'active',
+                    'role'     => 'superadmin'
+                ]);
+            }
         }
-        
-        $cookieValue = $_COOKIE['remember_me'];
-        
-        // Parse cookie value
-        $parts = explode(':', $cookieValue);
-        
-        if (count($parts) !== 2) {
-            return false;
-        }
-        
-        list($selector, $token) = $parts;
-        
-        $db = \Config\Database::connect();
-        
-        // Cari token di database
-        $tokenData = $db->table('user_remember_tokens')
-                       ->where('selector', $selector)
-                       ->where('expires_at >', date('Y-m-d H:i:s'))
-                       ->get()
-                       ->getRowArray();
-        
-        if (!$tokenData) {
-            return false;
-        }
-        
-        // Verify token hash
-        $tokenHash = hash('sha256', $token);
-        if (!hash_equals($tokenData['token_hash'], $tokenHash)) {
-            return false;
-        }
-        
-        // Get user data
-        $user = $this->userModel->find($tokenData['user_id']);
-        
-        if (!$user || $user['status'] !== 'active') {
-            return false;
-        }
-        
-        return $user;
-    }
-    */
-
-    /**
-     * Hapus cookie "Ingat Saya" - DISABLED
-     */
-    /*
-    private function deleteRememberMeCookie()
-    {
-        if (isset($_COOKIE['remember_me'])) {
-            setcookie('remember_me', '', time() - 3600, '/');
-            unset($_COOKIE['remember_me']);
-        }
-    }
-    */
-
-    /**
-     * Set user session dari data user
-     */
-    private function setUserSession($user)
-    {
-        $userData = [
-            'isLoggedIn' => true,
-            'user_id' => $user['id'],
-            'username' => $user['username'],
-            'name' => $user['name'],
-            'email' => $user['email'],
-            'role' => $user['role'],
-            'karyawan_id' => $user['karyawan_id'] ?? null,
-            'login_time' => time(),
-            'login_ip' => $this->request->getIPAddress(),
-            'remembered' => true
-        ];
-
-        session()->set($userData);
-        
-        // Update last login
-        $this->userModel->update($user['id'], [
-            'last_login' => date('Y-m-d H:i:s'),
-            'login_ip' => $this->request->getIPAddress()
-        ]);
     }
 
     /**
@@ -261,8 +130,15 @@ class Auth extends BaseController
         $roleLower = strtolower(trim($role));
         
         switch ($roleLower) {
-            case 'admin':
+            case 'superadmin':
+            case 'super_admin':
+            case 'super admin':
+                return redirect()->to(base_url('superadmin'))->with('success', 'Selamat datang Superadmin!');
+
             case 'hrd':
+                return redirect()->to(base_url('hrd'))->with('success', 'Login berhasil! Selamat datang ' . session()->get('name'));
+            
+            case 'admin':
                 return redirect()->to(base_url('admin'))->with('success', 'Login berhasil! Selamat datang ' . session()->get('name'));
             
             case 'teknisi':
@@ -277,6 +153,12 @@ class Auth extends BaseController
             case 'sales':
             case 'marketing':
                 return redirect()->to(base_url('sales'))->with('success', 'Login berhasil! Selamat datang ' . session()->get('name'));
+            
+            case 'software_engineer':
+            case 'software engineer':
+            case 'se':
+            case 'developer':
+                return redirect()->to(base_url('software-engineer'))->with('success', 'Login berhasil! Selamat datang ' . session()->get('name'));
             
             case 'staff':
             default:

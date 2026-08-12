@@ -3,6 +3,90 @@
 $title = $title ?? 'Dashboard Direktur';
 $subtitle = $subtitle ?? date('l, d F Y');
 $user = $user ?? ['name' => 'Direktur', 'role' => 'direktur'];
+
+// Real-time Notifications Query
+$db = \Config\Database::connect();
+$notifList = [];
+
+if ($db->tableExists('form_kasbon')) {
+    $kasbonCount = $db->table('form_kasbon')->where('status_direktur', 'Menunggu')->countAllResults();
+    if ($kasbonCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-wallet',
+            'bg' => 'bg-warning text-dark',
+            'title' => "$kasbonCount Kasbon Menunggu Approval",
+            'desc' => 'Pengajuan kasbon karyawan butuh persetujuan',
+            'url' => base_url('direktur/keuangan/kasbon?status=pending')
+        ];
+    }
+}
+
+if ($db->tableExists('form_pembelian')) {
+    $pembelianCount = $db->table('form_pembelian')->where('status_direktur', 'Menunggu')->countAllResults();
+    if ($pembelianCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-shopping-cart',
+            'bg' => 'bg-info text-white',
+            'title' => "$pembelianCount Form Pembelian (PR)",
+            'desc' => 'Pengajuan pengadaan barang butuh review',
+            'url' => base_url('direktur/keuangan/pembelian?status=pending')
+        ];
+    }
+}
+
+if ($db->tableExists('laporan_harian')) {
+    $laporanCount = $db->table('laporan_harian')->where('status', 'menunggu_review')->countAllResults();
+    if ($laporanCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-file-alt',
+            'bg' => 'bg-primary text-white',
+            'title' => "$laporanCount Laporan Harian Masuk",
+            'desc' => 'Laporan kerja staf belum direview',
+            'url' => base_url('direktur/proyek/monitoring-laporan?status=menunggu_review')
+        ];
+    }
+}
+
+if ($db->tableExists('pengajuan_atk')) {
+    $atkCount = $db->table('pengajuan_atk')->where('status', 'menunggu')->countAllResults();
+    if ($atkCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-pen-nib',
+            'bg' => 'bg-success text-white',
+            'title' => "$atkCount Pengajuan ATK Baru",
+            'desc' => 'Pengajuan alat tulis kantor butuh persetujuan',
+            'url' => base_url('direktur/pengadaan/pengajuan-atk')
+        ];
+    }
+}
+
+if ($db->tableExists('pengadaan_aset')) {
+    $asetCount = $db->table('pengadaan_aset')->where('status', 'menunggu')->countAllResults();
+    if ($asetCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-desktop',
+            'bg' => 'bg-secondary text-white',
+            'title' => "$asetCount Usulan Aset Baru",
+            'desc' => 'Pengadaan aset perusahaan butuh approval',
+            'url' => base_url('direktur/pengadaan/aset')
+        ];
+    }
+}
+
+if ($db->tableExists('laporan_kerusakan')) {
+    $kerusakanCount = $db->table('laporan_kerusakan')->where('status_tindakan', 'dilaporkan')->countAllResults();
+    if ($kerusakanCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-tools',
+            'bg' => 'bg-danger text-white',
+            'title' => "$kerusakanCount Kerusakan Alat",
+            'desc' => 'Laporan kerusakan barang perlu tindakan',
+            'url' => base_url('direktur/pengadaan/kerusakan')
+        ];
+    }
+}
+
+$totalNotif = count($notifList);
 ?>
 <!-- Main Content Area -->
 <div class="main-content">
@@ -16,116 +100,76 @@ $user = $user ?? ['name' => 'Direktur', 'role' => 'direktur'];
         z-index: 1000;
         backdrop-filter: blur(10px);
     ">
-        <div class="container-fluid p-0">
+        <div class="container-fluid p-0 d-flex justify-content-between align-items-center flex-nowrap">
             <!-- Left Side: Page Title and Breadcrumb -->
-            <div class="d-flex align-items-center">
-                <!-- Sidebar Toggle for Mobile -->
-                <button class="btn btn-modern-outline d-lg-none me-3" onclick="toggleSidebar()">
+            <div class="d-flex align-items-center" style="min-width: 0;">
+                <!-- Sidebar Toggle -->
+                <button class="btn btn-modern-outline me-3" onclick="toggleSidebar()">
                     <i class="fas fa-bars"></i>
                 </button>
                 
                 <!-- Page Title -->
                 <div class="d-flex flex-column">
-                    <h1 class="page-title mb-0">
+                    <h1 class="page-title mb-0 text-truncate" style="max-width: 100%; font-size: clamp(1rem, 2vw + 0.5rem, 1.5rem);">
                         <span class="text-gradient"><?= htmlspecialchars($title) ?></span>
                     </h1>
-                    <div class="d-flex align-items-center gap-2">
+                    <div class="d-none d-sm-flex align-items-center gap-2">
                         <small class="text-muted">
                             <i class="far fa-calendar-alt me-1"></i>
                             <?= htmlspecialchars($subtitle) ?>
-                        </small>
-                        <span class="text-muted">•</span>
-                        <small class="text-muted">
-                            <i class="far fa-clock me-1"></i>
-                            <span id="liveClock"><?= date('H:i:s') ?></span>
                         </small>
                     </div>
                 </div>
             </div>
 
             <!-- Right Side: User Info, Notifications, etc. -->
-            <div class="d-flex align-items-center gap-3">
-                <!-- Quick Actions -->
-                <div class="d-none d-md-flex gap-2">
-                    <button class="btn btn-modern-outline btn-sm" onclick="window.open('<?= base_url('direktur/laporan/quick-view') ?>', '_blank')">
-                        <i class="fas fa-chart-bar"></i> Quick View
-                    </button>
-                    <button class="btn btn-modern-primary btn-sm" onclick="window.location.href='<?= base_url('direktur/dashboard') ?>'">
-                        <i class="fas fa-home"></i> Dashboard
-                    </button>
-                </div>
-
-                <!-- Search Bar -->
-                <div class="d-none d-lg-block">
-                    <div class="input-group input-group-sm" style="width: 250px;">
-                        <span class="input-group-text bg-transparent border-end-0">
-                            <i class="fas fa-search"></i>
-                        </span>
-                        <input type="text" class="form-control border-start-0" placeholder="Search laporan..." 
-                               style="background: rgba(255,255,255,0.7); border-radius: var(--border-radius-sm);">
-                    </div>
-                </div>
+            <div class="d-flex align-items-center gap-2 gap-sm-3 flex-shrink-0">
 
                 <!-- Notifications -->
                 <div class="dropdown position-relative">
-                    <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="dropdown" 
+                    <button class="btn btn-link text-dark p-0 position-relative" type="button" data-bs-toggle="dropdown" 
                             style="text-decoration: none;">
                         <i class="fas fa-bell fa-lg"></i>
-                        <span class="notification-badge"><?= $notificationCount ?? 2 ?></span>
+                        <span class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle navbar-badge <?= $totalNotif > 0 ? '' : 'd-none' ?>" style="font-size: 0.7rem; padding: 3px 6px;">
+                            <?= $totalNotif ?>
+                        </span>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end p-0" style="
-                        min-width: 320px;
+                        min-width: 330px;
                         border: none;
                         box-shadow: var(--shadow-lg);
                         border-radius: var(--border-radius-sm);
                         overflow: hidden;
                         margin-top: 10px;
                     ">
-                        <div class="p-3 border-bottom">
-                            <h6 class="mb-0">Notifikasi Direktur</h6>
-                            <small class="text-muted"><?= $notificationCount ?? 2 ?> unread notifications</small>
+                        <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold">Notifikasi Direktur</h6>
+                            <span class="badge bg-primary rounded-pill navbar-notif-action-badge"><?= $totalNotif ?> Perlu Action</span>
                         </div>
-                        <div style="max-height: 300px; overflow-y: auto;">
-                            <!-- Notification Items -->
-                            <a href="<?= base_url('direktur/laporan/kinerja') ?>" class="dropdown-item p-3 border-bottom">
-                                <div class="d-flex">
-                                    <div class="me-3">
-                                        <div class="bg-gradient-accent text-white rounded-circle d-flex align-items-center justify-content-center" 
-                                             style="width: 40px; height: 40px;">
-                                            <i class="fas fa-chart-line"></i>
+                        <div style="max-height: 320px; overflow-y: auto;">
+                            <?php if(empty($notifList)): ?>
+                                <div class="p-4 text-center text-muted">
+                                    <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
+                                    <p class="mb-0 small">Semua pengajuan telah diproses!</p>
+                                </div>
+                            <?php else: ?>
+                                <?php foreach($notifList as $n): ?>
+                                <a href="<?= $n['url'] ?>" class="dropdown-item p-3 border-bottom text-wrap">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <div class="<?= $n['bg'] ?> rounded-circle d-flex align-items-center justify-content-center" 
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="<?= $n['icon'] ?>"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fs-6 fw-bold"><?= esc($n['title']) ?></h6>
+                                            <small class="text-muted d-block" style="font-size: 0.8rem;"><?= esc($n['desc']) ?></small>
                                         </div>
                                     </div>
-                                    <div>
-                                        <h6 class="mb-1">Laporan Kinerja Bulanan</h6>
-                                        <p class="mb-0 text-muted" style="font-size: 0.85rem;">
-                                            Kinerja Q4 2023 siap ditinjau
-                                        </p>
-                                        <small class="text-muted">1 hari lalu</small>
-                                    </div>
-                                </div>
-                            </a>
-                            <a href="<?= base_url('direktur/finansial/review') ?>" class="dropdown-item p-3">
-                                <div class="d-flex">
-                                    <div class="me-3">
-                                        <div class="bg-gradient-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
-                                             style="width: 40px; height: 40px;">
-                                            <i class="fas fa-money-bill-wave"></i>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-1">Review Anggaran 2024</h6>
-                                        <p class="mb-0 text-muted" style="font-size: 0.85rem;">
-                                            Butuh persetujuan direktur
-                                        </p>
-                                        <small class="text-muted">2 hari lalu</small>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="p-2 border-top">
-                            <a href="<?= base_url('direktur/notifikasi') ?>" class="btn btn-modern-outline w-100 btn-sm">
-                                <i class="fas fa-eye me-1"></i> Lihat Semua
-                            </a>
+                                </a>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -135,7 +179,7 @@ $user = $user ?? ['name' => 'Direktur', 'role' => 'direktur'];
                     <button class="btn p-0 d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" 
                             style="border: none; background: none;">
                         <div class="position-relative">
-                            <div class="user-avatar bg-gradient-primary text-white d-flex align-items-center justify-content-center" 
+                            <div class="user-avatar bg-primary text-white d-flex align-items-center justify-content-center" 
                                  style="width: 45px; height: 45px; border-radius: 50%; font-weight: 600; font-size: 1.1rem;">
                                 <?= strtoupper(substr($user['name'] ?? 'D', 0, 1)) ?>
                             </div>
@@ -148,7 +192,7 @@ $user = $user ?? ['name' => 'Direktur', 'role' => 'direktur'];
                                 <?= ucfirst($user['role'] ?? 'direktur') ?>
                             </small>
                         </div>
-                        <i class="fas fa-chevron-down text-muted"></i>
+                        <i class="fas fa-chevron-down text-muted ms-1"></i>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end" style="
                         min-width: 200px;
@@ -161,79 +205,12 @@ $user = $user ?? ['name' => 'Direktur', 'role' => 'direktur'];
                             <h6 class="mb-0"><?= htmlspecialchars($user['name'] ?? 'Direktur') ?></h6>
                             <small class="text-muted"><?= ucfirst($user['role'] ?? 'direktur') ?></small>
                         </div>
-                        <a class="dropdown-item" href="<?= base_url('direktur/profil') ?>">
-                            <i class="fas fa-user me-2"></i> Profil Saya
-                        </a>
-                        <a class="dropdown-item" href="<?= base_url('direktur/pengaturan') ?>">
-                            <i class="fas fa-cog me-2"></i> Pengaturan
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="<?= base_url('direktur/bantuan') ?>">
-                            <i class="fas fa-question-circle me-2"></i> Bantuan & Dukungan
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item text-danger" href="<?= base_url('logout') ?>">
-                            <i class="fas fa-sign-out-alt me-2"></i> Keluar
+                        <a class="dropdown-item p-2 px-3" href="<?= base_url('logout') ?>">
+                            <i class="fas fa-sign-out-alt text-danger me-2"></i> Keluar
                         </a>
                     </div>
                 </div>
+
             </div>
         </div>
     </nav>
-
-   
-
-    <!-- Main Content Container -->
-    <div class="container-fluid mt-4 px-4">
-        <!-- Flash Messages -->
-        <?php if(session()->getFlashdata('success')): ?>
-        <div class="alert alert-success alert-modern fade-in" role="alert">
-            <div class="d-flex align-items-center">
-                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
-                     style="width: 32px; height: 32px;">
-                    <i class="fas fa-check"></i>
-                </div>
-                <div>
-                    <h6 class="mb-1">Sukses!</h6>
-                    <p class="mb-0"><?= session()->getFlashdata('success') ?></p>
-                </div>
-                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        </div>
-        <?php endif; ?>
-        
-        <?php if(session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger alert-modern fade-in" role="alert">
-            <div class="d-flex align-items-center">
-                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
-                     style="width: 32px; height: 32px;">
-                    <i class="fas fa-exclamation"></i>
-                </div>
-                <div>
-                    <h6 class="mb-1">Error!</h6>
-                    <p class="mb-0"><?= session()->getFlashdata('error') ?></p>
-                </div>
-                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        </div>
-        <?php endif; ?>
-        
-        <?php if(session()->getFlashdata('errors')): ?>
-        <div class="alert alert-danger alert-modern fade-in" role="alert">
-            <div class="d-flex">
-                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" 
-                     style="width: 32px; height: 32px;">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <div>
-                    <h6 class="mb-2">Harap perbaiki kesalahan berikut:</h6>
-                    <ul class="mb-0 ps-3" style="list-style: disc;">
-                    <?php foreach(session()->getFlashdata('errors') as $error): ?>
-                        <li><?= $error ?></li>
-                    <?php endforeach; ?>
-                    </ul>
-                </div>
-                <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        </div>
-        <?php endif; ?>

@@ -38,8 +38,9 @@ class AccountingController extends BaseController
         $roleLower = strtolower($role ?? '');
         
         switch ($roleLower) {
-            case 'admin':
             case 'hrd':
+                return redirect()->to(base_url('hrd'));
+            case 'admin':
                 return redirect()->to(base_url('admin'));
             case 'direktur':
                 return redirect()->to(base_url('direktur'));

@@ -62,13 +62,16 @@ class Cuti extends BaseController
 
         // Build query
         $builder = $this->cutiModel->db->table('cuti c');
-        $builder->select('c.*, k.nik, k.nama_lengkap, k.jabatan, k.departemen');
+        $builder->select("c.*, COALESCE(c.status_hrd, c.status_direktur, 'Menunggu') as status, k.nik, k.nama_lengkap, k.jabatan, k.departemen");
         $builder->join('karyawan k', 'k.id = c.karyawan_id', 'left');
         $builder->where('c.tanggal_mulai >=', $startDate);
         $builder->where('c.tanggal_mulai <=', $endDate);
 
         if ($status) {
-            $builder->where('c.status', $status);
+            $builder->groupStart()
+                    ->where('c.status_hrd', $status)
+                    ->orWhere('c.status_direktur', $status)
+                    ->groupEnd();
         }
 
         if ($karyawanId) {
@@ -431,7 +434,7 @@ class Cuti extends BaseController
     public function myCuti()
     {
         // Get user ID from session
-        $userId = session()->get('id');
+        $userId = session()->get('user_id') ?? session()->get('id');
         
         if (!$userId) {
             return redirect()->to('login')->with('error', 'Silakan login terlebih dahulu');

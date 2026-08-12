@@ -89,6 +89,10 @@ class SpkInstalasiModel extends Model
      */
     public function getFiltered($status = null, $prioritas = null, $tanggal_mulai = null, $tanggal_selesai = null)
     {
+        $db = \Config\Database::connect();
+        $joinUser1 = $db->fieldExists('dibuat_oleh', 'spk_instalasi') ? 'users.id = spk_instalasi.dibuat_oleh' : ($db->fieldExists('created_by', 'spk_instalasi') ? 'users.id = spk_instalasi.created_by' : '1=0');
+        $joinUser2 = $db->fieldExists('diperbarui_oleh', 'spk_instalasi') ? 'u2.id = spk_instalasi.diperbarui_oleh' : '1=0';
+
         $builder = $this->select('
                 spk_instalasi.*, 
                 users.name as dibuat_oleh_nama, 
@@ -104,8 +108,8 @@ class SpkInstalasiModel extends Model
                 client.status as client_status,
                 client.kode_client as client_kode
             ')
-            ->join('users', 'users.id = spk_instalasi.dibuat_oleh', 'left')
-            ->join('users as u2', 'u2.id = spk_instalasi.diperbarui_oleh', 'left')
+            ->join('users', $joinUser1, 'left')
+            ->join('users as u2', $joinUser2, 'left')
             ->join('client', 'client.id = spk_instalasi.client_id', 'left');
         
         if ($status && $status != 'semua') {
@@ -134,6 +138,10 @@ class SpkInstalasiModel extends Model
      */
     public function getWithRelations($id)
     {
+        $db = \Config\Database::connect();
+        $joinUser1 = $db->fieldExists('dibuat_oleh', 'spk_instalasi') ? 'users.id = spk_instalasi.dibuat_oleh' : ($db->fieldExists('created_by', 'spk_instalasi') ? 'users.id = spk_instalasi.created_by' : '1=0');
+        $joinUser2 = $db->fieldExists('diperbarui_oleh', 'spk_instalasi') ? 'u2.id = spk_instalasi.diperbarui_oleh' : '1=0';
+
         return $this->select('
                 spk_instalasi.*, 
                 users.name as dibuat_oleh_nama, 
@@ -149,8 +157,8 @@ class SpkInstalasiModel extends Model
                 client.status as client_status,
                 client.kode_client as client_kode
             ')
-            ->join('users', 'users.id = spk_instalasi.dibuat_oleh', 'left')
-            ->join('users as u2', 'u2.id = spk_instalasi.diperbarui_oleh', 'left')
+            ->join('users', $joinUser1, 'left')
+            ->join('users as u2', $joinUser2, 'left')
             ->join('client', 'client.id = spk_instalasi.client_id', 'left')
             ->find($id);
     }
@@ -329,6 +337,10 @@ class SpkInstalasiModel extends Model
      */
     public function getStatistik()
     {
+        $db = \Config\Database::connect();
+        $estimasiBiayaSelect = $db->fieldExists('estimasi_biaya', 'spk_instalasi') ? 'SUM(spk_instalasi.estimasi_biaya)' : '0';
+        $progressSelect = $db->fieldExists('progress_persen', 'spk_instalasi') ? 'AVG(spk_instalasi.progress_persen)' : '0';
+
         $builder = $this->select('
                 COUNT(spk_instalasi.id) as total,
                 SUM(CASE WHEN spk_instalasi.status = "Draft" THEN 1 ELSE 0 END) as draft,
@@ -337,8 +349,8 @@ class SpkInstalasiModel extends Model
                 SUM(CASE WHEN spk_instalasi.status = "Selesai" THEN 1 ELSE 0 END) as selesai,
                 SUM(CASE WHEN spk_instalasi.status = "Ditunda" THEN 1 ELSE 0 END) as ditunda,
                 SUM(CASE WHEN spk_instalasi.status = "Dibatalkan" THEN 1 ELSE 0 END) as dibatalkan,
-                SUM(spk_instalasi.estimasi_biaya) as total_estimasi,
-                AVG(spk_instalasi.progress_persen) as total_progress
+                ' . $estimasiBiayaSelect . ' as total_estimasi,
+                ' . $progressSelect . ' as total_progress
             ')
             ->join('client', 'client.id = spk_instalasi.client_id', 'left');
             

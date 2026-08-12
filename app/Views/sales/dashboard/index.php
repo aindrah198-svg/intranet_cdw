@@ -1,287 +1,123 @@
-<?php
-$title = 'Dashboard Sales';
-$active = 'dashboard';
-$user = $user ?? ['name' => 'Sales', 'role' => 'sales'];
-?>
+<div class="content-wrapper p-4">
+    <!-- Header Page -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1 text-primary font-weight-bold"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard Sales & Marketing</h4>
+            <p class="text-muted mb-0">Overview performa leads, pipeline, quotation, dan target penjualan</p>
+        </div>
+        <div>
+            <a href="<?= site_url('sales/leads/create') ?>" class="btn btn-primary shadow-sm mr-2">
+                <i class="fas fa-user-plus mr-1"></i> Tambah Lead Baru
+            </a>
+            <a href="<?= site_url('sales/deal/create') ?>" class="btn btn-success shadow-sm">
+                <i class="fas fa-handshake mr-1"></i> Catat Closing Deal
+            </a>
+        </div>
+    </div>
 
-<?= $this->include('sales/templates/header') ?>
-<?= $this->include('sales/templates/sidebar') ?>
-<?= $this->include('sales/templates/navbar') ?>
-
-<div class="container-fluid py-4">
-    <!-- Welcome Card -->
-    <div class="row justify-content-center">
-        <div class="col-lg-12">
-            <div class="card border-0 shadow-lg">
-                <div class="card-body p-5">
-                    <!-- Header -->
-                    <div class="row align-items-center mb-5">
-                        <div class="col-md-8">
-                            <h1 class="display-5 fw-bold text-primary mb-3">
-                                <i class="fas fa-chart-line me-2"></i>
-                                Selamat Datang, <?= htmlspecialchars($user['name'] ?? 'Sales') ?>!
-                            </h1>
-                            <p class="lead text-muted mb-2">
-                                Anda login sebagai <span class="badge bg-primary fs-6">SALES</span>
-                            </p>
-                            <div class="d-flex flex-wrap gap-3 mt-3">
-                                <span class="text-muted">
-                                    <i class="fas fa-user me-1"></i>
-                                    Username: <?= htmlspecialchars($user['username'] ?? 'sales') ?>
-                                </span>
-                                <span class="text-muted">
-                                    <i class="fas fa-envelope me-1"></i>
-                                    Email: <?= htmlspecialchars($user['email'] ?? 'sales@example.com') ?>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="col-md-4 text-center">
-                            <div class="avatar-circle bg-primary text-white display-4 mb-3 mx-auto">
-                                <?= strtoupper(substr($user['name'] ?? 'S', 0, 1)) ?>
-                            </div>
-                            <h5 class="mb-1"><?= htmlspecialchars($user['name'] ?? 'Sales') ?></h5>
-                            <p class="text-muted small">Sales Department</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Quick Stats -->
-                    <div class="row mb-5">
-                        <div class="col-md-3 mb-4">
-                            <div class="card border-start border-primary border-4 h-100">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="text-uppercase text-muted mb-2">Total Clients</h6>
-                                            <h2 class="mb-0">0</h2>
-                                            <p class="text-muted mb-0">Your clients</p>
-                                        </div>
-                                        <div class="icon-circle bg-primary text-white">
-                                            <i class="fas fa-users fa-2x"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-3 mb-4">
-                            <div class="card border-start border-success border-4 h-100">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="text-uppercase text-muted mb-2">Active Clients</h6>
-                                            <h2 class="mb-0">0</h2>
-                                            <p class="text-muted mb-0">Active status</p>
-                                        </div>
-                                        <div class="icon-circle bg-success text-white">
-                                            <i class="fas fa-check-circle fa-2x"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-3 mb-4">
-                            <div class="card border-start border-info border-4 h-100">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="text-uppercase text-muted mb-2">Pending Deals</h6>
-                                            <h2 class="mb-0">0</h2>
-                                            <p class="text-muted mb-0">In progress</p>
-                                        </div>
-                                        <div class="icon-circle bg-info text-white">
-                                            <i class="fas fa-clock fa-2x"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-3 mb-4">
-                            <div class="card border-start border-warning border-4 h-100">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="text-uppercase text-muted mb-2">Today's Date</h6>
-                                            <h2 class="mb-0"><?= date('d') ?></h2>
-                                            <p class="text-muted mb-0"><?= date('F Y') ?></p>
-                                        </div>
-                                        <div class="icon-circle bg-warning text-white">
-                                            <i class="fas fa-calendar-alt fa-2x"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Quick Actions -->
-                    <div class="row mb-5">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-bolt me-2"></i>
-                                        Quick Actions
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-3 mb-3">
-                                            <a href="<?= base_url('sales/client') ?>" class="btn btn-primary btn-lg w-100 py-3">
-                                                <i class="fas fa-user-tie me-2"></i> Manage Clients
-                                            </a>
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <a href="<?= base_url('sales/client/create') ?>" class="btn btn-success btn-lg w-100 py-3">
-                                                <i class="fas fa-plus-circle me-2"></i> Add New Client
-                                            </a>
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <a href="<?= base_url('sales/absensi') ?>" class="btn btn-info btn-lg w-100 py-3">
-                                                <i class="fas fa-clock me-2"></i> Attendance
-                                            </a>
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <a href="<?= base_url('sales/profile') ?>" class="btn btn-warning btn-lg w-100 py-3">
-                                                <i class="fas fa-user me-2"></i> My Profile
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- System Info -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        System Information
-                                    </h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <p><strong>Current Time:</strong> <?= date('H:i:s') ?></p>
-                                            <p><strong>Login Role:</strong> <span class="badge bg-primary"><?= htmlspecialchars($user['role'] ?? 'sales') ?></span></p>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <p><strong>Session ID:</strong> <?= session_id() ?></p>
-                                            <p><strong>Karyawan ID:</strong> <?= htmlspecialchars($user['karyawan_id'] ?? 'N/A') ?></p>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <p><strong>Application:</strong> CDW Sales System</p>
-                                            <p><strong>Version:</strong> 1.0.0</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-primary text-white">
+                <div class="card-body">
+                    <small class="text-uppercase font-weight-bold">Leads Aktif</small>
+                    <h3 class="mb-0 mt-2 font-weight-bold"><?= $leadsAktif ?></h3>
+                    <small class="text-white-50">Dari total <?= $totalLeads ?> leads</small>
                 </div>
             </div>
-            
-            <!-- Footer Note -->
-            <div class="text-center mt-4">
-                <p class="text-muted">
-                    <i class="fas fa-chart-line me-1"></i>
-                    CDW Engineering - Simple Sales Dashboard
-                    <span class="mx-2">•</span>
-                    Ready for Client Management
-                </p>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-success text-white">
+                <div class="card-body">
+                    <small class="text-uppercase font-weight-bold">Closing Bulan Ini</small>
+                    <h3 class="mb-0 mt-2 font-weight-bold">Rp <?= number_format($nilaiClosingBulanIni, 0, ',', '.') ?></h3>
+                    <small class="text-white-50"><?= $jumlahDealBulanIni ?> deal terkonfirmasi</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-info text-white">
+                <div class="card-body">
+                    <small class="text-uppercase font-weight-bold">Target vs Realisasi</small>
+                    <h3 class="mb-0 mt-2 font-weight-bold"><?= $persenRealisasi ?>%</h3>
+                    <small class="text-white-50">Target: Rp <?= number_format($targetBulanIni, 0, ',', '.') ?></small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-warning text-dark">
+                <div class="card-body">
+                    <small class="text-uppercase font-weight-bold">Quotation Pending</small>
+                    <h3 class="mb-0 mt-2 font-weight-bold"><?= $quotationPending ?></h3>
+                    <small class="text-dark-50">Penawaran menunggu respon</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pipeline Funnel Stats -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-funnel-dollar mr-2"></i>Status Leads & Pipeline Funnel</h6>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <?php 
+                $badgeColors = ['Baru' => 'secondary', 'Follow Up' => 'info', 'Negosiasi' => 'warning', 'Closing' => 'success', 'Hilang' => 'danger'];
+                foreach ($pipelineStats as $st => $count): 
+                ?>
+                    <div class="col">
+                        <div class="p-3 rounded border bg-light">
+                            <span class="badge badge-<?= $badgeColors[$st] ?? 'secondary' ?> mb-2"><?= $st ?></span>
+                            <h4 class="font-weight-bold mb-0"><?= $count ?></h4>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Leads -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-user-clock mr-2"></i>Leads Terbaru</h6>
+            <a href="<?= site_url('sales/leads') ?>" class="btn btn-sm btn-outline-primary">Lihat Semua Leads</a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Kode</th>
+                            <th>Nama Lead</th>
+                            <th>Perusahaan</th>
+                            <th>Sumber</th>
+                            <th class="text-right">Nilai Potensi</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($recentLeads)): ?>
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">Belum ada data leads.</td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($recentLeads as $lead): ?>
+                                <tr>
+                                    <td><code><?= esc($lead['kode_lead']) ?></code></td>
+                                    <td><strong><?= esc($lead['nama_lead']) ?></strong></td>
+                                    <td><?= esc($lead['perusahaan'] ?? '-') ?></td>
+                                    <td><span class="badge badge-light border"><?= esc($lead['sumber_lead']) ?></span></td>
+                                    <td class="text-right">Rp <?= number_format($lead['nilai_potensi'], 0, ',', '.') ?></td>
+                                    <td class="text-center">
+                                        <span class="badge badge-<?= $badgeColors[$lead['status']] ?? 'secondary' ?>"><?= esc($lead['status']) ?></span>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-/* Custom styles untuk Simple Dashboard */
-.card {
-    border-radius: 15px;
-    overflow: hidden;
-    transition: transform 0.3s;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-}
-
-.avatar-circle {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
-
-.icon-circle {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-lg {
-    border-radius: 10px;
-    font-weight: 600;
-    transition: all 0.3s;
-}
-
-.btn-lg:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .display-5 {
-        font-size: 1.8rem;
-    }
-    
-    .avatar-circle {
-        width: 70px;
-        height: 70px;
-        font-size: 1.5rem;
-    }
-    
-    .btn-lg {
-        padding: 0.75rem !important;
-        font-size: 0.9rem;
-    }
-}
-</style>
-
-<script>
-// Live Clock Update
-function updateLiveTime() {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('id-ID', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        second: '2-digit'
-    });
-    
-    // Update all elements with class 'live-time'
-    document.querySelectorAll('.live-time').forEach(el => {
-        el.textContent = timeStr;
-    });
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    updateLiveTime();
-    
-    // Update every second
-    setInterval(updateLiveTime, 1000);
-});
-</script>
-
-<?= $this->include('sales/templates/footer') ?>

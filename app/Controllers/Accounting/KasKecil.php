@@ -30,13 +30,45 @@ class KasKecil extends BaseController
 
     public function __construct()
     {
+        $this->db = \Config\Database::connect();
+        if (!$this->db->tableExists('kas_kecil')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `kas_kecil` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `tanggal` DATE NOT NULL,
+                  `kode_transaksi` VARCHAR(50) NOT NULL,
+                  `tipe` ENUM('Pemasukan','Pengeluaran') NOT NULL,
+                  `jumlah` DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+                  `keterangan` TEXT DEFAULT NULL,
+                  `coa_lawan_id` INT DEFAULT NULL,
+                  `coa_lawan_kode` VARCHAR(50) DEFAULT NULL,
+                  `coa_lawan_nama` VARCHAR(150) DEFAULT NULL,
+                  `karyawan_id` INT DEFAULT NULL,
+                  `nama_karyawan` VARCHAR(150) DEFAULT NULL,
+                  `spk_id` INT DEFAULT NULL,
+                  `nomor_spk` VARCHAR(50) DEFAULT NULL,
+                  `no_bukti` VARCHAR(100) DEFAULT NULL,
+                  `lampiran` VARCHAR(255) DEFAULT NULL,
+                  `status` ENUM('Draft','Posted','Dibatalkan') DEFAULT 'Draft',
+                  `posted_at` DATETIME DEFAULT NULL,
+                  `jurnal_id` INT DEFAULT NULL,
+                  `nomor_jurnal` VARCHAR(50) DEFAULT NULL,
+                  `metode_imprest` TINYINT(1) DEFAULT 0,
+                  `saldo_setelah` DECIMAL(15,2) DEFAULT 0.00,
+                  `created_by` INT DEFAULT NULL,
+                  `updated_by` INT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL,
+                  `deleted_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
         $this->kasKecilModel = new KasKecilModel();
         $this->coaModel = new CoaModel();
         $this->jurnalModel = new JurnalModel();
         $this->jurnalDetailModel = new JurnalDetailModel();
         $this->karyawanModel = new KaryawanModel();
         $this->spkModel = new SpkInstalasiModel();
-        $this->db = \Config\Database::connect();
         
         helper(['form', 'url', 'text', 'number']);
         

@@ -227,6 +227,7 @@ class Karyawan extends BaseController
             return redirect()->to('/hr/karyawan')->with('error', 'Data karyawan tidak ditemukan');
         }
         
+        (new \App\Models\UserModel())->where('karyawan_id', $id)->delete();
         if ($this->karyawanModel->delete($id)) {
             return redirect()->to('/hr/karyawan')->with('success', 'Data karyawan berhasil dihapus');
         } else {

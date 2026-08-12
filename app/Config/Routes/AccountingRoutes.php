@@ -272,6 +272,7 @@ $routes->group('accounting', ['filter' => 'auth'], function($routes) {
     // ============================================
     $routes->group('penggajian', function($routes) {
         $routes->get('/', 'Accounting\Penggajian::index', ['as' => 'accounting.penggajian']);
+        $routes->get('slip-gaji-laporan', 'Accounting\Penggajian::slipGajiLaporan', ['as' => 'accounting.penggajian.slip-gaji-laporan']);
         
         // Data Karyawan
         $routes->group('data-karyawan', function($routes) {
@@ -379,8 +380,16 @@ $routes->group('accounting', ['filter' => 'auth'], function($routes) {
             $routes->post('update/(:num)', 'Accounting\Penggajian::updatePotonganGaji/$1', ['as' => 'accounting.penggajian.potongan-gaji.update']);
             $routes->post('delete/(:num)', 'Accounting\Penggajian::deletePotonganGaji/$1', ['as' => 'accounting.penggajian.potongan-gaji.delete']);
             $routes->post('toggle-status/(:num)', 'Accounting\Penggajian::togglePotonganStatus/$1', ['as' => 'accounting.penggajian.potongan-gaji.toggle-status']);
-            $routes->get('ajax-get-data', 'Accounting\Penggajian::ajaxGetPotonganGajiData', ['as' => 'accounting.penggajian.potongan-gaji.ajax.get']);
         });
+    });
+
+    // ============================================
+    // KASBON
+    // ============================================
+    $routes->group('kasbon', function($routes) {
+        $routes->get('/', 'Accounting\Kasbon::index', ['as' => 'accounting.kasbon']);
+        $routes->get('potong-gaji', 'Accounting\Kasbon::potongGaji', ['as' => 'accounting.kasbon.potong-gaji']);
+        $routes->get('proses-potong/(:num)', 'Accounting\Kasbon::prosesPotong/$1', ['as' => 'accounting.kasbon.proses-potong']);
     });
     
     // ============================================
@@ -391,7 +400,7 @@ $routes->group('accounting', ['filter' => 'auth'], function($routes) {
         
         // Register Aset
         $routes->group('register-aset', function($routes) {
-            $routes->get('/', 'Accounting\AsetTetap::registerAset', ['as' => 'accounting.aset-tetap.register-aset']);
+            $routes->get('/', 'Accounting\AsetTetapRegister::index', ['as' => 'accounting.aset-tetap.register-aset']);
             $routes->get('create', 'Accounting\AsetTetap::createAset', ['as' => 'accounting.aset-tetap.register-aset.create']);
             $routes->post('store', 'Accounting\AsetTetap::storeAset', ['as' => 'accounting.aset-tetap.register-aset.store']);
             $routes->get('detail/(:num)', 'Accounting\AsetTetap::detailAset/$1', ['as' => 'accounting.aset-tetap.register-aset.detail']);
@@ -429,7 +438,7 @@ $routes->group('accounting', ['filter' => 'auth'], function($routes) {
         
         // Penyusutan
         $routes->group('penyusutan', function($routes) {
-            $routes->get('/', 'Accounting\AsetTetap::penyusutan', ['as' => 'accounting.aset-tetap.penyusutan']);
+            $routes->get('/', 'Accounting\Penyusutan::index', ['as' => 'accounting.aset-tetap.penyusutan']);
             $routes->get('create', 'Accounting\AsetTetap::createPenyusutan', ['as' => 'accounting.aset-tetap.penyusutan.create']);
             $routes->post('store', 'Accounting\AsetTetap::storePenyusutan', ['as' => 'accounting.aset-tetap.penyusutan.store']);
             $routes->get('detail/(:num)', 'Accounting\AsetTetap::detailPenyusutan/$1', ['as' => 'accounting.aset-tetap.penyusutan.detail']);
@@ -454,7 +463,7 @@ $routes->group('accounting', ['filter' => 'auth'], function($routes) {
         
         // Pelepasan Aset
         $routes->group('pelepasan-aset', function($routes) {
-            $routes->get('/', 'Accounting\AsetTetap::pelepasanAset', ['as' => 'accounting.aset-tetap.pelepasan-aset']);
+            $routes->get('/', 'Accounting\PelepasanAset::index', ['as' => 'accounting.aset-tetap.pelepasan-aset']);
             $routes->get('create', 'Accounting\AsetTetap::createPelepasan', ['as' => 'accounting.aset-tetap.pelepasan-aset.create']);
             $routes->post('store', 'Accounting\AsetTetap::storePelepasan', ['as' => 'accounting.aset-tetap.pelepasan-aset.store']);
             $routes->get('detail/(:num)', 'Accounting\AsetTetap::detailPelepasan/$1', ['as' => 'accounting.aset-tetap.pelepasan-aset.detail']);
@@ -671,6 +680,7 @@ $routes->group('accounting', ['filter' => 'auth'], function($routes) {
         $routes->get('riwayat-audit', 'Accounting\Pribadi::riwayatAudit', ['as' => 'accounting.pribadi.riwayat-audit']);
     });
     
+
     // ============================================
     // REDIRECT ROUTES LAMA (UNTUK COMPATIBILITY)
     // ============================================

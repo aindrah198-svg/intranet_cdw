@@ -46,8 +46,9 @@ class Dashboard extends BaseController
         if ($roleLower !== 'teknisi') {
             // Redirect sesuai role
             switch ($roleLower) {
-                case 'admin':
                 case 'hrd':
+                    return redirect()->to(base_url('hrd'))->with('info', 'Anda dialihkan ke dashboard HRD.');
+                case 'admin':
                     return redirect()->to(base_url('admin'))->with('info', 'Anda dialihkan ke dashboard Admin.');
                 case 'direktur':
                     return redirect()->to(base_url('direktur'))->with('info', 'Anda dialihkan ke dashboard Direktur.');

@@ -55,12 +55,37 @@ $scripts = $scripts ?? [];
             box-sizing: border-box;
         }
         
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
         body {
             background: linear-gradient(135deg, #f5f7ff 0%, #f0f2f9 100%);
             font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
+            min-height: 100dvh;
             color: var(--cdw-dark);
-            overflow-x: hidden;
+        }
+
+        #sidebarOverlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            height: 100dvh !important;
+            background: rgba(0, 0, 0, 0.65) !important;
+            backdrop-filter: blur(3px) !important;
+            -webkit-backdrop-filter: blur(3px) !important;
+            z-index: 1040 !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         
         /* Main Layout */
@@ -294,8 +319,8 @@ $scripts = $scripts ?? [];
             margin-bottom: 20px;
         }
         
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
+        /* Mobile & Tablet Responsive (up to lg breakpoint) */
+        @media (max-width: 991.98px) {
             .main-content {
                 margin-left: 0;
                 padding: 0;
@@ -306,8 +331,8 @@ $scripts = $scripts ?? [];
             }
             
             .modern-card {
-                padding: 20px;
-                margin: 15px;
+                padding: 16px;
+                margin: 10px 0 15px 0;
             }
         }
         

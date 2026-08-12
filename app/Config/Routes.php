@@ -28,13 +28,18 @@ $routes->setAutoRoute(false);
 
 // Daftar file routes yang akan dimuat
 $routesFiles = [
-    'AuthRoutes',        // Login, logout, forgot password
-    'PublicRoutes',      // Home, about, contact, services, products, projects, gallery
-    'AdminRoutes',       // Admin group (karyawan, absensi, cuti, jam-kerja, dokumen, kontrak)
-    'DirekturRoutes',    // Direktur group (dashboard, monitoring, approval, penawaran, laporan)
-    'TeknisiRoutes',     // Teknisi group (absensi, tugas-proyek, gudang, pengajuan, cuti)
-    'SalesRoutes',       // Sales group (client, penawaran, project, invoice, surat-jalan) - KOSONG
-    'AccountingRoutes',  // Accounting group (kas-bank, pembukuan, penggajian, aset-tetap, pajak, laporan)
+    'AuthRoutes',            // Login, logout, forgot password
+    'PublicRoutes',          // Home, about, contact, services, products, projects, gallery
+    'SuperadminRoutes',      // Superadmin group (/superadmin)
+    'HrdRoutes',             // HRD group (/hrd) - karyawan, absensi, cuti, jam-kerja, dokumen, kontrak
+    'AdminRoutes',           // Admin Panel group (/admin) - surat, inventaris, dokumen legal, fasilitas
+    'AdminPanelRoutes',      // Admin Panel routes fallback
+    'DirekturRoutes',        // Direktur group (dashboard, monitoring, approval, penawaran, laporan)
+    'TeknisiRoutes',         // Teknisi group (absensi, tugas-proyek, gudang, pengajuan, cuti)
+    'SalesRoutes',           // Sales group (client, penawaran, project, invoice, surat-jalan) - KOSONG
+    'AccountingRoutes',      // Accounting group (kas-bank, pembukuan, penggajian, aset-tetap, pajak, laporan)
+    'StaffRoutes',           // Staff group (dashboard, logout)
+    'SoftwareEngineerRoutes', // Software Engineer group (dev, maintenance, hosting, bugs, docs, etc)
 ];
 
 // Load setiap file routes jika ada

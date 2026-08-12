@@ -28,13 +28,59 @@ class Penyusutan extends BaseController
 
     public function __construct()
     {
+        $this->db = \Config\Database::connect();
+        if (!$this->db->tableExists('penyusutan_aset')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `penyusutan_aset` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `kode_penyusutan` VARCHAR(50) NOT NULL,
+                  `periode_bulan` INT NOT NULL,
+                  `periode_tahun` INT NOT NULL,
+                  `tanggal_penyusutan` DATE DEFAULT NULL,
+                  `aset_id` INT DEFAULT NULL,
+                  `nominal` DECIMAL(15,2) DEFAULT 0.00,
+                  `jurnal_id` INT DEFAULT NULL,
+                  `status` ENUM('Draft','Posted','Dibatalkan') DEFAULT 'Draft',
+                  `keterangan` TEXT DEFAULT NULL,
+                  `created_by` INT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL,
+                  `deleted_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        if (!$this->db->tableExists('penyusutan')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `penyusutan` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `kode_penyusutan` VARCHAR(50) DEFAULT NULL,
+                  `periode` DATE DEFAULT NULL,
+                  `periode_bulan` INT DEFAULT NULL,
+                  `periode_tahun` INT DEFAULT NULL,
+                  `tanggal_penyusutan` DATE DEFAULT NULL,
+                  `aset_id` INT DEFAULT NULL,
+                  `nilai_buku_awal` DECIMAL(15,2) DEFAULT 0.00,
+                  `nilai_penyusutan` DECIMAL(15,2) DEFAULT 0.00,
+                  `nominal` DECIMAL(15,2) DEFAULT 0.00,
+                  `akumulasi_penyusutan` DECIMAL(15,2) DEFAULT 0.00,
+                  `nilai_buku_akhir` DECIMAL(15,2) DEFAULT 0.00,
+                  `jurnal_id` INT DEFAULT NULL,
+                  `status` ENUM('Draft','Posted','Dibatalkan') DEFAULT 'Draft',
+                  `keterangan` TEXT DEFAULT NULL,
+                  `created_by` INT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL,
+                  `deleted_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+
         $this->asetModel = new AsetTetapModel();
         $this->kategoriModel = new AsetTetapKategoriModel();
         $this->penyusutanModel = new PenyusutanModel();
         $this->coaModel = new CoaModel();
         $this->jurnalModel = new JurnalModel();
         $this->jurnalDetailModel = new JurnalDetailModel();
-        $this->db = \Config\Database::connect();
         
         helper(['form', 'url', 'text', 'number']);
         
@@ -78,9 +124,11 @@ class Penyusutan extends BaseController
         $data['bulanOptions'] = $this->getBulanOptions();
         $data['statusOptions'] = ['Draft', 'Posted', 'Dibatalkan'];
         
-        $data['stats'] = $this->penyusutanModel->getStats(date('Y'));
-        
-        return view('accounting/aset-tetap/penyusutan/index', $data);
+        $data['active'] = 'penyusutan';
+        return view('accounting/templates/header', $data)
+             . view('accounting/templates/sidebar', $data)
+             . view('accounting/aset-tetap/penyusutan/index', $data)
+             . view('accounting/templates/footer', $data);
     }
 
     /**

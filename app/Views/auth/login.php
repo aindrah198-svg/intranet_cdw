@@ -277,6 +277,74 @@ $error = $session->getFlashdata('error');
         }
         .alert-success { background: #f0fdf4; color: #166534; }
         .alert-danger  { background: #fef2f2; color: #991b1b; }
+
+        /* Demo Credentials */
+        .demo-section {
+            margin: 14px 0 4px;
+            padding: 14px;
+            background: #f8fafc;
+            border: 1.5px dashed #cbd5e1;
+            border-radius: 12px;
+        }
+        .demo-section-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .demo-card {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .demo-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            transform: translateY(-1px);
+        }
+        .demo-card .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-bottom: 6px;
+        }
+        .badge-direktur { background: rgba(30,58,138,0.1); color: #1e3a8a; }
+        .badge-admin    { background: rgba(5,150,105,0.1);  color: #065f46; }
+        .demo-card .cred-row {
+            font-size: 11px;
+            color: #475569;
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .demo-card .cred-row strong {
+            color: #0f172a;
+            font-family: monospace;
+            font-size: 11.5px;
+        }
+        .demo-card .click-hint {
+            font-size: 9.5px;
+            color: #94a3b8;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
     </style>
 </head>
 <body>
@@ -401,6 +469,29 @@ $error = $session->getFlashdata('error');
         <a href="<?= base_url('forgot-password') ?>" class="link-forgot">
             <i class="fas fa-key me-1"></i>Lupa password?
         </a>
+
+        <!-- Demo Credentials -->
+        <div class="demo-section mt-3">
+            <div class="demo-section-title">
+                <i class="fas fa-flask"></i> Akun Demo – Klik untuk Login Otomatis
+            </div>
+            <div class="demo-grid">
+                <!-- Direktur -->
+                <div class="demo-card" onclick="fillLogin('cecep.trihardiyanto','123456')" title="Login sebagai Direktur">
+                    <div class="role-badge badge-direktur"><i class="fas fa-user-tie"></i> DIREKTUR</div>
+                    <div class="cred-row"><i class="fas fa-user" style="width:10px;"></i> <strong>cecep.trihardiyanto</strong></div>
+                    <div class="cred-row"><i class="fas fa-lock" style="width:10px;"></i> <strong>123456</strong></div>
+                    <div class="click-hint"><i class="fas fa-mouse-pointer"></i> Klik untuk isi otomatis</div>
+                </div>
+                <!-- Admin -->
+                <div class="demo-card" onclick="fillLogin('afrijal323','pass123456')" title="Login sebagai Admin">
+                    <div class="role-badge badge-admin"><i class="fas fa-user-shield"></i> ADMIN</div>
+                    <div class="cred-row"><i class="fas fa-user" style="width:10px;"></i> <strong>afrijal323</strong></div>
+                    <div class="cred-row"><i class="fas fa-lock" style="width:10px;"></i> <strong>pass123456</strong></div>
+                    <div class="click-hint"><i class="fas fa-mouse-pointer"></i> Klik untuk isi otomatis</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Footer -->
@@ -499,6 +590,26 @@ document.addEventListener('DOMContentLoaded', function () {
             if (usernameField.value) localStorage.setItem('cdw_username', usernameField.value);
         });
     }
+});
+
+// Fill login from demo card
+function fillLogin(username, password) {
+    const u = document.getElementById('username');
+    const p = document.getElementById('password');
+    if (u) u.value = username;
+    if (p) p.value = password;
+    // Show password briefly so user sees it filled
+    if (p) { p.type = 'text'; setTimeout(() => { p.type = 'password'; }, 800); }
+    const eyeIcon = document.getElementById('eyeIcon');
+    if (eyeIcon) { eyeIcon.classList.remove('fa-eye-slash'); eyeIcon.classList.add('fa-eye'); }
+    // Auto submit after brief delay
+    setTimeout(() => {
+        const form = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Memproses...'; }
+        if (form) form.submit();
+    }, 900);
+}
 
     // Keyboard shortcuts
     document.addEventListener('keydown', function (e) {

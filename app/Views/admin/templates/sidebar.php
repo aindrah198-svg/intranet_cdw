@@ -1,738 +1,184 @@
 <?php
 // app/Views/admin/templates/sidebar.php
-
-$active = $active ?? 'dashboard';
-$uri = service('uri');
+$active   = $active   ?? 'dashboard';
+$uri      = service('uri');
 $segments = $uri->getSegments();
+$seg1     = $segments[1] ?? '';
+$seg2     = $segments[2] ?? '';
 
-// Ambil segment dengan cara yang aman
-$segment1 = isset($segments[1]) ? $segments[1] : '';
-$segment2 = isset($segments[2]) ? $segments[2] : '';
-$segment3 = isset($segments[3]) ? $segments[3] : '';
+$isSuratActive      = ($seg1 === 'surat');
+$isInventarisActive = in_array($seg1, ['inventaris', 'pengadaan']);
+$isDokumenActive    = in_array($seg1, ['dokumen', 'dokumen-legal']);
+$isFasilitasActive  = ($seg1 === 'fasilitas');
+$isPengajuanActive  = in_array($seg1, ['pengajuan', 'form-pengajuan', 'keluhan-saya', 'kasbon']);
+$isLaporanActive    = in_array($seg1, ['laporan', 'laporan-harian-saya', 'slip-gaji']);
+$isPribadiActive    = in_array($seg1, ['absensi-saya', 'tugas-saya', 'timeline-kerja', 'project-saat-ini', 'profil']);
 
-// Definisikan semua menu utama dan submenu untuk pengecekan yang lebih mudah
-$karyawanMenuItems = ['karyawan', 'dokumen', 'kontrak', 'akun'];
-$isKaryawanMenuActive = (in_array($active, $karyawanMenuItems) || 
-                         in_array($segment1, ['karyawan']));
+function adminSidebarLink($href, $icon, $label, $isActive) {
+    $style = $isActive ? 'background:rgba(255,255,255,0.18);border-left-color:#60a5fa;color:white;' : '';
+    return '
+        <a href="'.$href.'" style="color:rgba(255,255,255,0.85);padding:10px 20px;display:flex;align-items:center;text-decoration:none;transition:all 0.3s;border-left:3px solid transparent;'.$style.'">
+            <i class="'.$icon.'" style="width:24px;text-align:center;margin-right:8px;"></i>
+            <span style="font-size:0.875rem;">'.$label.'</span>
+        </a>';
+}
 
-$operasionalMenuItems = ['absensi', 'jamkerja', 'cuti'];
-$isOperasionalMenuActive = (in_array($active, $operasionalMenuItems) || 
-                           in_array($segment1, ['absensi', 'jam-kerja', 'cuti']));
-
-// Menu baru: Manajemen Form (HRD/Admin membuat & mengelola form, direktur yang approve)
-$formMenuItems = [
-    'form-cuti', 'form-spk', 'form-kasbon', 'form-dokumen', 
-    'form-pembelian', 'form-surat-jalan', 'form-bast', 'form-izin'
-];
-$isFormMenuActive = (in_array($active, $formMenuItems) || 
-                     in_array($segment1, $formMenuItems));
-
-$finansialMenuItems = ['payroll', 'bpjs', 'pajak', 'pph21'];
-$isFinansialMenuActive = (in_array($active, $finansialMenuItems) || 
-                         in_array($segment1, ['payroll', 'bpjs', 'pajak']));
-
-$peformaMenuItems = ['kpi', 'tinjauan', 'audit', 'laporan'];
-$isPeformaMenuActive = (in_array($active, $peformaMenuItems) || 
-                       in_array($segment1, ['kpi', 'tinjauan', 'audit', 'laporan']));
+function adminSubLink($href, $icon, $label, $isActive) {
+    $fw = $isActive ? 'font-weight:600;color:white;' : '';
+    return '
+        <a href="'.$href.'" style="color:rgba(255,255,255,0.78);padding:8px 10px 8px 48px;font-size:0.82rem;display:flex;align-items:center;text-decoration:none;transition:all 0.25s;'.$fw.'">
+            <i class="'.$icon.'" style="width:18px;margin-right:7px;"></i>'.$label.'
+        </a>';
+}
 ?>
-<!-- Sidebar -->
-<div class="sidebar" style="
-    width: var(--sidebar-width, 250px);
-    background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
-    color: white;
-    height: 100vh;
-    position: fixed;
-    left: 0;
-    top: 0;
-    transition: all 0.3s;
-    z-index: 1000;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-">
-    <div class="sidebar-header" style="
-        padding: 20px; 
-        text-align: center; 
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    ">
-        <h4 style="margin: 0; font-weight: 600; font-size: 1.3rem;">
-            <i class="fas fa-hard-hat me-2"></i>CDW ENGINEERING
-        </h4>
-        <p style="opacity: 0.8; font-size: 0.8rem; margin: 5px 0 0;">
-            Human Resource Management
-        </p>
-    </div>
-    
-    <div class="sidebar-menu" style="padding: 20px 0; height: calc(100vh - 120px); overflow-y: auto;">
-        <ul class="nav flex-column" style="list-style: none; padding: 0; margin: 0;">
-            <!-- Dashboard -->
-            <li class="nav-item">
-                <a class="nav-link <?= $active == 'dashboard' ? 'active' : '' ?>" 
-                   href="<?= base_url('admin') ?>"
-                   style="
-                       color: rgba(255,255,255,0.8); 
-                       padding: 12px 20px; 
-                       transition: all 0.3s; 
-                       border-left: 3px solid transparent;
-                       display: flex;
-                       align-items: center;
-                       text-decoration: none;
-                       <?= $active == 'dashboard' ? 'background: rgba(255,255,255,0.1); border-left-color: #4dabf7;' : '' ?>
-                   ">
-                    <i class="fas fa-tachometer-alt" style="width: 25px; text-align: center;"></i> 
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            
-            <!-- Data Karyawan Menu -->
-            <li class="nav-item">
-                <a class="nav-link <?= $isKaryawanMenuActive ? 'active' : '' ?>" 
-                   data-bs-toggle="collapse" href="#karyawanMenu" role="button" 
-                   aria-expanded="<?= $isKaryawanMenuActive ? 'true' : 'false' ?>"
-                   style="
-                       color: rgba(255,255,255,0.8); 
-                       padding: 12px 20px; 
-                       transition: all 0.3s; 
-                       border-left: 3px solid transparent;
-                       display: flex;
-                       align-items: center;
-                       justify-content: space-between;
-                       text-decoration: none;
-                       cursor: pointer;
-                       <?= $isKaryawanMenuActive ? 'background: rgba(255,255,255,0.1); border-left-color: #4dabf7;' : '' ?>
-                   ">
-                    <div style="display: flex; align-items: center;">
-                        <i class="fas fa-users" style="width: 25px; text-align: center;"></i>
-                        <span style="margin-left: 5px;">Data Karyawan</span>
-                    </div>
-                    <i class="fas fa-chevron-down" style="
-                        transition: transform 0.3s; 
-                        font-size: 0.8rem;
-                        <?= $isKaryawanMenuActive ? 'transform: rotate(180deg);' : '' ?>
-                    ">
-                    </i>
-                </a>
-                <div class="collapse <?= $isKaryawanMenuActive ? 'show' : '' ?>" 
-                     id="karyawanMenu" style="background: rgba(0,0,0,0.1);">
-                    <ul class="nav flex-column" style="padding: 5px 0; list-style: none;">
-                        <li class="nav-item">
-                            <a class="nav-link <?= ($segment2 == '' || $segment2 == 'aktif' || $segment2 == 'keluar' || $segment2 == 'search' || $segment2 == 'create' || $segment2 == 'show' || $segment2 == 'edit') ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/karyawan') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= ($segment2 == '' || $segment2 == 'aktif' || $segment2 == 'keluar' || $segment2 == 'search' || $segment2 == 'create' || $segment2 == 'show' || $segment2 == 'edit') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-list me-2" style="width: 20px;"></i>
-                                <span>Daftar Karyawan</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment2 == 'dokumen' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/karyawan/dokumen') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $segment2 == 'dokumen' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-folder me-2" style="width: 20px;"></i>
-                                <span>Dokumen Karyawan</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment2 == 'kontrak' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/karyawan/kontrak') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $segment2 == 'kontrak' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-file-contract me-2" style="width: 20px;"></i>
-                                <span>Kontrak Kerja</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment2 == 'akun' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/karyawan/akun') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $segment2 == 'akun' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-user-cog me-2" style="width: 20px;"></i>
-                                <span>Manajemen Akun</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            
-            <!-- Operasional Menu -->
-            <li class="nav-item">
-                <a class="nav-link <?= $isOperasionalMenuActive ? 'active' : '' ?>" 
-                   data-bs-toggle="collapse" href="#operasionalMenu" role="button" 
-                   aria-expanded="<?= $isOperasionalMenuActive ? 'true' : 'false' ?>"
-                   style="
-                       color: rgba(255,255,255,0.8); 
-                       padding: 12px 20px; 
-                       transition: all 0.3s; 
-                       border-left: 3px solid transparent;
-                       display: flex;
-                       align-items: center;
-                       justify-content: space-between;
-                       text-decoration: none;
-                       cursor: pointer;
-                       <?= $isOperasionalMenuActive ? 'background: rgba(255,255,255,0.1); border-left-color: #4dabf7;' : '' ?>
-                   ">
-                    <div style="display: flex; align-items: center;">
-                        <i class="fas fa-tools" style="width: 25px; text-align: center;"></i>
-                        <span style="margin-left: 5px;">Operasional</span>
-                    </div>
-                    <i class="fas fa-chevron-down" style="
-                        transition: transform 0.3s; 
-                        font-size: 0.8rem;
-                        <?= $isOperasionalMenuActive ? 'transform: rotate(180deg);' : '' ?>
-                    ">
-                    </i>
-                </a>
-                <div class="collapse <?= $isOperasionalMenuActive ? 'show' : '' ?>" 
-                     id="operasionalMenu" style="background: rgba(0,0,0,0.1);">
-                    <ul class="nav flex-column" style="padding: 5px 0; list-style: none;">
-                        <li class="nav-item">
-                            <a class="nav-link <?= ($active == 'absensi' && $segment2 == 'user') ? 'active fw-bold' : '' ?>" 
-                                href="<?= base_url('admin/absensi/my-attendance') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= ($active == 'absensi' && $segment2 == 'user') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-clock me-2" style="width: 20px;"></i>
-                                <span>Absensi Saya</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= ($active == 'absensi' && $segment2 == '') ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/absensi') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= ($active == 'absensi' && $segment2 == '') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-clipboard-list me-2" style="width: 20px;"></i>
-                                <span>Absensi</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $active == 'jamkerja' || $segment1 == 'jam-kerja' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/jam-kerja') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $active == 'jamkerja' || $segment1 == 'jam-kerja' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-business-time me-2" style="width: 20px;"></i>
-                                <span>Jam Kerja</span>
-                            </a>
-                        </li>
-                       
-                        <li class="nav-item">
-                            <a class="nav-link <?= $active == 'cuti' || $segment1 == 'cuti' ? 'active fw-bold' : '' ?>" 
-                            href="<?= base_url('admin/cuti') ?>"
-                            style="
-                                color: rgba(255,255,255,0.8); 
-                                padding: 10px 15px 10px 45px;
-                                font-size: 0.9rem;
-                                border-left: 2px solid transparent;
-                                display: flex;
-                                align-items: center;
-                                text-decoration: none;
-                                transition: all 0.2s;
-                                <?= $active == 'cuti' || $segment1 == 'cuti' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                            ">
-                                <i class="fas fa-calendar-alt me-2" style="width: 20px;"></i>
-                                <span>Manajemen Cuti</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            
-            <!-- ============ MENU BARU: MANAJEMEN FORM ============ -->
-            <!-- HRD/Admin bertugas membuat, mengedit, menghapus, mencetak form -->
-            <!-- Direktur akan melakukan approval terpisah -->
-            <li class="nav-item">
-                <a class="nav-link <?= $isFormMenuActive ? 'active' : '' ?>" 
-                   data-bs-toggle="collapse" href="#formMenu" role="button" 
-                   aria-expanded="<?= $isFormMenuActive ? 'true' : 'false' ?>"
-                   style="
-                       color: rgba(255,255,255,0.8); 
-                       padding: 12px 20px; 
-                       transition: all 0.3s; 
-                       border-left: 3px solid transparent;
-                       display: flex;
-                       align-items: center;
-                       justify-content: space-between;
-                       text-decoration: none;
-                       cursor: pointer;
-                       <?= $isFormMenuActive ? 'background: rgba(255,255,255,0.1); border-left-color: #4dabf7;' : '' ?>
-                   ">
-                    <div style="display: flex; align-items: center;">
-                        <i class="fas fa-edit" style="width: 25px; text-align: center;"></i>
-                        <span style="margin-left: 5px;">Manajemen Form</span>
-                    </div>
-                    <i class="fas fa-chevron-down" style="
-                        transition: transform 0.3s; 
-                        font-size: 0.8rem;
-                        <?= $isFormMenuActive ? 'transform: rotate(180deg);' : '' ?>
-                    ">
-                    </i>
-                </a>
-                <div class="collapse <?= $isFormMenuActive ? 'show' : '' ?>" 
-                     id="formMenu" style="background: rgba(0,0,0,0.1);">
-                    <ul class="nav flex-column" style="padding: 5px 0; list-style: none;">
-                        <li class="nav-item">
-                            <a class="nav-link <?= $active == 'form-cuti' || $segment1 == 'form-cuti' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/form-cuti') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $active == 'form-cuti' || $segment1 == 'form-cuti' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-calendar-check me-2" style="width: 20px;"></i>
-                                <span>Form Cuti</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $active == 'form-spk' || $segment1 == 'form-spk' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/form-spk') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $active == 'form-spk' || $segment1 == 'form-spk' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-file-signature me-2" style="width: 20px;"></i>
-                                <span>Form SPK</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $active == 'form-kasbon' || $segment1 == 'form-kasbon' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/form-kasbon') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $active == 'form-kasbon' || $segment1 == 'form-kasbon' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-money-bill me-2" style="width: 20px;"></i>
-                                <span>Form Kasbon</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $active == 'form-dokumen' || $segment1 == 'form-dokumen' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/form-dokumen') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $active == 'form-dokumen' || $segment1 == 'form-dokumen' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-folder-open me-2" style="width: 20px;"></i>
-                                <span>Form Dokumen</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $active == 'form-pembelian' || $segment1 == 'form-pembelian' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/form-pembelian') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $active == 'form-pembelian' || $segment1 == 'form-pembelian' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-shopping-cart me-2" style="width: 20px;"></i>
-                                <span>Form Pembelian</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $active == 'form-surat-jalan' || $segment1 == 'form-surat-jalan' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/form-surat-jalan') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $active == 'form-surat-jalan' || $segment1 == 'form-surat-jalan' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-truck me-2" style="width: 20px;"></i>
-                                <span>Form Surat Jalan</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $active == 'form-bast' || $segment1 == 'form-bast' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/form-bast') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $active == 'form-bast' || $segment1 == 'form-bast' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-check-double me-2" style="width: 20px;"></i>
-                                <span>Form BAST</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $active == 'form-izin' || $segment1 == 'form-izin' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/form-izin') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $active == 'form-izin' || $segment1 == 'form-izin' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-id-card me-2" style="width: 20px;"></i>
-                                <span>Form Izin</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            <!-- ============ END MANAJEMEN FORM ============ -->
-            
-            <!-- Finansial Menu -->
-            <li class="nav-item">
-                <a class="nav-link <?= $isFinansialMenuActive ? 'active' : '' ?>" 
-                   data-bs-toggle="collapse" href="#finansialMenu" role="button" 
-                   aria-expanded="<?= $isFinansialMenuActive ? 'true' : 'false' ?>"
-                   style="
-                       color: rgba(255,255,255,0.8); 
-                       padding: 12px 20px; 
-                       transition: all 0.3s; 
-                       border-left: 3px solid transparent;
-                       display: flex;
-                       align-items: center;
-                       justify-content: space-between;
-                       text-decoration: none;
-                       cursor: pointer;
-                       <?= $isFinansialMenuActive ? 'background: rgba(255,255,255,0.1); border-left-color: #4dabf7;' : '' ?>
-                   ">
-                    <div style="display: flex; align-items: center;">
-                        <i class="fas fa-money-bill-wave" style="width: 25px; text-align: center;"></i>
-                        <span style="margin-left: 5px;">Finansial</span>
-                    </div>
-                    <i class="fas fa-chevron-down" style="
-                        transition: transform 0.3s; 
-                        font-size: 0.8rem;
-                        <?= $isFinansialMenuActive ? 'transform: rotate(180deg);' : '' ?>
-                    ">
-                    </i>
-                </a>
-                <div class="collapse <?= $isFinansialMenuActive ? 'show' : '' ?>" 
-                     id="finansialMenu" style="background: rgba(0,0,0,0.1);">
-                    <ul class="nav flex-column" style="padding: 5px 0; list-style: none;">
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 == 'payroll' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/payroll') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $segment1 == 'payroll' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-money-check-alt me-2" style="width: 20px;"></i>
-                                <span>Payroll</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 == 'bpjs' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/bpjs') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $segment1 == 'bpjs' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-heartbeat me-2" style="width: 20px;"></i>
-                                <span>BPJS</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 == 'pajak' || $active == 'pajak' || $active == 'pph21' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/pajak') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $segment1 == 'pajak' || $active == 'pajak' || $active == 'pph21' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-file-invoice-dollar me-2" style="width: 20px;"></i>
-                                <span>Pajak PPh21</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            
-            <!-- Peforma & Keamanan Menu -->
-            <li class="nav-item">
-                <a class="nav-link <?= $isPeformaMenuActive ? 'active' : '' ?>" 
-                   data-bs-toggle="collapse" href="#peformaMenu" role="button" 
-                   aria-expanded="<?= $isPeformaMenuActive ? 'true' : 'false' ?>"
-                   style="
-                       color: rgba(255,255,255,0.8); 
-                       padding: 12px 20px; 
-                       transition: all 0.3s; 
-                       border-left: 3px solid transparent;
-                       display: flex;
-                       align-items: center;
-                       justify-content: space-between;
-                       text-decoration: none;
-                       cursor: pointer;
-                       <?= $isPeformaMenuActive ? 'background: rgba(255,255,255,0.1); border-left-color: #4dabf7;' : '' ?>
-                   ">
-                    <div style="display: flex; align-items: center;">
-                        <i class="fas fa-chart-line" style="width: 25px; text-align: center;"></i>
-                        <span style="margin-left: 5px;">Peforma & Keamanan</span>
-                    </div>
-                    <i class="fas fa-chevron-down" style="
-                        transition: transform 0.3s; 
-                        font-size: 0.8rem;
-                        <?= $isPeformaMenuActive ? 'transform: rotate(180deg);' : '' ?>
-                    ">
-                    </i>
-                </a>
-                <div class="collapse <?= $isPeformaMenuActive ? 'show' : '' ?>" 
-                     id="peformaMenu" style="background: rgba(0,0,0,0.1);">
-                    <ul class="nav flex-column" style="padding: 5px 0; list-style: none;">
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 == 'kpi' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/kpi') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $segment1 == 'kpi' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-bullseye me-2" style="width: 20px;"></i>
-                                <span>KPI Karyawan</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 == 'tinjauan' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/tinjauan') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $segment1 == 'tinjauan' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-search me-2" style="width: 20px;"></i>
-                                <span>Tinjauan Karyawan</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 == 'audit' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/audit') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $segment1 == 'audit' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-history me-2" style="width: 20px;"></i>
-                                <span>Audit Trail</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link <?= $segment1 == 'laporan' ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('admin/laporan') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= $segment1 == 'laporan' ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-file-alt me-2" style="width: 20px;"></i>
-                                <span>Laporan Harian</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
-            
-            <!-- Logout -->
-            <li class="nav-item">
-                <a class="nav-link" href="<?= base_url('logout') ?>"
-                   style="
-                       color: rgba(255,255,255,0.9); 
-                       padding: 12px 20px; 
-                       transition: all 0.3s; 
-                       border-left: 3px solid transparent;
-                       display: flex;
-                       align-items: center;
-                       text-decoration: none;
-                       background: rgba(255,255,255,0.08);
-                       margin-top: 20px;
-                   ">
-                    <i class="fas fa-sign-out-alt" style="width: 25px; text-align: center;"></i> 
-                    <span>Keluar</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-</div>
 
-<!-- CSS untuk hover effect -->
-<style>
-    .sidebar .nav-link:not(.active):hover {
-        background: rgba(255,255,255,0.05) !important;
-        color: white !important;
-        border-left-color: rgba(255,255,255,0.3) !important;
-    }
-    
-    .sidebar .nav-link.active {
-        color: white !important;
-    }
-    
-    #karyawanMenu .nav-link:not(.active):hover,
-    #operasionalMenu .nav-link:not(.active):hover,
-    #formMenu .nav-link:not(.active):hover,
-    #finansialMenu .nav-link:not(.active):hover,
-    #peformaMenu .nav-link:not(.active):hover {
-        background: rgba(255,255,255,0.05) !important;
-        color: white !important;
-        border-left-color: rgba(255,255,255,0.2) !important;
-    }
-    
-    .sidebar-menu::-webkit-scrollbar {
-        width: 5px;
-    }
-    
-    .sidebar-menu::-webkit-scrollbar-track {
-        background: rgba(255,255,255,0.05);
-    }
-    
-    .sidebar-menu::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.2);
-        border-radius: 3px;
-    }
-    
-    .sidebar-menu::-webkit-scrollbar-thumb:hover {
-        background: rgba(255,255,255,0.3);
-    }
-</style>
+<!-- Admin Sidebar -->
+<div class="sidebar">
+    <!-- Header -->
+    <div style="padding: 18px 20px; text-align:center; border-bottom: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.15);">
+        <div style="background: rgba(255,255,255,0.15); border-radius: 50%; width:52px; height:52px; margin: 0 auto 10px; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-user-shield" style="font-size:1.4rem;"></i>
+        </div>
+        <h5 style="margin:0; font-weight:700; font-size:1rem; letter-spacing:0.5px;">ADMIN PANEL</h5>
+        <p style="opacity:0.75; font-size:0.72rem; margin:4px 0 0; font-weight:500; text-transform:uppercase; letter-spacing:1px;">CDW Engineering</p>
+    </div>
+
+    <!-- Menu -->
+    <nav style="padding: 10px 0;">
+
+        <!-- Dashboard -->
+        <div style="padding: 6px 0;">
+            <?= adminSidebarLink(base_url('admin'), 'fas fa-tachometer-alt', 'Dashboard', $seg1 === '' || $seg1 === 'dashboard') ?>
+        </div>
+
+        <div style="padding: 4px 16px 2px; font-size:0.65rem; color:rgba(255,255,255,0.45); font-weight:600; letter-spacing:1.5px; text-transform:uppercase; margin-top:8px;">
+            ADMINISTRASI
+        </div>
+
+        <!-- Surat Menyurat (Unified Module) -->
+        <div style="padding: 2px 0;">
+            <?= adminSidebarLink(base_url('admin/surat'), 'fas fa-envelope', 'Surat Menyurat', $seg1 === 'surat') ?>
+        </div>
+
+        <!-- Pengadaan & Aset / ATK & Inventaris -->
+        <div>
+            <a data-bs-toggle="collapse" href="#inventarisMenu"
+               style="color:rgba(255,255,255,0.85);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-left:3px solid <?= $isInventarisActive ? '#ce93d8' : 'transparent' ?>;<?= $isInventarisActive ? 'background:rgba(255,255,255,0.15);' : '' ?>">
+                <div style="display:flex;align-items:center;">
+                    <i class="fas fa-boxes" style="width:24px;text-align:center;margin-right:8px;"></i>
+                    <span style="font-size:0.875rem;">Pengadaan & Aset</span>
+                </div>
+                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+            </a>
+            <div class="collapse <?= $isInventarisActive ? 'show' : '' ?>" id="inventarisMenu" style="background:rgba(0,0,0,0.15);">
+                <?= adminSubLink(base_url('admin/inventaris/pengajuan-atk'),  'fas fa-pen-nib',        'Pengajuan ATK',                       $seg2==='pengajuan-atk') ?>
+                <?= adminSubLink(base_url('admin/inventaris/stok-atk'),       'fas fa-clipboard-list', 'Monitoring Stok ATK',                $seg2==='stok-atk') ?>
+                <?= adminSubLink(base_url('admin/inventaris/aset'),           'fas fa-desktop',        'Pengadaan Aset',                      $seg2==='aset' || $seg2==='inventaris-kantor') ?>
+                <?= adminSubLink(base_url('admin/inventaris/pembelian'),      'fas fa-shopping-cart',  'Pencatatan & Tracking Pembelian (PR)',$seg2==='pembelian') ?>
+                <?= adminSubLink(base_url('admin/inventaris/kerusakan'),      'fas fa-tools',          'Kerusakan Alat',                      $seg2==='kerusakan') ?>
+                <?= adminSubLink(base_url('admin/inventaris/gudang'),         'fas fa-warehouse',      'Monitoring Gudang',                   $seg2==='gudang') ?>
+            </div>
+        </div>
+
+        <!-- Dokumen -->
+        <div>
+            <a data-bs-toggle="collapse" href="#dokumenMenu"
+               style="color:rgba(255,255,255,0.85);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-left:3px solid <?= $isDokumenActive ? '#ce93d8' : 'transparent' ?>;<?= $isDokumenActive ? 'background:rgba(255,255,255,0.15);' : '' ?>">
+                <div style="display:flex;align-items:center;">
+                    <i class="fas fa-folder-open" style="width:24px;text-align:center;margin-right:8px;"></i>
+                    <span style="font-size:0.875rem;">Dokumen</span>
+                </div>
+                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+            </a>
+            <div class="collapse <?= $isDokumenActive ? 'show' : '' ?>" id="dokumenMenu" style="background:rgba(0,0,0,0.15);">
+                <?= adminSubLink(base_url('admin/dokumen/penting'),    'fas fa-file-invoice', 'Dokumen Penting',    $seg1==='dokumen' && ($seg2==='' || $seg2==='penting')) ?>
+                <?= adminSubLink(base_url('admin/dokumen/sertifikat'), 'fas fa-certificate',  'Dokumen Sertifikat', $seg1==='dokumen' && $seg2==='sertifikat') ?>
+                <?= adminSubLink(base_url('admin/dokumen/kontak'),     'fas fa-address-book', 'Kontak Project',     $seg1==='dokumen' && $seg2==='kontak') ?>
+            </div>
+        </div>
+
+        <!-- Fasilitas & Tamu -->
+        <div>
+            <a data-bs-toggle="collapse" href="#fasilitasMenu"
+               style="color:rgba(255,255,255,0.85);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-left:3px solid <?= $isFasilitasActive ? '#ce93d8' : 'transparent' ?>;<?= $isFasilitasActive ? 'background:rgba(255,255,255,0.15);' : '' ?>">
+                <div style="display:flex;align-items:center;">
+                    <i class="fas fa-concierge-bell" style="width:24px;text-align:center;margin-right:8px;"></i>
+                    <span style="font-size:0.875rem;">Fasilitas & Tamu</span>
+                </div>
+                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+            </a>
+            <div class="collapse <?= $isFasilitasActive ? 'show' : '' ?>" id="fasilitasMenu" style="background:rgba(0,0,0,0.15);">
+                <?= adminSubLink(base_url('admin/fasilitas/buku-tamu'),    'fas fa-book-open',  'Buku Tamu',          $seg2===''||$seg2==='buku-tamu') ?>
+                <?= adminSubLink(base_url('admin/fasilitas/booking-ruang'),'fas fa-calendar-check','Booking Ruang Meeting', $seg2==='booking-ruang') ?>
+                <?= adminSubLink(base_url('admin/fasilitas/kendaraan'),    'fas fa-car',        'Koordinasi Kendaraan',$seg2==='kendaraan') ?>
+            </div>
+        </div>
+
+        <!-- Pengajuan -->
+        <div>
+            <a data-bs-toggle="collapse" href="#pengajuanMenu"
+               style="color:rgba(255,255,255,0.85);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-left:3px solid <?= $isPengajuanActive ? '#ce93d8' : 'transparent' ?>;<?= $isPengajuanActive ? 'background:rgba(255,255,255,0.15);' : '' ?>">
+                <div style="display:flex;align-items:center;">
+                    <i class="fas fa-clipboard-list" style="width:24px;text-align:center;margin-right:8px;"></i>
+                    <span style="font-size:0.875rem;">Pengajuan</span>
+                </div>
+                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+            </a>
+            <div class="collapse <?= $isPengajuanActive ? 'show' : '' ?>" id="pengajuanMenu" style="background:rgba(0,0,0,0.15);">
+                <?= adminSubLink(base_url('admin/pengajuan/semua'),    'fas fa-list-alt',        'Pengajuan', $seg1==='pengajuan' && ($seg2==='' || $seg2==='semua')) ?>
+                <?= adminSubLink(base_url('admin/pengajuan/cuti'),     'fas fa-umbrella-beach',  'Cuti',      $seg1==='pengajuan' && $seg2==='cuti') ?>
+                <?= adminSubLink(base_url('admin/pengajuan/kasbon'),   'fas fa-hand-holding-usd','Kasbon',    $seg1==='pengajuan' && $seg2==='kasbon') ?>
+                <?= adminSubLink(base_url('admin/laporan/keluhan'),      'fas fa-comment-alt',     'Keluhan',   ($seg1==='laporan' && $seg2==='keluhan') || $seg1==='keluhan-saya') ?>
+            </div>
+        </div>
+
+        <!-- Laporan & Keluhan -->
+        <div>
+            <a data-bs-toggle="collapse" href="#laporanMenu"
+               style="color:rgba(255,255,255,0.85);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-left:3px solid <?= $isLaporanActive ? '#ce93d8' : 'transparent' ?>;<?= $isLaporanActive ? 'background:rgba(255,255,255,0.15);' : '' ?>">
+                <div style="display:flex;align-items:center;">
+                    <i class="fas fa-chart-bar" style="width:24px;text-align:center;margin-right:8px;"></i>
+                    <span style="font-size:0.875rem;">Laporan & Keluhan</span>
+                </div>
+                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+            </a>
+            <div class="collapse <?= $isLaporanActive ? 'show' : '' ?>" id="laporanMenu" style="background:rgba(0,0,0,0.15);">
+                <?= adminSubLink(base_url('admin/laporan/kerja-harian'),  'fas fa-tasks',          'Laporan Kerja Harian',$seg1==='laporan' && ($seg2==='kerja-harian' || $seg1==='laporan-harian-saya')) ?>
+                <?= adminSubLink(base_url('admin/laporan/keluhan'),       'fas fa-comment-dots',   'Keluhan',              $seg1==='laporan' && $seg2==='keluhan') ?>
+                <?= adminSubLink(base_url('admin/slip-gaji'),             'fas fa-money-bill-wave','Slip Gaji',           $seg1==='slip-gaji') ?>
+            </div>
+        </div>
+
+        <div style="padding: 4px 16px 2px; font-size:0.65rem; color:rgba(255,255,255,0.45); font-weight:600; letter-spacing:1.5px; text-transform:uppercase; margin-top:10px;">
+            MENU PRIBADI
+        </div>
+
+        <!-- Menu Pribadi -->
+        <div>
+            <a data-bs-toggle="collapse" href="#pribadiMenu"
+               style="color:rgba(255,255,255,0.85);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-left:3px solid <?= $isPribadiActive ? '#ce93d8' : 'transparent' ?>;<?= $isPribadiActive ? 'background:rgba(255,255,255,0.15);' : '' ?>">
+                <div style="display:flex;align-items:center;">
+                    <i class="fas fa-user-circle" style="width:24px;text-align:center;margin-right:8px;"></i>
+                    <span style="font-size:0.875rem;">Menu Pribadi</span>
+                </div>
+                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+            </a>
+            <div class="collapse <?= $isPribadiActive ? 'show' : '' ?>" id="pribadiMenu" style="background:rgba(0,0,0,0.15);">
+                <?= adminSubLink(base_url('admin/absensi-saya'),      'fas fa-fingerprint',   'Absensi',          $seg1==='absensi-saya') ?>
+                <?= adminSubLink(base_url('admin/tugas-saya'),        'fas fa-tasks',         'Tugas Hari Ini',   $seg1==='tugas-saya') ?>
+                <?= adminSubLink(base_url('admin/timeline-kerja'),    'fas fa-stream',        'Timeline Kerja',   $seg1==='timeline-kerja') ?>
+                <?= adminSubLink(base_url('admin/project-saat-ini'),  'fas fa-project-diagram','Project Saat Ini', $seg1==='project-saat-ini') ?>
+                <?= adminSubLink(base_url('admin/profil'),            'fas fa-id-badge',      'Profil',           $seg1==='profil') ?>
+            </div>
+        </div>
+
+        <!-- Keluar -->
+        <div style="margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 12px;">
+            <a href="<?= base_url('logout') ?>" style="color:#f48fb1;padding:11px 20px;display:flex;align-items:center;text-decoration:none;font-weight:600;">
+                <i class="fas fa-sign-out-alt" style="width:24px;text-align:center;margin-right:8px;"></i>
+                <span style="font-size:0.875rem;">Keluar</span>
+            </a>
+        </div>
+
+    </nav>
+</div>

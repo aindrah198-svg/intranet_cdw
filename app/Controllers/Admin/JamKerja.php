@@ -33,7 +33,7 @@ class JamKerja extends BaseController
     {
         // === TAMBAHKAN INI DI AWAL METHOD ===
     $session = \Config\Services::session();
-    if (!$session->get('isLoggedIn') || strtolower($session->get('role')) !== 'admin') {
+    if (!$session->get('isLoggedIn') || !in_array(strtolower($session->get('role') ?? ''), ['admin', 'hrd'])) {
         return redirect()->to(base_url('login'));
     }
     // === END TAMBAHKAN ===
@@ -1326,7 +1326,7 @@ class JamKerja extends BaseController
 public function exportRekap()
 {
     $session = \Config\Services::session();
-    if (!$session->get('isLoggedIn') || strtolower($session->get('role')) !== 'admin') {
+    if (!$session->get('isLoggedIn') || !in_array(strtolower($session->get('role') ?? ''), ['admin', 'hrd'])) {
         return redirect()->to(base_url('login'));
     }
     

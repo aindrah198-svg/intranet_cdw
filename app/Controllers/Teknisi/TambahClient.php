@@ -7,7 +7,7 @@ use App\Models\Teknisi\ClientModel;
 use App\Models\KaryawanModel;
 use App\Models\UserModel;
 
-class TambahClient extends BaseController
+class TambahClient extends TeknisiController
 {
     protected $clientModel;
     protected $karyawanModel;
@@ -74,7 +74,7 @@ class TambahClient extends BaseController
         // Statistik
         $data['statistik'] = $this->clientModel->getStatistik();
         
-        return view('teknisi/tugas_proyek/tambah_client/index', $data);
+        return $this->renderView('teknisi/tugas_proyek/tambah_client/index', $data);
     }
 
     /**
@@ -93,7 +93,7 @@ class TambahClient extends BaseController
             ->orderBy('nama_lengkap', 'ASC')
             ->findAll();
         
-        return view('teknisi/tugas_proyek/tambah_client/create', $data);
+        return $this->renderView('teknisi/tugas_proyek/tambah_client/create', $data);
     }
 
     /**
@@ -221,7 +221,7 @@ public function detail($id)
     
     $data['statistik_spk'] = $statistik;
     
-    return view('teknisi/tugas_proyek/tambah_client/detail', $data);
+    return $this->renderView('teknisi/tugas_proyek/tambah_client/detail', $data);
 }
 
     /**
@@ -244,7 +244,7 @@ public function detail($id)
             ->orderBy('nama_lengkap', 'ASC')
             ->findAll();
         
-        return view('teknisi/tugas_proyek/tambah_client/edit', $data);
+        return $this->renderView('teknisi/tugas_proyek/tambah_client/edit', $data);
     }
 
   /**

@@ -23,6 +23,194 @@ class ManajemenPajak extends BaseController
 
     public function __construct()
     {
+        $this->db = \Config\Database::connect();
+        
+        if (!$this->db->tableExists('tarif_pajak')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `tarif_pajak` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `jenis_pajak` VARCHAR(50) NOT NULL,
+                  `nama_tarif` VARCHAR(100) NOT NULL,
+                  `tarif_persen` DECIMAL(5,2) DEFAULT 0.00,
+                  `dasar_hukum` VARCHAR(255) DEFAULT NULL,
+                  `berlaku_mulai` DATE DEFAULT NULL,
+                  `berlaku_sampai` DATE DEFAULT NULL,
+                  `is_active` TINYINT(1) DEFAULT 1,
+                  `keterangan` TEXT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        if (!$this->db->tableExists('faktur_pajak')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `faktur_pajak` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `nomor_faktur` VARCHAR(50) NOT NULL,
+                  `tanggal_faktur` DATE DEFAULT NULL,
+                  `jenis_faktur` ENUM('Masukan','Keluaran') DEFAULT 'Masukan',
+                  `invoice_id` INT DEFAULT NULL,
+                  `pembelian_id` INT DEFAULT NULL,
+                  `npwp_pengusaha` VARCHAR(30) DEFAULT NULL,
+                  `nama_pengusaha` VARCHAR(150) DEFAULT NULL,
+                  `alamat_pengusaha` TEXT DEFAULT NULL,
+                  `nilai_transaksi` DECIMAL(15,2) DEFAULT 0.00,
+                  `nilai_ppn` DECIMAL(15,2) DEFAULT 0.00,
+                  `tarif_ppn` DECIMAL(5,2) DEFAULT 11.00,
+                  `status_approval` ENUM('Draft','Pending','Approved','Rejected','Disetujui','Ditolak','Dibatalkan') DEFAULT 'Draft',
+                  `status_lapor` ENUM('Belum','Sudah','Belum Dilaporkan','Sudah Dilaporkan') DEFAULT 'Belum',
+                  `masa_pajak` INT DEFAULT NULL,
+                  `tahun_pajak` INT DEFAULT NULL,
+                  `file_faktur` VARCHAR(255) DEFAULT NULL,
+                  `keterangan` TEXT DEFAULT NULL,
+                  `created_by` INT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        if (!$this->db->tableExists('ppn_masukan')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `ppn_masukan` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `faktur_id` INT DEFAULT NULL,
+                  `tanggal_pembelian` DATE DEFAULT NULL,
+                  `supplier` VARCHAR(150) DEFAULT NULL,
+                  `npwp_supplier` VARCHAR(30) DEFAULT NULL,
+                  `nomor_invoice_supplier` VARCHAR(50) DEFAULT NULL,
+                  `nilai_dpp` DECIMAL(15,2) DEFAULT 0.00,
+                  `nilai_ppn` DECIMAL(15,2) DEFAULT 0.00,
+                  `masa_pajak` INT DEFAULT NULL,
+                  `tahun_pajak` INT DEFAULT NULL,
+                  `status_kredit` ENUM('Belum','Sudah','Tidak Dapat') DEFAULT 'Belum',
+                  `bulan_dikreditkan` INT DEFAULT NULL,
+                  `tahun_dikreditkan` INT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        if (!$this->db->tableExists('ppn_keluaran')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `ppn_keluaran` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `faktur_id` INT DEFAULT NULL,
+                  `tanggal_penjualan` DATE DEFAULT NULL,
+                  `customer` VARCHAR(150) DEFAULT NULL,
+                  `npwp_customer` VARCHAR(30) DEFAULT NULL,
+                  `nomor_invoice` VARCHAR(50) DEFAULT NULL,
+                  `nilai_dpp` DECIMAL(15,2) DEFAULT 0.00,
+                  `nilai_ppn` DECIMAL(15,2) DEFAULT 0.00,
+                  `masa_pajak` INT DEFAULT NULL,
+                  `tahun_pajak` INT DEFAULT NULL,
+                  `status_setor` ENUM('Belum','Sudah') DEFAULT 'Belum',
+                  `tanggal_setor` DATE DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        if (!$this->db->tableExists('pph_badan')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `pph_badan` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `periode` VARCHAR(20) DEFAULT 'Tahunan',
+                  `tahun` INT DEFAULT NULL,
+                  `tahun_pajak` INT DEFAULT NULL,
+                  `triwulan` INT DEFAULT NULL,
+                  `penghasilan_bruto` DECIMAL(15,2) DEFAULT 0.00,
+                  `biaya_fiskal` DECIMAL(15,2) DEFAULT 0.00,
+                  `penghasilan_neto_fiskal` DECIMAL(15,2) DEFAULT 0.00,
+                  `kompensasi_kerugian` DECIMAL(15,2) DEFAULT 0.00,
+                  `pkp` DECIMAL(15,2) DEFAULT 0.00,
+                  `tarif` DECIMAL(5,2) DEFAULT 22.00,
+                  `tarif_persen` DECIMAL(5,2) DEFAULT 22.00,
+                  `pph_terutang` DECIMAL(15,2) DEFAULT 0.00,
+                  `kredit_pajak` DECIMAL(15,2) DEFAULT 0.00,
+                  `pph_kurang_bayar` DECIMAL(15,2) DEFAULT 0.00,
+                  `status` ENUM('Perhitungan','Draft','Posted','Selesai','Dilaporkan') DEFAULT 'Draft',
+                  `tanggal_lapor` DATE DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        } else {
+            $pphCols = [
+                'periode' => "VARCHAR(20) DEFAULT 'Tahunan'",
+                'tahun' => "INT DEFAULT NULL",
+                'tahun_pajak' => "INT DEFAULT NULL",
+                'triwulan' => "INT DEFAULT NULL",
+                'tarif' => "DECIMAL(5,2) DEFAULT 22.00",
+                'tarif_persen' => "DECIMAL(5,2) DEFAULT 22.00",
+                'tanggal_lapor' => "DATE DEFAULT NULL",
+            ];
+            foreach ($pphCols as $col => $type) {
+                if (!$this->db->fieldExists($col, 'pph_badan')) {
+                    $this->db->query("ALTER TABLE `pph_badan` ADD COLUMN `{$col}` {$type}");
+                }
+            }
+        }
+        if (!$this->db->tableExists('setoran_pajak')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `setoran_pajak` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `jenis_pajak` VARCHAR(50) NOT NULL,
+                  `kode_akun_pajak` VARCHAR(50) DEFAULT NULL,
+                  `kode_jenis_setoran` VARCHAR(50) DEFAULT NULL,
+                  `masa_pajak` INT DEFAULT NULL,
+                  `tahun_pajak` INT DEFAULT NULL,
+                  `tanggal_bayar` DATE DEFAULT NULL,
+                  `ntpn` VARCHAR(50) DEFAULT NULL,
+                  `jumlah_bayar` DECIMAL(15,2) DEFAULT 0.00,
+                  `bukti_bayar` VARCHAR(255) DEFAULT NULL,
+                  `keterangan` TEXT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        if (!$this->db->tableExists('arsip_pajak')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `arsip_pajak` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `kode_arsip` VARCHAR(50) DEFAULT NULL,
+                  `jenis_pajak` VARCHAR(50) DEFAULT NULL,
+                  `nama_dokumen` VARCHAR(150) DEFAULT NULL,
+                  `jenis_dokumen` VARCHAR(50) DEFAULT NULL,
+                  `nomor_dokumen` VARCHAR(100) DEFAULT NULL,
+                  `judul` VARCHAR(255) DEFAULT NULL,
+                  `deskripsi` TEXT DEFAULT NULL,
+                  `tahun_pajak` INT DEFAULT NULL,
+                  `masa_pajak` INT DEFAULT NULL,
+                  `file_path` VARCHAR(255) DEFAULT NULL,
+                  `file_type` VARCHAR(50) DEFAULT NULL,
+                  `file_size` INT DEFAULT 0,
+                  `tanggal_dokumen` DATE DEFAULT NULL,
+                  `kategori` VARCHAR(50) DEFAULT NULL,
+                  `keterangan` TEXT DEFAULT NULL,
+                  `created_by` INT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        } else {
+            $arsipCols = [
+                'kode_arsip' => "VARCHAR(50) DEFAULT NULL",
+                'jenis_pajak' => "VARCHAR(50) DEFAULT NULL",
+                'nomor_dokumen' => "VARCHAR(100) DEFAULT NULL",
+                'judul' => "VARCHAR(255) DEFAULT NULL",
+                'deskripsi' => "TEXT DEFAULT NULL",
+                'file_type' => "VARCHAR(50) DEFAULT NULL",
+                'file_size' => "INT DEFAULT 0",
+                'tanggal_dokumen' => "DATE DEFAULT NULL",
+            ];
+            foreach ($arsipCols as $col => $type) {
+                if (!$this->db->fieldExists($col, 'arsip_pajak')) {
+                    $this->db->query("ALTER TABLE `arsip_pajak` ADD COLUMN `{$col}` {$type}");
+                }
+            }
+        }
+
         $this->tarifPajakModel = new TarifPajakModel();
         $this->fakturPajakModel = new FakturPajakModel();
         $this->ppnMasukanModel = new PpnMasukanModel();
@@ -30,7 +218,6 @@ class ManajemenPajak extends BaseController
         $this->pphBadanModel = new PphBadanModel();
         $this->setoranPajakModel = new SetoranPajakModel();
         $this->arsipPajakModel = new ArsipPajakModel();
-        $this->db = \Config\Database::connect();
         
         helper(['form', 'url', 'text', 'number']);
         
@@ -138,7 +325,11 @@ class ManajemenPajak extends BaseController
         // Tarif PPN aktif
         $data['tarifPpn'] = $this->tarifPajakModel->getCurrentRate('PPN');
         
-        return view('accounting/manajemen-pajak/ppn/index', $data);
+        $data['active'] = 'manajemen-pajak';
+        return view('accounting/templates/header', $data)
+             . view('accounting/templates/sidebar', $data)
+             . view('accounting/manajemen-pajak/ppn/index', $data)
+             . view('accounting/templates/footer', $data);
     }
 
     /**
@@ -146,7 +337,15 @@ class ManajemenPajak extends BaseController
      */
     public function pph()
     {
-        $data['title'] = 'Manajemen PPh';
+        return $this->pphBadan();
+    }
+
+    /**
+     * Menu PPh Badan
+     */
+    public function pphBadan()
+    {
+        $data['title'] = 'Manajemen PPh Badan';
         
         $tahun = $this->request->getGet('tahun') ?? date('Y');
         
@@ -168,7 +367,39 @@ class ManajemenPajak extends BaseController
         // Tarif PPh Badan aktif
         $data['tarifPphBadan'] = $this->tarifPajakModel->getCurrentRate('PPh Badan');
         
-        return view('accounting/manajemen-pajak/pph/index', $data);
+        $data['active'] = 'manajemen-pajak';
+        return view('accounting/templates/header', $data)
+             . view('accounting/templates/sidebar', $data)
+             . view('accounting/manajemen-pajak/pph-badan/index', $data)
+             . view('accounting/templates/footer', $data);
+    }
+
+    /**
+     * Menu Arsip Pajak
+     */
+    public function arsipPajak()
+    {
+        $data['title'] = 'Arsip Pajak';
+        
+        $tahun = $this->request->getGet('tahun') ?? date('Y');
+        $kategori = $this->request->getGet('kategori');
+        
+        $data['tahun'] = $tahun;
+        $data['kategori'] = $kategori;
+        $data['tahunOptions'] = $this->getTahunOptions();
+        
+        $filters = [
+            'tahun' => $tahun,
+            'kategori' => $kategori
+        ];
+        
+        $data['arsipList'] = $this->arsipPajakModel->getAllWithFilters($filters);
+        
+        $data['active'] = 'manajemen-pajak';
+        return view('accounting/templates/header', $data)
+             . view('accounting/templates/sidebar', $data)
+             . view('accounting/manajemen-pajak/arsip-pajak/index', $data)
+             . view('accounting/templates/footer', $data);
     }
 
     /**

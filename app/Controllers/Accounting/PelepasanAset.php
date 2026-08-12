@@ -32,6 +32,47 @@ class PelepasanAset extends BaseController
 
     public function __construct()
     {
+        $this->db = \Config\Database::connect();
+        if (!$this->db->tableExists('pelepasan_aset')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `pelepasan_aset` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `kode_pelepasan` VARCHAR(50) NOT NULL,
+                  `tanggal_pelepasan` DATE DEFAULT NULL,
+                  `aset_id` INT NOT NULL,
+                  `jenis_pelepasan` ENUM('Penjualan','Hibah','Pemusnahan/Rusak','Lainnya') DEFAULT 'Penjualan',
+                  `harga_jual` DECIMAL(15,2) DEFAULT 0.00,
+                  `nilai_buku_saat_pelepasan` DECIMAL(15,2) DEFAULT 0.00,
+                  `laba_rugi_pelepasan` DECIMAL(15,2) DEFAULT 0.00,
+                  `coa_id_kas_bank` INT DEFAULT NULL,
+                  `coa_id_laba_rugi` INT DEFAULT NULL,
+                  `jurnal_id` INT DEFAULT NULL,
+                  `status` ENUM('Draft','Approved','Posted','Dibatalkan') DEFAULT 'Draft',
+                  `keterangan` TEXT DEFAULT NULL,
+                  `lampiran` VARCHAR(255) DEFAULT NULL,
+                  `created_by` INT DEFAULT NULL,
+                  `updated_by` INT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL,
+                  `deleted_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        if ($this->db->tableExists('pelepasan_aset')) {
+            if (!$this->db->fieldExists('disetujui_oleh', 'pelepasan_aset')) {
+                $this->db->query("ALTER TABLE `pelepasan_aset` ADD COLUMN `disetujui_oleh` INT DEFAULT NULL");
+            }
+            if (!$this->db->fieldExists('disetujui_at', 'pelepasan_aset')) {
+                $this->db->query("ALTER TABLE `pelepasan_aset` ADD COLUMN `disetujui_at` DATETIME DEFAULT NULL");
+            }
+            if (!$this->db->fieldExists('pembeli_penerima', 'pelepasan_aset')) {
+                $this->db->query("ALTER TABLE `pelepasan_aset` ADD COLUMN `pembeli_penerima` VARCHAR(150) DEFAULT NULL");
+            }
+            if (!$this->db->fieldExists('laba_rugi', 'pelepasan_aset')) {
+                $this->db->query("ALTER TABLE `pelepasan_aset` ADD COLUMN `laba_rugi` DECIMAL(15,2) DEFAULT 0.00");
+            }
+        }
+
         $this->asetModel = new AsetTetapModel();
         $this->kategoriModel = new AsetTetapKategoriModel();
         $this->pelepasanModel = new PelepasanAsetModel();
@@ -40,7 +81,6 @@ class PelepasanAset extends BaseController
         $this->jurnalModel = new JurnalModel();
         $this->jurnalDetailModel = new JurnalDetailModel();
         $this->karyawanModel = new KaryawanModel();
-        $this->db = \Config\Database::connect();
         
         helper(['form', 'url', 'text', 'number']);
         
@@ -84,10 +124,11 @@ class PelepasanAset extends BaseController
         $data['jenisPelepasanOptions'] = ['Dijual', 'Dihibahkan', 'Dimusnahkan', 'Hilang', 'Tukar Tambah'];
         $data['statusOptions'] = ['Draft', 'Disetujui', 'Selesai', 'Dibatalkan'];
         
-        $data['stats'] = $this->pelepasanModel->getStats();
-        $data['statsPerJenis'] = $this->pelepasanModel->getRingkasanPerJenis();
-        
-        return view('accounting/aset-tetap/pelepasan/index', $data);
+        $data['active'] = 'pelepasan-aset';
+        return view('accounting/templates/header', $data)
+             . view('accounting/templates/sidebar', $data)
+             . view('accounting/aset-tetap/pelepasan-aset/index', $data)
+             . view('accounting/templates/footer', $data);
     }
 
     /**

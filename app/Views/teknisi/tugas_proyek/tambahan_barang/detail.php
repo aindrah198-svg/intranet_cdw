@@ -1,7 +1,3 @@
-<?= $this->include('teknisi/templates/header') ?>
-<?= $this->include('teknisi/templates/sidebar') ?>
-<?= $this->include('teknisi/templates/navbar') ?>
-
 <!-- Konten utama -->
 <div class="container-fluid">
     <!-- Header -->
@@ -383,10 +379,6 @@ function getJenisBadgeColor($jenis) {
         'Makan' => 'bg-success text-white',
         'Akomodasi' => 'bg-primary text-white',
         'Material Tambahan' => 'bg-secondary text-white',
-        'Lainnya' => 'bg-dark text-white'
-    ];
     return $colors[$jenis] ?? 'bg-secondary text-white';
 }
 ?>
-
-<?= $this->include('teknisi/templates/footer') ?>

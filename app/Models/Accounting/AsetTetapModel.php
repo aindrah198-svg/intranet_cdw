@@ -59,6 +59,43 @@ class AsetTetapModel extends Model
         'kondisi' => 'permit_empty|in_list[Baik,Rusak Ringan,Rusak Berat,Perlu Perbaikan]'
     ];
 
+    public function __construct()
+    {
+        parent::__construct();
+        $db = \Config\Database::connect();
+        if ($db->tableExists('aset_tetap_kategori')) {
+            $katCols = [
+                'masa_manfaat' => "INT DEFAULT 4",
+                'persentase_penyusutan' => "DECIMAL(5,2) DEFAULT 0.00",
+                'is_active' => "TINYINT(1) DEFAULT 1",
+                'coa_aset_id' => "INT DEFAULT NULL",
+                'coa_akumulasi_id' => "INT DEFAULT NULL",
+                'coa_beban_id' => "INT DEFAULT NULL",
+            ];
+            foreach ($katCols as $col => $type) {
+                if (!$db->fieldExists($col, 'aset_tetap_kategori')) {
+                    $db->query("ALTER TABLE `aset_tetap_kategori` ADD COLUMN `{$col}` {$type}");
+                }
+            }
+        }
+        if ($db->tableExists('aset_tetap')) {
+            $asetCols = [
+                'coa_aset_id' => "INT DEFAULT NULL",
+                'coa_akumulasi_id' => "INT DEFAULT NULL",
+                'coa_beban_id' => "INT DEFAULT NULL",
+                'penanggung_jawab_id' => "INT DEFAULT NULL",
+                'merk' => "VARCHAR(100) DEFAULT NULL",
+                'model' => "VARCHAR(100) DEFAULT NULL",
+                'serial_number' => "VARCHAR(100) DEFAULT NULL",
+            ];
+            foreach ($asetCols as $col => $type) {
+                if (!$db->fieldExists($col, 'aset_tetap')) {
+                    $db->query("ALTER TABLE `aset_tetap` ADD COLUMN `{$col}` {$type}");
+                }
+            }
+        }
+    }
+
     protected $validationMessages = [
         'kode_aset' => [
             'required' => 'Kode aset harus diisi',
@@ -263,7 +300,7 @@ class AsetTetapModel extends Model
             ->join('coa as coa_aset', 'coa_aset.id = aset_tetap.coa_aset_id', 'left')
             ->join('coa as coa_akumulasi', 'coa_akumulasi.id = aset_tetap.coa_akumulasi_id', 'left')
             ->join('coa as coa_beban', 'coa_beban.id = aset_tetap.coa_beban_id', 'left')
-            ->join('karyawan', 'karyawan.id = aset_tetap.penanggung_jawab', 'left')
+            ->join('karyawan', 'karyawan.id = aset_tetap.penanggung_jawab_id', 'left')
             ->join('users as creator', 'creator.id = aset_tetap.created_by', 'left');
         
         // Apply filters

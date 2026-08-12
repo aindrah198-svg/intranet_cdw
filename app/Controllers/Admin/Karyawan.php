@@ -260,6 +260,7 @@ public function delete($id = null)
         return redirect()->to('/admin/karyawan')->with('error', 'Data karyawan tidak ditemukan');
     }
     
+    (new \App\Models\UserModel())->where('karyawan_id', $id)->delete();
     if ($this->karyawanModel->delete($id)) {
         if ($this->request->isAJAX()) {
             return $this->response->setJSON(['success' => true, 'message' => 'Data karyawan berhasil dihapus']);

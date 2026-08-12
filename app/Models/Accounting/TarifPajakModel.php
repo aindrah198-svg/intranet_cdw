@@ -38,6 +38,25 @@ class TarifPajakModel extends Model
         'is_active' => 'permit_empty|in_list[0,1]'
     ];
 
+    public function __construct()
+    {
+        parent::__construct();
+        $db = \Config\Database::connect();
+        if ($db->tableExists($this->table)) {
+            $cols = [
+                'kode_tarif' => "VARCHAR(50) DEFAULT NULL",
+                'persentase' => "DECIMAL(5,2) DEFAULT 0.00",
+                'tarif_persen' => "DECIMAL(5,2) DEFAULT 0.00",
+                'dasar_hukum' => "VARCHAR(255) DEFAULT NULL",
+            ];
+            foreach ($cols as $col => $type) {
+                if (!$db->fieldExists($col, $this->table)) {
+                    $db->query("ALTER TABLE `{$this->table}` ADD COLUMN `{$col}` {$type}");
+                }
+            }
+        }
+    }
+
     protected $validationMessages = [
         'jenis_pajak' => [
             'required' => 'Jenis pajak harus dipilih',

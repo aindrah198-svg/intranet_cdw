@@ -186,12 +186,8 @@ class Absensi extends BaseController
             'user' => $userData
         ];
         
-        // Return view dengan include template
-        return view('direktur/templates/header', $data)
-             . view('direktur/templates/sidebar', $data)
-             . view('direktur/templates/navbar', $data)
-             . view('direktur/monitoring/absensi', $data)
-             . view('direktur/templates/footer', $data);
+        // Return view utama (template header, sidebar, navbar, footer sudah di-include di view)
+        return view('direktur/monitoring/absensi', $data);
     }
 
     /**
@@ -242,11 +238,7 @@ class Absensi extends BaseController
             'user' => $userData
         ];
         
-        return view('direktur/templates/header', $data)
-             . view('direktur/templates/sidebar', $data)
-             . view('direktur/templates/navbar', $data)
-             . view('direktur/monitoring/absensi_detail', $data)
-             . view('direktur/templates/footer', $data);
+        return view('direktur/monitoring/absensi_detail', $data);
     }
 
     /**
@@ -549,5 +541,241 @@ class Absensi extends BaseController
             'status' => 'success',
             'data' => $this->absensiModel->getSummary($bulan, $tahun)
         ]);
+    }
+
+    /**
+     * Simpan data absensi baru (Manual Create by Direktur)
+     */
+    public function simpan()
+    {
+        $session = \Config\Services::session();
+        if (!$session->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+
+        $karyawanId = $this->request->getPost('karyawan_id');
+        $tanggal    = $this->request->getPost('tanggal');
+        $status     = $this->request->getPost('status');
+        $shift      = $this->request->getPost('shift') ?? 'siang';
+        $waktuMasuk = $this->request->getPost('waktu_masuk');
+        $waktuPulang= $this->request->getPost('waktu_pulang');
+        $terlambat  = (int)($this->request->getPost('terlambat') ?? 0);
+        $jamLembur  = (float)($this->request->getPost('jam_lembur') ?? 0);
+        $keterangan = $this->request->getPost('keterangan');
+
+        if (empty($karyawanId) || empty($tanggal) || empty($status)) {
+            return redirect()->back()->with('error', 'Karyawan, Tanggal, dan Status wajib diisi.');
+        }
+
+        $wMasukFull = !empty($waktuMasuk) ? (strlen($waktuMasuk) == 5 ? $waktuMasuk . ':00' : $waktuMasuk) : null;
+        $wPulangFull= !empty($waktuPulang) ? (strlen($waktuPulang) == 5 ? $waktuPulang . ':00' : $waktuPulang) : null;
+
+        $jamKerja = 0;
+        if (!empty($wMasukFull) && !empty($wPulangFull)) {
+            $tMasuk  = strtotime($tanggal . ' ' . $wMasukFull);
+            $tPulang = strtotime($tanggal . ' ' . $wPulangFull);
+            if ($tPulang > $tMasuk) {
+                $durasi = ($tPulang - $tMasuk) / 3600;
+                $jamKerja = round(max(0, $durasi > 4 ? $durasi - 1 : $durasi), 1);
+            }
+        }
+
+        $insertData = [
+            'karyawan_id'  => $karyawanId,
+            'tanggal'      => $tanggal,
+            'waktu_masuk'  => $wMasukFull,
+            'waktu_pulang' => $wPulangFull,
+            'status'       => $status,
+            'shift'        => $shift,
+            'terlambat'    => $terlambat,
+            'jam_kerja'    => $jamKerja,
+            'jam_lembur'   => $jamLembur,
+            'keterangan'   => $keterangan,
+            'created_by'   => $session->get('user_id'),
+        ];
+
+        $this->absensiModel->insert($insertData);
+
+        return redirect()->to(base_url('direktur/monitoring/absensi'))
+            ->with('success', 'Data absensi berhasil ditambahkan.');
+    }
+
+    /**
+     * Update data absensi
+     */
+    public function update($id)
+    {
+        $session = \Config\Services::session();
+        if (!$session->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+
+        $absensi = $this->absensiModel->find($id);
+        if (!$absensi) {
+            return redirect()->to(base_url('direktur/monitoring/absensi'))
+                ->with('error', 'Data absensi tidak ditemukan.');
+        }
+
+        $status     = $this->request->getPost('status') ?? $absensi['status'];
+        $shift      = $this->request->getPost('shift') ?? $absensi['shift'];
+        $waktuMasuk = $this->request->getPost('waktu_masuk');
+        $waktuPulang= $this->request->getPost('waktu_pulang');
+        $terlambat  = $this->request->getPost('terlambat') !== null ? (int)$this->request->getPost('terlambat') : $absensi['terlambat'];
+        $jamLembur  = $this->request->getPost('jam_lembur') !== null ? (float)$this->request->getPost('jam_lembur') : $absensi['jam_lembur'];
+        $keterangan = $this->request->getPost('keterangan') ?? $absensi['keterangan'];
+
+        $wMasukFull = !empty($waktuMasuk) ? (strlen($waktuMasuk) == 5 ? $waktuMasuk . ':00' : $waktuMasuk) : null;
+        $wPulangFull= !empty($waktuPulang) ? (strlen($waktuPulang) == 5 ? $waktuPulang . ':00' : $waktuPulang) : null;
+
+        $jamKerja = $absensi['jam_kerja'];
+        if (!empty($wMasukFull) && !empty($wPulangFull)) {
+            $tMasuk  = strtotime($absensi['tanggal'] . ' ' . $wMasukFull);
+            $tPulang = strtotime($absensi['tanggal'] . ' ' . $wPulangFull);
+            if ($tPulang > $tMasuk) {
+                $durasi = ($tPulang - $tMasuk) / 3600;
+                $jamKerja = round(max(0, $durasi > 4 ? $durasi - 1 : $durasi), 1);
+            }
+        }
+
+        $updateData = [
+            'status'       => $status,
+            'shift'        => $shift,
+            'waktu_masuk'  => $wMasukFull,
+            'waktu_pulang' => $wPulangFull,
+            'terlambat'    => $terlambat,
+            'jam_kerja'    => $jamKerja,
+            'jam_lembur'   => $jamLembur,
+            'keterangan'   => $keterangan,
+            'updated_by'   => $session->get('user_id'),
+        ];
+
+        $this->absensiModel->update($id, $updateData);
+
+        return redirect()->to(base_url('direktur/monitoring/absensi'))
+            ->with('success', 'Data absensi berhasil diperbarui.');
+    }
+
+    /**
+     * Hapus data absensi (Soft delete)
+     */
+    public function delete($id)
+    {
+        $session = \Config\Services::session();
+        if (!$session->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+
+        $absensi = $this->absensiModel->find($id);
+        if (!$absensi) {
+            return redirect()->to(base_url('direktur/monitoring/absensi'))
+                ->with('error', 'Data absensi tidak ditemukan.');
+        }
+
+        $this->absensiModel->delete($id);
+
+        return redirect()->to(base_url('direktur/monitoring/absensi'))
+            ->with('success', 'Data absensi berhasil dihapus.');
+    }
+
+    /**
+     * Export data absensi ke PDF menggunakan Dompdf
+     */
+    public function exportPdf()
+    {
+        $session = \Config\Services::session();
+        if (!$session->get('isLoggedIn')) {
+            return redirect()->to(base_url('login'));
+        }
+
+        $startDate = (string) ($this->request->getGet('start_date') ?? date('Y-m-01'));
+        $endDate = (string) ($this->request->getGet('end_date') ?? date('Y-m-d'));
+        $statusFilter = $this->request->getGet('status');
+        $karyawanIdFilter = $this->request->getGet('karyawan_id');
+        $searchQuery = $this->request->getGet('search');
+
+        $db = \Config\Database::connect();
+        $builder = $db->table('absensi')
+            ->select('absensi.*, karyawan.nik, karyawan.nama_lengkap, karyawan.nama_panggilan, karyawan.jabatan, karyawan.departemen')
+            ->join('karyawan', 'karyawan.id = absensi.karyawan_id')
+            ->where('absensi.deleted_at', null)
+            ->where('absensi.tanggal >=', $startDate)
+            ->where('absensi.tanggal <=', $endDate);
+
+        if ($statusFilter) {
+            $builder->where('absensi.status', $statusFilter);
+        }
+
+        if ($karyawanIdFilter) {
+            $builder->where('absensi.karyawan_id', $karyawanIdFilter);
+        }
+
+        if ($searchQuery) {
+            $builder->groupStart()
+                ->like('karyawan.nama_lengkap', $searchQuery)
+                ->orLike('karyawan.nik', $searchQuery)
+                ->groupEnd();
+        }
+
+        $builder->orderBy('absensi.tanggal', 'DESC');
+        $builder->orderBy('karyawan.nama_lengkap', 'ASC');
+        $absensiData = $builder->get()->getResultArray();
+
+        // Statistics
+        $statsBuilder = $db->table('absensi')
+            ->select("
+                COUNT(*) as total_absensi,
+                COUNT(DISTINCT absensi.karyawan_id) as total_karyawan,
+                SUM(CASE WHEN absensi.status = 'Hadir' THEN 1 ELSE 0 END) as total_hadir,
+                SUM(CASE WHEN absensi.status = 'Terlambat' THEN 1 ELSE 0 END) as total_terlambat,
+                SUM(CASE WHEN absensi.status = 'Izin' THEN 1 ELSE 0 END) as total_izin,
+                SUM(CASE WHEN absensi.status = 'Sakit' THEN 1 ELSE 0 END) as total_sakit,
+                SUM(CASE WHEN absensi.status = 'Alpha' THEN 1 ELSE 0 END) as total_alpha
+            ")
+            ->join('karyawan', 'karyawan.id = absensi.karyawan_id')
+            ->where('absensi.deleted_at', null)
+            ->where('absensi.tanggal >=', $startDate)
+            ->where('absensi.tanggal <=', $endDate);
+
+        if ($statusFilter) {
+            $statsBuilder->where('absensi.status', $statusFilter);
+        }
+
+        if ($karyawanIdFilter) {
+            $statsBuilder->where('absensi.karyawan_id', $karyawanIdFilter);
+        }
+
+        $stats = $statsBuilder->get()->getRowArray();
+
+        $selectedKaryawan = null;
+        if ($karyawanIdFilter) {
+            $selectedKaryawan = $this->karyawanModel->find($karyawanIdFilter);
+        }
+
+        $data = [
+            'title' => 'Laporan Monitoring Absensi Karyawan',
+            'absensiData' => $absensiData,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'statusFilter' => $statusFilter,
+            'selectedKaryawan' => $selectedKaryawan,
+            'stats' => $stats
+        ];
+
+        $html = view('direktur/monitoring/absensi_pdf', $data);
+
+        if (class_exists('Dompdf\Dompdf')) {
+            $options = new \Dompdf\Options();
+            $options->set('isRemoteEnabled', true);
+            $options->set('defaultFont', 'Helvetica');
+            $dompdf = new \Dompdf\Dompdf($options);
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'landscape');
+            $dompdf->render();
+            $filename = 'Laporan_Absensi_' . date('Ymd_His') . '.pdf';
+            $dompdf->stream($filename, ['Attachment' => 1]);
+            exit();
+        } else {
+            return $this->response->setHeader('Content-Type', 'text/html')->setBody($html);
+        }
     }
 }

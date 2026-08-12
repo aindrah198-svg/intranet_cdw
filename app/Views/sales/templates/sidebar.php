@@ -2,533 +2,250 @@
 $active = $active ?? 'dashboard';
 $uri = service('uri');
 $segments = $uri->getSegments();
+$segment2 = $segments[1] ?? '';
+$segment3 = $segments[2] ?? '';
 
-// Ambil segment dengan cara yang aman
-$segment1 = isset($segments[1]) ? $segments[1] : '';
-$segment2 = isset($segments[2]) ? $segments[2] : '';
+// Active state checks
+$isDashboardActive = $active === 'dashboard' || $segment2 === 'dashboard' || $segment2 === '';
+$isLeadsActive = $segment2 === 'leads' && $segment3 !== 'pipeline';
+$isPipelineActive = $segment2 === 'leads' && $segment3 === 'pipeline';
+$isLeadsGroupActive = $isLeadsActive || $isPipelineActive;
 
-// Check active menu
-$isDashboardActive = $active == 'dashboard' || $segment2 === 'dashboard';
-$isClientActive = $segment2 === 'client';
-$isPenawaranActive = $segment2 === 'penawaran';
-$isInvoiceActive = $segment2 === 'invoice';
-$isSuratJalanActive = $segment2 === 'surat-jalan' || $segment2 === 'suratjalan';
-$isAbsensiActive = $segment2 === 'absensi';
-$isProfileActive = $segment2 === 'profile';
+$isQuotationCreateActive = $segment2 === 'quotation' && $segment3 === 'create';
+$isQuotationHistoryActive = $segment2 === 'quotation' && $segment3 !== 'create';
+$isQuotationGroupActive = $isQuotationCreateActive || $isQuotationHistoryActive;
+
+$isDealActive = $segment2 === 'deal' && ($segment3 === '' || $segment3 === 'index');
+$isDealInvoiceActive = $segment2 === 'deal' && $segment3 === 'invoice';
+$isDealProjectActive = $segment2 === 'deal' && $segment3 === 'project';
+$isDealGroupActive = $isDealActive || $isDealInvoiceActive || $isDealProjectActive;
+
+$isLaporanHarianActive = $segment2 === 'laporan' && ($segment3 === '' || $segment3 === 'index');
+$isLaporanTargetActive = $segment2 === 'laporan' && $segment3 === 'target';
+$isLaporanGroupActive = $isLaporanHarianActive || $isLaporanTargetActive;
+
+$isKontakActive = $segment2 === 'kontak';
+
+$isAbsensiActive = $segment2 === 'pribadi' && $segment3 === 'absensi';
+$isTugasActive = $segment2 === 'pribadi' && $segment3 === 'tugas';
+$isLaporanKerjaActive = $segment2 === 'pribadi' && $segment3 === 'laporan-harian';
+$isPengajuanActive = $segment2 === 'pribadi' && $segment3 === 'pengajuan';
+$isSlipGajiActive = $segment2 === 'pribadi' && $segment3 === 'slip-gaji';
+$isProfilActive = $segment2 === 'pribadi' && $segment3 === 'profil';
+$isPribadiGroupActive = $isAbsensiActive || $isTugasActive || $isLaporanKerjaActive || $isPengajuanActive || $isSlipGajiActive || $isProfilActive;
 ?>
 
-<!-- Sidebar -->
-<nav class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <div class="sidebar-brand">
-            <h5 class="mb-0">
-                <i class="fas fa-chart-line me-2"></i>
-                SALES PANEL
-            </h5>
-        </div>
-        
-        <button class="sidebar-close-btn d-lg-none" onclick="toggleSidebar()">
-            <i class="fas fa-times"></i>
-        </button>
+<!-- Navigasi Sidebar Sales & Marketing -->
+<nav class="sidebar text-white" id="sidebar" style="width: 260px; background: #1a237e; min-height: 100vh; position: fixed; top: 0; left: 0; z-index: 1050; overflow-y: auto;">
+    <div class="sidebar-header p-3 border-bottom border-secondary text-center">
+        <h5 class="mb-0 fw-bold text-white tracking-wide"><i class="fas fa-chart-line text-warning me-2"></i>SALES & MARKETING</h5>
+        <small class="text-white-50">Sales Panel</small>
     </div>
-    
-    <div class="sidebar-user">
-        <div class="sidebar-user-avatar">
-            <?= strtoupper(substr($user['name'] ?? 'S', 0, 1)) ?>
+
+    <div class="sidebar-user p-3 border-bottom border-secondary d-flex align-items-center">
+        <div class="rounded-circle bg-warning text-dark font-weight-bold d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px; font-weight: 700; font-size: 1.1rem;">
+            <?= strtoupper(substr(session()->get('username') ?? 'S', 0, 1)) ?>
         </div>
-        <div class="sidebar-user-name"><?= htmlspecialchars($user['name'] ?? 'Sales') ?></div>
-        <div class="sidebar-user-role">
-            <span class="badge bg-primary"><?= ucfirst($user['role'] ?? 'sales') ?></span>
+        <div>
+            <div class="fw-bold text-white mb-0"><?= esc(session()->get('username') ?? 'Sales Staff') ?></div>
+            <small class="badge bg-warning text-dark">Sales & Marketing</small>
         </div>
     </div>
-    
-    <div class="sidebar-menu">
-        <ul class="nav flex-column">
+
+    <div class="sidebar-menu p-2">
+        <ul class="nav flex-column gap-1">
             <!-- Dashboard -->
             <li class="nav-item">
-                <a class="nav-link <?= $isDashboardActive ? 'active' : '' ?>" 
-                   href="<?= base_url('sales/dashboard') ?>">
-                    <i class="fas fa-tachometer-alt me-2"></i> 
-                    <span class="menu-text">Dashboard</span>
-                    <?php if($isDashboardActive): ?>
-                        <span class="menu-active-indicator"></span>
-                    <?php endif; ?>
-                </a>
-            </li>
-            
-            <!-- Sales Modules -->
-            <li class="nav-item mt-3">
-                <span class="nav-label text-uppercase text-muted small fw-bold px-3">
-                    <i class="fas fa-briefcase me-1"></i> Sales Modules
-                </span>
-            </li>
-            
-            <!-- Clients -->
-            <li class="nav-item">
-                <a class="nav-link <?= $isClientActive ? 'active' : '' ?>" 
-                   href="<?= base_url('sales/client') ?>">
-                    <i class="fas fa-user-tie me-2"></i>
-                    <span class="menu-text">Client Management</span>
-                    <?php if($isClientActive): ?>
-                        <span class="menu-active-indicator"></span>
-                    <?php endif; ?>
-                </a>
-            </li>
-            
-            <!-- Penawaran Harga -->
-            <li class="nav-item">
-                <a class="nav-link <?= $isPenawaranActive ? 'active' : '' ?>" 
-                   href="<?= base_url('sales/penawaran') ?>">
-                    <i class="fas fa-file-invoice-dollar me-2"></i>
-                    <span class="menu-text">Penawaran Harga</span>
-                    <?php if($isPenawaranActive): ?>
-                        <span class="menu-active-indicator"></span>
-                    <?php endif; ?>
-                </a>
-            </li>
-            
-            <!-- Invoice -->
-            <li class="nav-item">
-                <a class="nav-link <?= $isInvoiceActive ? 'active' : '' ?>" 
-                   href="<?= base_url('sales/invoice') ?>">
-                    <i class="fas fa-file-invoice me-2"></i>
-                    <span class="menu-text">Invoice Management</span>
-                    <?php if($isInvoiceActive): ?>
-                        <span class="menu-active-indicator"></span>
-                    <?php endif; ?>
+                <a class="nav-link text-white py-2 px-3 rounded <?= $isDashboardActive ? 'bg-primary fw-bold active' : '' ?>" href="<?= site_url('sales/dashboard') ?>">
+                    <i class="fas fa-tachometer-alt me-2 text-warning"></i> Dashboard
                 </a>
             </li>
 
-            <!-- Surat Jalan -->
+            <!-- Leads & Pipeline -->
             <li class="nav-item">
-                <a class="nav-link <?= $isSuratJalanActive ? 'active' : '' ?>" 
-                   href="<?= base_url('sales/surat-jalan') ?>">
-                    <i class="fas fa-truck me-2"></i>
-                    <span class="menu-text">Surat Jalan</span>
-                    <?php if($isSuratJalanActive): ?>
-                        <span class="menu-active-indicator"></span>
-                    <?php endif; ?>
+                <a class="nav-link text-white py-2 px-3 rounded d-flex justify-content-between align-items-center <?= $isLeadsGroupActive ? 'bg-primary fw-bold' : '' ?>" 
+                   data-bs-toggle="collapse" data-toggle="collapse" href="#menuLeads" role="button" aria-expanded="<?= $isLeadsGroupActive ? 'true' : 'false' ?>">
+                    <span><i class="fas fa-filter me-2 text-warning"></i> Leads & Pipeline</span>
+                    <i class="fas fa-chevron-down small"></i>
+                </a>
+                <div class="collapse <?= $isLeadsGroupActive ? 'show' : '' ?>" id="menuLeads">
+                    <ul class="nav flex-column ps-3 py-1 gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isLeadsActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/leads') ?>">
+                                <i class="fas fa-list me-2"></i> Daftar Leads
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isPipelineActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/leads/pipeline') ?>">
+                                <i class="fas fa-columns me-2"></i> Pipeline (Kanban)
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Quotation -->
+            <li class="nav-item">
+                <a class="nav-link text-white py-2 px-3 rounded d-flex justify-content-between align-items-center <?= $isQuotationGroupActive ? 'bg-primary fw-bold' : '' ?>" 
+                   data-bs-toggle="collapse" data-toggle="collapse" href="#menuQuotation" role="button" aria-expanded="<?= $isQuotationGroupActive ? 'true' : 'false' ?>">
+                    <span><i class="fas fa-file-invoice-dollar me-2 text-warning"></i> Quotation</span>
+                    <i class="fas fa-chevron-down small"></i>
+                </a>
+                <div class="collapse <?= $isQuotationGroupActive ? 'show' : '' ?>" id="menuQuotation">
+                    <ul class="nav flex-column ps-3 py-1 gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isQuotationCreateActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/quotation/create') ?>">
+                                <i class="fas fa-plus-circle me-2"></i> Buat Quotation
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isQuotationHistoryActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/quotation') ?>">
+                                <i class="fas fa-history me-2"></i> Riwayat Quotation
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Closing & Deal -->
+            <li class="nav-item">
+                <a class="nav-link text-white py-2 px-3 rounded d-flex justify-content-between align-items-center <?= $isDealGroupActive ? 'bg-primary fw-bold' : '' ?>" 
+                   data-bs-toggle="collapse" data-toggle="collapse" href="#menuDeal" role="button" aria-expanded="<?= $isDealGroupActive ? 'true' : 'false' ?>">
+                    <span><i class="fas fa-handshake me-2 text-warning"></i> Closing & Deal</span>
+                    <i class="fas fa-chevron-down small"></i>
+                </a>
+                <div class="collapse <?= $isDealGroupActive ? 'show' : '' ?>" id="menuDeal">
+                    <ul class="nav flex-column ps-3 py-1 gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isDealActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/deal') ?>">
+                                <i class="fas fa-check-circle me-2"></i> Closing Deal
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Laporan Penjualan -->
+            <li class="nav-item">
+                <a class="nav-link text-white py-2 px-3 rounded d-flex justify-content-between align-items-center <?= $isLaporanGroupActive ? 'bg-primary fw-bold' : '' ?>" 
+                   data-bs-toggle="collapse" data-toggle="collapse" href="#menuLaporan" role="button" aria-expanded="<?= $isLaporanGroupActive ? 'true' : 'false' ?>">
+                    <span><i class="fas fa-chart-bar me-2 text-warning"></i> Laporan Penjualan</span>
+                    <i class="fas fa-chevron-down small"></i>
+                </a>
+                <div class="collapse <?= $isLaporanGroupActive ? 'show' : '' ?>" id="menuLaporan">
+                    <ul class="nav flex-column ps-3 py-1 gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isLaporanHarianActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/laporan') ?>">
+                                <i class="fas fa-calendar-alt me-2"></i> Laporan Harian/Mingguan
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isLaporanTargetActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/laporan/target') ?>">
+                                <i class="fas fa-bullseye me-2"></i> Target vs Realisasi
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Kontak Klien -->
+            <li class="nav-item">
+                <a class="nav-link text-white py-2 px-3 rounded <?= $isKontakActive ? 'bg-primary fw-bold active' : '' ?>" href="<?= site_url('sales/kontak') ?>">
+                    <i class="fas fa-address-book me-2 text-warning"></i> Kontak Klien
                 </a>
             </li>
-            
-            <!-- Personal -->
+
+            <hr class="border-secondary my-2">
+
+            <!-- Menu Pribadi -->
+            <li class="nav-item">
+                <a class="nav-link text-white py-2 px-3 rounded d-flex justify-content-between align-items-center <?= $isPribadiGroupActive ? 'bg-primary fw-bold' : '' ?>" 
+                   data-bs-toggle="collapse" data-toggle="collapse" href="#menuPribadi" role="button" aria-expanded="<?= $isPribadiGroupActive ? 'true' : 'false' ?>">
+                    <span><i class="fas fa-user-clock me-2 text-warning"></i> Menu Pribadi</span>
+                    <i class="fas fa-chevron-down small"></i>
+                </a>
+                <div class="collapse <?= $isPribadiGroupActive ? 'show' : '' ?>" id="menuPribadi">
+                    <ul class="nav flex-column ps-3 py-1 gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isAbsensiActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/pribadi/absensi') ?>">
+                                <i class="fas fa-user-check me-2"></i> Absensi Saya
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isTugasActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/pribadi/tugas') ?>">
+                                <i class="fas fa-tasks me-2"></i> Tugas Saya
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isLaporanKerjaActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/pribadi/laporan-harian') ?>">
+                                <i class="fas fa-clipboard-list me-2"></i> Laporan Kerja Harian
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isPengajuanActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/pribadi/pengajuan') ?>">
+                                <i class="fas fa-paper-plane me-2"></i> Form Pengajuan
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isSlipGajiActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/pribadi/slip-gaji') ?>">
+                                <i class="fas fa-file-invoice-dollar me-2"></i> Slip Gaji
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white-50 py-1.5 px-3 rounded <?= $isProfilActive ? 'text-white fw-bold bg-secondary bg-opacity-25' : '' ?>" href="<?= site_url('sales/pribadi/profil') ?>">
+                                <i class="fas fa-id-card me-2"></i> Profil
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
+            <!-- Keluar -->
             <li class="nav-item mt-3">
-                <span class="nav-label text-uppercase text-muted small fw-bold px-3">
-                    <i class="fas fa-user me-1"></i> Personal
-                </span>
-            </li>
-            
-            <!-- Attendance -->
-            <li class="nav-item">
-                <a class="nav-link <?= $isAbsensiActive ? 'active' : '' ?>" 
-                   href="<?= base_url('sales/absensi') ?>">
-                    <i class="fas fa-clock me-2"></i>
-                    <span class="menu-text">Attendance</span>
-                    <?php if($isAbsensiActive): ?>
-                        <span class="menu-active-indicator"></span>
-                    <?php endif; ?>
-                </a>
-            </li>
-            
-            <!-- Profile -->
-            <li class="nav-item">
-                <a class="nav-link <?= $isProfileActive ? 'active' : '' ?>" 
-                   href="<?= base_url('sales/profile') ?>">
-                    <i class="fas fa-user me-2"></i>
-                    <span class="menu-text">Profile</span>
-                    <?php if($isProfileActive): ?>
-                        <span class="menu-active-indicator"></span>
-                    <?php endif; ?>
-                </a>
-            </li>
-            
-            <!-- Separator -->
-            <li class="nav-item mt-3">
-                <hr class="sidebar-divider mx-3">
-            </li>
-            
-            <!-- Logout -->
-            <li class="nav-item">
-                <a class="nav-link text-danger" href="<?= base_url('logout') ?>" onclick="return confirm('Are you sure you want to logout?')">
-                    <i class="fas fa-sign-out-alt me-2"></i>
-                    <span class="menu-text">Logout</span>
+                <a class="nav-link text-danger py-2 px-3 rounded fw-bold" href="<?= site_url('logout') ?>">
+                    <i class="fas fa-sign-out-alt me-2"></i> Keluar
                 </a>
             </li>
         </ul>
     </div>
-    
-    <!-- Footer -->
-    <div class="sidebar-footer text-center py-3">
-        <small class="text-muted">v1.0.0</small>
-    </div>
 </nav>
 
-<!-- Overlay for Mobile -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-<!-- Mobile Toggle Button -->
-<button class="btn btn-primary sidebar-toggle d-lg-none" id="sidebarToggle" onclick="toggleSidebar()">
-    <i class="fas fa-bars"></i>
-</button>
-
 <style>
-/* Sidebar Styling */
-.sidebar {
-    width: 260px;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
-    color: white;
-    z-index: 1050;
-    display: flex;
-    flex-direction: column;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+.sidebar .nav-link {
+    cursor: pointer !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease-in-out;
 }
-
-.sidebar-header {
-    padding: 20px 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.sidebar .nav-link:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.15) !important;
 }
-
-.sidebar-brand h5 {
-    color: white;
-    font-weight: 600;
-}
-
-.sidebar-close-btn {
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-.sidebar-close-btn:hover {
-    color: white;
-}
-
-.sidebar-user {
-    padding: 25px 20px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.sidebar-user-avatar {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background: linear-gradient(45deg, #4a90e2, #63b3ed);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    font-weight: bold;
-    margin: 0 auto 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.sidebar-user-name {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sidebar-user-role .badge {
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 20px;
-}
-
-.sidebar-menu {
-    flex: 1;
-    padding: 20px 0;
-    overflow-y: auto;
-}
-
-.nav-item {
-    margin-bottom: 2px;
-}
-
-.nav-link {
-    color: rgba(255, 255, 255, 0.8);
-    padding: 14px 25px;
-    border-left: 3px solid transparent;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    position: relative;
-}
-
-.nav-link:hover {
-    color: white;
-    background: rgba(255, 255, 255, 0.1);
-    border-left-color: rgba(74, 144, 226, 0.5);
-    padding-left: 28px;
-}
-
-.nav-link.active {
-    color: white;
-    background: rgba(255, 255, 255, 0.15);
-    border-left-color: #ffd700;
-    font-weight: 500;
-}
-
-.nav-link i {
-    width: 20px;
-    text-align: center;
-    font-size: 16px;
-}
-
-.menu-text {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.menu-active-indicator {
-    width: 6px;
-    height: 6px;
-    background: #ffd700;
-    border-radius: 50%;
-    margin-left: 5px;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-
-.nav-label {
-    padding: 10px 0;
-    display: block;
-    font-size: 11px;
-    letter-spacing: 1px;
-    margin-top: 15px;
-}
-
-.sidebar-divider {
-    border-color: rgba(255, 255, 255, 0.1);
-    margin: 15px 0;
-}
-
-.sidebar-footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 15px;
-}
-
-/* Overlay for Mobile */
-.sidebar-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1040;
-    transition: opacity 0.3s ease;
-}
-
-/* Mobile Toggle Button */
-.sidebar-toggle {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1030;
-    width: 45px;
-    height: 45px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Responsive */
-@media (max-width: 992px) {
-    .sidebar {
-        transform: translateX(-100%);
-    }
-    
-    .sidebar.show {
-        transform: translateX(0);
-    }
-    
-    .sidebar-overlay.show {
-        display: block;
-    }
-    
-    .sidebar .sidebar-close-btn {
-        display: block;
-    }
-}
-
-@media (min-width: 993px) {
-    .sidebar-toggle,
-    .sidebar-overlay,
-    .sidebar .sidebar-close-btn {
-        display: none;
-    }
-    
-    .main-content {
-        margin-left: 260px;
-    }
-}
-
-/* Scrollbar Styling */
-.sidebar-menu::-webkit-scrollbar {
-    width: 6px;
-}
-
-.sidebar-menu::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 3px;
-}
-
-.sidebar-menu::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
-}
-
-.sidebar-menu::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-/* Smooth transitions */
-.sidebar * {
-    transition: all 0.3s ease;
+.sidebar .collapse .nav-link:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.25) !important;
 }
 </style>
 
 <script>
-// Sidebar state management
-let sidebarState = localStorage.getItem('sidebarState') || 'open';
-
-// Initialize sidebar
-function initSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.querySelector('.main-content');
-    
-    if (window.innerWidth >= 993) {
-        // Desktop
-        sidebar.classList.remove('show');
-        document.getElementById('sidebarOverlay').classList.remove('show');
-        
-        if (sidebarState === 'collapsed') {
-            collapseSidebar();
-        } else {
-            expandSidebar();
-        }
-    } else {
-        // Mobile - default closed
-        sidebar.classList.remove('show');
-        document.getElementById('sidebarOverlay').classList.remove('show');
-    }
-}
-
-// Toggle sidebar for mobile
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    
-    sidebar.classList.toggle('show');
-    overlay.classList.toggle('show');
-    
-    // Prevent body scrolling when sidebar is open on mobile
-    if (window.innerWidth <= 992) {
-        document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : '';
-    }
-}
-
-// Expand sidebar
-function expandSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.querySelector('.main-content');
-    
-    sidebar.style.width = '260px';
-    if (mainContent) {
-        mainContent.style.marginLeft = '260px';
-    }
-    
-    // Show all menu texts
-    document.querySelectorAll('.menu-text').forEach(text => {
-        text.style.opacity = '1';
-        text.style.width = 'auto';
-    });
-    
-    sidebarState = 'open';
-    localStorage.setItem('sidebarState', 'open');
-}
-
-// Collapse sidebar (for future feature)
-function collapseSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.querySelector('.main-content');
-    
-    sidebar.style.width = '80px';
-    if (mainContent) {
-        mainContent.style.marginLeft = '80px';
-    }
-    
-    // Hide menu texts
-    document.querySelectorAll('.menu-text').forEach(text => {
-        text.style.opacity = '0';
-        text.style.width = '0';
-    });
-    
-    sidebarState = 'collapsed';
-    localStorage.setItem('sidebarState', 'collapsed');
-}
-
-// Close sidebar when clicking outside on mobile
-document.getElementById('sidebarOverlay').addEventListener('click', function() {
-    if (window.innerWidth <= 992) {
-        toggleSidebar();
-    }
-});
-
-// Close sidebar when clicking a link on mobile
-document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-    link.addEventListener('click', function() {
-        if (window.innerWidth <= 992) {
-            toggleSidebar();
-        }
-    });
-});
-
-// Handle window resize
-window.addEventListener('resize', function() {
-    initSidebar();
-});
-
-// Initialize on load
 document.addEventListener('DOMContentLoaded', function() {
-    initSidebar();
-    
-    // Add smooth transition to main content
-    const mainContent = document.querySelector('.main-content');
-    if (mainContent) {
-        mainContent.style.transition = 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-    }
-});
-
-// Keyboard shortcut to toggle sidebar (Esc key)
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && window.innerWidth <= 992) {
-        toggleSidebar();
-    }
+    // Pure JS Click Fallback for Sidebar Collapses
+    document.querySelectorAll('.sidebar [data-bs-toggle="collapse"], .sidebar [data-toggle="collapse"]').forEach(function(toggler) {
+        toggler.addEventListener('click', function(e) {
+            var targetId = this.getAttribute('href') || this.getAttribute('data-bs-target') || this.getAttribute('data-target');
+            if (targetId && targetId.startsWith('#')) {
+                var targetEl = document.querySelector(targetId);
+                if (targetEl) {
+                    e.preventDefault();
+                    if (targetEl.classList.contains('show')) {
+                        targetEl.classList.remove('show');
+                        this.setAttribute('aria-expanded', 'false');
+                    } else {
+                        targetEl.classList.add('show');
+                        this.setAttribute('aria-expanded', 'true');
+                    }
+                }
+            }
+        });
+    });
 });
 </script>

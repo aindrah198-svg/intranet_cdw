@@ -79,7 +79,7 @@ class CutiModel extends Model
     public function getCutiWithKaryawan($id = null)
     {
         $builder = $this->db->table($this->table . ' c');
-        $builder->select('c.*, k.nik, k.nama_lengkap, k.jabatan, k.departemen, u.name as disetujui_nama');
+        $builder->select("c.*, COALESCE(c.status_hrd, c.status_direktur, 'Menunggu') as status, k.nik, k.nama_lengkap, k.jabatan, k.departemen, u.name as disetujui_nama");
         $builder->join('karyawan k', 'k.id = c.karyawan_id', 'left');
         $builder->join('users u', 'u.id = c.disetujui_oleh', 'left');
 
@@ -97,9 +97,12 @@ class CutiModel extends Model
      */
     public function getByStatus($status)
     {
-        return $this->select('c.*, k.nik, k.nama_lengkap')
+        return $this->select("c.*, COALESCE(c.status_hrd, c.status_direktur, 'Menunggu') as status, k.nik, k.nama_lengkap")
                    ->join('karyawan k', 'k.id = c.karyawan_id', 'left')
-                   ->where('c.status', $status)
+                   ->groupStart()
+                       ->where('c.status_hrd', $status)
+                       ->orWhere('c.status_direktur', $status)
+                   ->groupEnd()
                    ->orderBy('c.created_at', 'DESC')
                    ->findAll();
     }
@@ -125,8 +128,10 @@ class CutiModel extends Model
     public function checkDateConflict($karyawanId, $startDate, $endDate, $excludeId = null)
     {
         $builder = $this->where('karyawan_id', $karyawanId)
-                       ->where('status !=', 'Ditolak')
-                       ->where('status !=', 'Dibatalkan')
+                       ->groupStart()
+                           ->where('status_hrd !=', 'Ditolak')
+                           ->orWhere('status_direktur !=', 'Ditolak')
+                       ->groupEnd()
                        ->groupStart()
                            ->groupStart()
                                ->where('tanggal_mulai <=', $endDate)
@@ -155,11 +160,11 @@ class CutiModel extends Model
     public function updateStatus($id, $status, $approvedBy = null, $rejectionReason = null)
     {
         $data = [
-            'status' => $status,
+            'status_hrd' => $status,
             'updated_at' => date('Y-m-d H:i:s')
         ];
 
-        if ($approvedBy && ($status === 'Disetujui HRD' || $status === 'Disetujui Atasan')) {
+        if ($approvedBy && ($status === 'Disetujui' || $status === 'Disetujui HRD' || $status === 'Disetujui Atasan')) {
             $data['disetujui_oleh'] = $approvedBy;
             $data['disetujui_at'] = date('Y-m-d H:i:s');
         }
@@ -179,10 +184,10 @@ class CutiModel extends Model
         $builder = $this->db->table($this->table . ' c');
         $builder->select("
             COUNT(*) as total_pengajuan,
-            SUM(CASE WHEN c.status = 'Disetujui HRD' OR c.status = 'Disetujui Atasan' THEN 1 ELSE 0 END) as total_disetujui,
-            SUM(CASE WHEN c.status = 'Ditolak' THEN 1 ELSE 0 END) as total_ditolak,
-            SUM(CASE WHEN c.status = 'Menunggu' THEN 1 ELSE 0 END) as total_menunggu,
-            SUM(c.lama_hari) as total_hari_cuti
+            SUM(CASE WHEN COALESCE(c.status_hrd, c.status_direktur, '') IN ('Disetujui', 'Disetujui HRD', 'Disetujui Atasan') THEN 1 ELSE 0 END) as total_disetujui,
+            SUM(CASE WHEN COALESCE(c.status_hrd, c.status_direktur, '') = 'Ditolak' THEN 1 ELSE 0 END) as total_ditolak,
+            SUM(CASE WHEN COALESCE(c.status_hrd, c.status_direktur, 'Menunggu') = 'Menunggu' THEN 1 ELSE 0 END) as total_menunggu,
+            SUM(COALESCE(c.lama_hari, 0)) as total_hari_cuti
         ")->join('karyawan k', 'k.id = c.karyawan_id', 'left');
 
         if ($startDate) {

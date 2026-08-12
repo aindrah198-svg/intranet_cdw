@@ -26,12 +26,78 @@ class AsetTetapRegister extends BaseController
 
     public function __construct()
     {
+        $this->db = \Config\Database::connect();
+        if (!$this->db->tableExists('aset_tetap_kategori')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `aset_tetap_kategori` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `kode_kategori` VARCHAR(50) NOT NULL,
+                  `nama_kategori` VARCHAR(100) NOT NULL,
+                  `masa_manfaat_bulan` INT DEFAULT 48,
+                  `metode_penyusutan` ENUM('Garis Lurus','Saldo Menurun') DEFAULT 'Garis Lurus',
+                  `tarif_penyusutan` DECIMAL(5,2) DEFAULT 0.00,
+                  `coa_id_aset` INT DEFAULT NULL,
+                  `coa_id_akumulasi` INT DEFAULT NULL,
+                  `coa_id_beban` INT DEFAULT NULL,
+                  `keterangan` TEXT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL,
+                  `deleted_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        if (!$this->db->tableExists('aset_tetap')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `aset_tetap` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `kode_aset` VARCHAR(50) NOT NULL,
+                  `nama_aset` VARCHAR(150) NOT NULL,
+                  `kategori_id` INT DEFAULT NULL,
+                  `tanggal_perolehan` DATE DEFAULT NULL,
+                  `harga_perolehan` DECIMAL(15,2) DEFAULT 0.00,
+                  `nilai_sisa` DECIMAL(15,2) DEFAULT 0.00,
+                  `masa_manfaat_bulan` INT DEFAULT 48,
+                  `metode_penyusutan` ENUM('Garis Lurus','Saldo Menurun','Tidak Disusutkan') DEFAULT 'Garis Lurus',
+                  `penyusutan_per_bulan` DECIMAL(15,2) DEFAULT 0.00,
+                  `akumulasi_penyusutan` DECIMAL(15,2) DEFAULT 0.00,
+                  `nilai_buku` DECIMAL(15,2) DEFAULT 0.00,
+                  `status` ENUM('Aktif','Disusutkan Penuh','Dilepas','Rusak','Dijual') DEFAULT 'Aktif',
+                  `lokasi` VARCHAR(150) DEFAULT NULL,
+                  `penanggung_jawab_id` INT DEFAULT NULL,
+                  `coa_id_aset` INT DEFAULT NULL,
+                  `coa_id_akumulasi` INT DEFAULT NULL,
+                  `coa_id_beban` INT DEFAULT NULL,
+                  `keterangan` TEXT DEFAULT NULL,
+                  `foto` VARCHAR(255) DEFAULT NULL,
+                  `created_by` INT DEFAULT NULL,
+                  `updated_by` INT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL,
+                  `deleted_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+
+        if ($this->db->tableExists('aset_tetap')) {
+            if (!$this->db->fieldExists('coa_aset_id', 'aset_tetap')) {
+                $this->db->query("ALTER TABLE `aset_tetap` ADD COLUMN `coa_aset_id` INT DEFAULT NULL");
+            }
+            if (!$this->db->fieldExists('coa_akumulasi_id', 'aset_tetap')) {
+                $this->db->query("ALTER TABLE `aset_tetap` ADD COLUMN `coa_akumulasi_id` INT DEFAULT NULL");
+            }
+            if (!$this->db->fieldExists('coa_beban_id', 'aset_tetap')) {
+                $this->db->query("ALTER TABLE `aset_tetap` ADD COLUMN `coa_beban_id` INT DEFAULT NULL");
+            }
+            if (!$this->db->fieldExists('penanggung_jawab_id', 'aset_tetap')) {
+                $this->db->query("ALTER TABLE `aset_tetap` ADD COLUMN `penanggung_jawab_id` INT DEFAULT NULL");
+            }
+        }
+
         $this->asetModel = new AsetTetapModel();
         $this->kategoriModel = new AsetTetapKategoriModel();
         $this->penyusutanModel = new PenyusutanModel();
         $this->coaModel = new CoaModel();
         $this->karyawanModel = new KaryawanModel();
-        $this->db = \Config\Database::connect();
         
         helper(['form', 'url', 'text', 'number']);
         
@@ -81,9 +147,11 @@ class AsetTetapRegister extends BaseController
         $data['departemenOptions'] = $this->getDepartemenOptions();
         $data['karyawanOptions'] = $this->karyawanModel->select('id, nik, nama_lengkap, jabatan')->findAll();
         
-        $data['stats'] = $this->asetModel->getStats();
-        
-        return view('accounting/aset-tetap/register/index', $data);
+        $data['active'] = 'register-aset';
+        return view('accounting/templates/header', $data)
+             . view('accounting/templates/sidebar', $data)
+             . view('accounting/aset-tetap/register-aset/index', $data)
+             . view('accounting/templates/footer', $data);
     }
 
     /**

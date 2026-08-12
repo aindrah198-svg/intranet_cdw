@@ -13,8 +13,25 @@ class KaryawanModel extends Model
     protected $returnType = 'array';
     protected $useSoftDeletes = true;
     
+    public function __construct()
+    {
+        parent::__construct();
+        // Dynamic DB Schema Check: Ensure no_ktp column exists in karyawan table
+        try {
+            if ($this->db && !$this->db->fieldExists('no_ktp', $this->table)) {
+                $this->db->query("ALTER TABLE {$this->table} ADD COLUMN no_ktp VARCHAR(30) NULL AFTER no_npwp");
+            }
+            if ($this->db && !$this->db->fieldExists('gaji_pokok', $this->table)) {
+                $this->db->query("ALTER TABLE {$this->table} ADD COLUMN gaji_pokok DECIMAL(15,2) DEFAULT 0.00 AFTER status_karyawan");
+            }
+        } catch (\Throwable $e) {
+            // Ignore if column already exists or DB error handled
+        }
+    }
+    
     protected $allowedFields = [
         'nik',
+        'no_ktp',
         'nama_lengkap',
         'nama_panggilan',
         'jenis_kelamin',
@@ -30,6 +47,7 @@ class KaryawanModel extends Model
         'divisi',
         'tanggal_masuk',
         'status_karyawan',
+        'gaji_pokok',
         'tanggal_keluar',
         'alasan_keluar',
         'no_npwp',
@@ -58,20 +76,21 @@ class KaryawanModel extends Model
     // Validation Rules tanpa is_unique di NIK (kita handle manual di controller)
     protected $validationRules = [
         'nik' => 'required|max_length[20]',
+        'no_ktp' => 'permit_empty|max_length[30]',
         'nama_lengkap' => 'required|max_length[100]',
         'nama_panggilan' => 'max_length[50]',
-        'jenis_kelamin' => 'in_list[L,P]',
+        'jenis_kelamin' => 'permit_empty|in_list[L,P]',
         'tempat_lahir' => 'max_length[50]',
         'tanggal_lahir' => 'permit_empty|valid_date',
-        'agama' => 'max_length[20]',
-        'status_pernikahan' => 'in_list[Belum Menikah,Menikah,Janda/Duda]',
+        'agama' => 'permit_empty|max_length[20]',
+        'status_pernikahan' => 'permit_empty|in_list[Belum Menikah,Menikah,Janda/Duda]',
         'telepon' => 'max_length[20]',
         'email' => 'permit_empty|valid_email|max_length[100]',
         'jabatan' => 'max_length[50]',
         'departemen' => 'max_length[50]',
         'divisi' => 'max_length[50]',
         'tanggal_masuk' => 'permit_empty|valid_date',
-        'status_karyawan' => 'in_list[Tetap,Kontrak,Probation,Magang]',
+        'status_karyawan' => 'in_list[Tetap,Kontrak,Probation,Magang,Staff]',
         'tanggal_keluar' => 'permit_empty|valid_date',
         'no_npwp' => 'max_length[25]',
         'no_bpjs_kes' => 'max_length[20]',
@@ -288,7 +307,7 @@ public function getKaryawanBelumAkun()
         ->where('deleted_at', null)
         ->getCompiledSelect();
     
-    return $this->select('karyawan.id, karyawan.nik, karyawan.nama_lengkap, karyawan.jabatan, karyawan.departemen, karyawan.email')
+    return $this->select('karyawan.id, karyawan.nik, karyawan.nama_lengkap, karyawan.jabatan, karyawan.departemen, karyawan.divisi, karyawan.email')
                 ->where("karyawan.id NOT IN ($subquery)", null, false)
                 ->where('karyawan.deleted_at', null)
                 ->where('karyawan.tanggal_keluar', null) // Hanya karyawan aktif

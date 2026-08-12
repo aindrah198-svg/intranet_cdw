@@ -167,23 +167,23 @@
                                 <tr>
                                     <td><?= $no++ ?></td>
                                     <td>
-                                        <strong><?= esc($spk->nomor_spk) ?></strong>
+                                        <strong><?= esc($spk->nomor_spk ?? '-') ?></strong>
                                     </td>
                                     <td>
-                                        <?= esc($spk->judul_pekerjaan) ?>
+                                        <?= esc($spk->judul_pekerjaan ?? '-') ?>
                                         <?php if(!empty($spk->deskripsi)): ?>
                                             <br><small class="text-muted"><?= esc(substr($spk->deskripsi, 0, 50)) ?>...</small>
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?= esc($spk->client_nama) ?>
+                                        <?= esc($spk->client_nama ?? $spk->client_nama_tabel ?? '-') ?>
                                         <?php if(!empty($spk->client_kontak)): ?>
                                             <br><small class="text-muted"><?= esc($spk->client_kontak) ?></small>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?= date('d/m/Y', strtotime($spk->tanggal_mulai)) ?></td>
+                                    <td><?= !empty($spk->tanggal_mulai) ? date('d/m/Y', strtotime($spk->tanggal_mulai)) : '-' ?></td>
                                     <td>
-                                        <?= $spk->target_selesai ? date('d/m/Y', strtotime($spk->target_selesai)) : '-' ?>
+                                        <?= !empty($spk->target_selesai) ? date('d/m/Y', strtotime($spk->target_selesai)) : (!empty($spk->tanggal_selesai) ? date('d/m/Y', strtotime($spk->tanggal_selesai)) : '-') ?>
                                     </td>
                                     <td>
                                         <?php
@@ -193,9 +193,10 @@
                                             'Tinggi' => 'badge bg-warning',
                                             'Urgent' => 'badge bg-danger'
                                         ];
-                                        $class = $prioritasClass[$spk->prioritas] ?? 'badge bg-secondary';
+                                        $prioritasVal = $spk->prioritas ?? 'Normal';
+                                        $class = $prioritasClass[$prioritasVal] ?? 'badge bg-secondary';
                                         ?>
-                                        <span class="<?= $class ?>"><?= $spk->prioritas ?></span>
+                                        <span class="<?= $class ?>"><?= esc($prioritasVal) ?></span>
                                     </td>
                                     <td>
                                         <?php
@@ -207,19 +208,21 @@
                                             'Ditunda' => 'badge bg-warning',
                                             'Dibatalkan' => 'badge bg-danger'
                                         ];
-                                        $class = $statusClass[$spk->status] ?? 'badge bg-secondary';
+                                        $statusVal = $spk->status ?? 'Dijadwalkan';
+                                        $class = $statusClass[$statusVal] ?? 'badge bg-secondary';
                                         ?>
-                                        <span class="<?= $class ?>"><?= $spk->status ?></span>
+                                        <span class="<?= $class ?>"><?= esc($statusVal) ?></span>
                                     </td>
                                     <td>
+                                        <?php $progressVal = (int)($spk->progress_persen ?? 0); ?>
                                         <div class="progress" style="height: 20px;">
-                                            <div class="progress-bar <?= $spk->progress_persen >= 100 ? 'bg-success' : ($spk->progress_persen >= 50 ? 'bg-info' : 'bg-warning') ?>" 
+                                            <div class="progress-bar <?= $progressVal >= 100 ? 'bg-success' : ($progressVal >= 50 ? 'bg-info' : 'bg-warning') ?>" 
                                                  role="progressbar" 
-                                                 style="width: <?= $spk->progress_persen ?>%;"
-                                                 aria-valuenow="<?= $spk->progress_persen ?>" 
+                                                 style="width: <?= $progressVal ?>%;"
+                                                 aria-valuenow="<?= $progressVal ?>" 
                                                  aria-valuemin="0" 
                                                  aria-valuemax="100">
-                                                <?= $spk->progress_persen ?>%
+                                                <?= $progressVal ?>%
                                             </div>
                                         </div>
                                     </td>

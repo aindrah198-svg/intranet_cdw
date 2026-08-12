@@ -160,7 +160,7 @@ if (!isset($data)) {
             <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
             <div class="row mt-3">
                 <div class="col-6 mb-3">
-                    <a href="<?= base_url('admin/karyawan/create') ?>" class="btn btn-outline-primary w-100">
+                    <a href="<?= base_url('hrd/karyawan/create') ?>" class="btn btn-outline-primary w-100">
                         <i class="fas fa-plus me-2"></i>Add Employee
                     </a>
                 </div>
@@ -170,12 +170,12 @@ if (!isset($data)) {
                     </button>
                 </div>
                 <div class="col-6 mb-3">
-                    <a href="<?= base_url('admin/register') ?>" class="btn btn-outline-info w-100">
+                    <a href="<?= base_url('hrd/register') ?>" class="btn btn-outline-info w-100">
                         <i class="fas fa-user-plus me-2"></i>Add User
                     </a>
                 </div>
                 <div class="col-6 mb-3">
-                    <a href="<?= base_url('admin/settings') ?>" class="btn btn-outline-warning w-100">
+                    <a href="<?= base_url('hrd/settings') ?>" class="btn btn-outline-warning w-100">
                         <i class="fas fa-cog me-2"></i>Settings
                     </a>
                 </div>

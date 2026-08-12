@@ -1,7 +1,3 @@
-<?= $this->include('teknisi/templates/header') ?>
-<?= $this->include('teknisi/templates/sidebar') ?>
-<?= $this->include('teknisi/templates/navbar') ?>
-
 <!-- Konten utama -->
 <div class="container-fluid">
     <!-- Header -->
@@ -509,7 +505,4 @@ function hapusClient(id, nama) {
 }
 </style>
 
-<!-- Additional CSS for DataTables -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
-
-<?= $this->include('teknisi/templates/footer') ?>

@@ -30,6 +30,108 @@ class Penggajian extends BaseController
 
     public function __construct()
     {
+        $this->db = \Config\Database::connect();
+        if (!$this->db->tableExists('penggajian_perhitungan')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `penggajian_perhitungan` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `nomor_perhitungan` VARCHAR(50) DEFAULT NULL,
+                  `karyawan_id` INT NOT NULL,
+                  `periode_bulan` INT NOT NULL,
+                  `periode_tahun` INT NOT NULL,
+                  `tanggal_perhitungan` DATE DEFAULT NULL,
+                  `gaji_pokok` DECIMAL(15,2) DEFAULT 0.00,
+                  `tunjangan_jabatan` DECIMAL(15,2) DEFAULT 0.00,
+                  `tunjangan_bpjs` DECIMAL(15,2) DEFAULT 0.00,
+                  `tunjangan_makan` DECIMAL(15,2) DEFAULT 0.00,
+                  `tunjangan_transport` DECIMAL(15,2) DEFAULT 0.00,
+                  `tunjangan_lainnya` DECIMAL(15,2) DEFAULT 0.00,
+                  `total_pendapatan` DECIMAL(15,2) DEFAULT 0.00,
+                  `potongan_bpjs_kes` DECIMAL(15,2) DEFAULT 0.00,
+                  `potongan_bpjs_tk` DECIMAL(15,2) DEFAULT 0.00,
+                  `potongan_pph21` DECIMAL(15,2) DEFAULT 0.00,
+                  `potongan_absensi` DECIMAL(15,2) DEFAULT 0.00,
+                  `potongan_kasbon` DECIMAL(15,2) DEFAULT 0.00,
+                  `potongan_lainnya` DECIMAL(15,2) DEFAULT 0.00,
+                  `total_potongan` DECIMAL(15,2) DEFAULT 0.00,
+                  `total_hari_kerja` INT DEFAULT 0,
+                  `total_hadir` INT DEFAULT 0,
+                  `total_izin` INT DEFAULT 0,
+                  `total_sakit` INT DEFAULT 0,
+                  `total_cuti` INT DEFAULT 0,
+                  `total_alpha` INT DEFAULT 0,
+                  `total_terlambat` INT DEFAULT 0,
+                  `jam_lembur` DECIMAL(8,2) DEFAULT 0.00,
+                  `upah_lembur` DECIMAL(15,2) DEFAULT 0.00,
+                  `gaji_bersih` DECIMAL(15,2) DEFAULT 0.00,
+                  `status` ENUM('Draft','Dihitung','Disetujui','Ditolak') DEFAULT 'Draft',
+                  `catatan` TEXT DEFAULT NULL,
+                  `disetujui_oleh` INT DEFAULT NULL,
+                  `disetujui_at` DATETIME DEFAULT NULL,
+                  `created_by` INT DEFAULT NULL,
+                  `updated_by` INT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL,
+                  `deleted_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        if (!$this->db->tableExists('penggajian_proses_pembayaran')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `penggajian_proses_pembayaran` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `nomor_pembayaran` VARCHAR(50) DEFAULT NULL,
+                  `periode_bulan` INT NOT NULL,
+                  `periode_tahun` INT NOT NULL,
+                  `tanggal_pembayaran` DATE DEFAULT NULL,
+                  `tanggal_proses` DATE DEFAULT NULL,
+                  `coa_bank_id` INT DEFAULT NULL,
+                  `total_karyawan` INT DEFAULT 0,
+                  `total_nominal` DECIMAL(15,2) DEFAULT 0.00,
+                  `status` ENUM('Draft','Diproses','Selesai','Dibatalkan') DEFAULT 'Draft',
+                  `catatan` TEXT DEFAULT NULL,
+                  `jurnal_id` INT DEFAULT NULL,
+                  `created_by` INT DEFAULT NULL,
+                  `updated_by` INT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL,
+                  `deleted_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        if ($this->db->tableExists('penggajian_proses_pembayaran') && !$this->db->fieldExists('tanggal_proses', 'penggajian_proses_pembayaran')) {
+            $this->db->query("ALTER TABLE `penggajian_proses_pembayaran` ADD COLUMN `tanggal_proses` DATE DEFAULT NULL AFTER `tanggal_pembayaran`");
+        }
+        if (!$this->db->tableExists('penggajian_komponen')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `penggajian_komponen` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `kode_komponen` VARCHAR(50) NOT NULL,
+                  `nama_komponen` VARCHAR(100) NOT NULL,
+                  `tipe` ENUM('Pendapatan','Potongan') NOT NULL,
+                  `nominal_default` DECIMAL(15,2) DEFAULT 0.00,
+                  `is_aktif` TINYINT(1) DEFAULT 1,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL,
+                  `deleted_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        if (!$this->db->tableExists('penggajian_detail_pembayaran')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `penggajian_detail_pembayaran` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `pembayaran_id` INT NOT NULL,
+                  `perhitungan_id` INT NOT NULL,
+                  `karyawan_id` INT NOT NULL,
+                  `gaji_bersih` DECIMAL(15,2) DEFAULT 0.00,
+                  `status` VARCHAR(50) DEFAULT 'Paid',
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+
         $this->komponenModel = new PenggajianKomponenModel();
         $this->perhitunganModel = new PenggajianPerhitunganModel();
         $this->prosesPembayaranModel = new PenggajianProsesPembayaranModel();
@@ -37,7 +139,6 @@ class Penggajian extends BaseController
         $this->karyawanModel = new KaryawanModel();
         $this->absensiModel = new AbsensiModel();
         $this->coaModel = new CoaModel();
-        $this->db = \Config\Database::connect();
         
         helper(['form', 'url', 'text', 'number']);
         
@@ -201,16 +302,24 @@ class Penggajian extends BaseController
         $tahun = $this->request->getGet('tahun') ?? date('Y');
         $bulan = $this->request->getGet('bulan') ?? date('m');
         $status = $this->request->getGet('status');
+        $karyawanId = $this->request->getGet('karyawan_id');
         
         $data['tahun'] = $tahun;
         $data['bulan'] = $bulan;
         $data['status'] = $status;
+        $data['karyawan_id'] = $karyawanId;
         $data['tahunOptions'] = $this->getTahunOptions();
         $data['bulanOptions'] = $this->getBulanOptions();
         $data['statusOptions'] = ['Draft', 'Dihitung', 'Disetujui', 'Ditolak'];
+        $data['karyawanOptions'] = $this->karyawanModel->select('id, nik, nama_lengkap')->orderBy('nama_lengkap', 'ASC')->findAll();
         
         // Ambil data perhitungan
         $perhitungan = $this->perhitunganModel->getByPeriode($bulan, $tahun, $status);
+        if ($karyawanId) {
+            $perhitungan = array_filter($perhitungan, function($item) use ($karyawanId) {
+                return $item['karyawan_id'] == $karyawanId;
+            });
+        }
         
         // Tambah nama karyawan
         foreach ($perhitungan as &$item) {
@@ -233,7 +342,11 @@ class Penggajian extends BaseController
             'ditolak' => $this->perhitunganModel->where('periode_bulan', $bulan)->where('periode_tahun', $tahun)->where('status', 'Ditolak')->countAllResults()
         ];
         
-        return view('accounting/penggajian/perhitungan-gaji/index', $data);
+        $data['active'] = 'perhitungan-gaji';
+        return view('accounting/templates/header', $data)
+             . view('accounting/templates/sidebar', $data)
+             . view('accounting/penggajian/perhitungan-gaji/index', $data)
+             . view('accounting/templates/footer', $data);
     }
 
     /**
@@ -278,7 +391,11 @@ class Penggajian extends BaseController
         // COA Bank options
         $data['coaBankOptions'] = $this->prosesPembayaranModel->getCoaBankOptions();
         
-        return view('accounting/penggajian/proses-pembayaran/index', $data);
+        $data['active'] = 'proses-pembayaran';
+        return view('accounting/templates/header', $data)
+             . view('accounting/templates/sidebar', $data)
+             . view('accounting/penggajian/proses-pembayaran/index', $data)
+             . view('accounting/templates/footer', $data);
     }
 
     /**
@@ -324,7 +441,11 @@ class Penggajian extends BaseController
         // Rekap per departemen
         $data['rekapDepartemen'] = $this->perhitunganModel->getRekapPerDepartemen($bulan, $tahun);
         
-        return view('accounting/penggajian/slip-gaji/index', $data);
+        $data['active'] = 'slip-gaji';
+        return view('accounting/templates/header', $data)
+             . view('accounting/templates/sidebar', $data)
+             . view('accounting/penggajian/slip-gaji-laporan/slip-gaji/index', $data)
+             . view('accounting/templates/footer', $data);
     }
 
     /**
@@ -406,7 +527,19 @@ class Penggajian extends BaseController
             9 => 'September',
             10 => 'Oktober',
             11 => 'November',
-            12 => 'Desember'
+            12 => 'Desember',
+            '01' => 'Januari',
+            '02' => 'Februari',
+            '03' => 'Maret',
+            '04' => 'April',
+            '05' => 'Mei',
+            '06' => 'Juni',
+            '07' => 'Juli',
+            '08' => 'Agustus',
+            '09' => 'September',
+            '10' => 'Oktober',
+            '11' => 'November',
+            '12' => 'Desember'
         ];
     }
 }

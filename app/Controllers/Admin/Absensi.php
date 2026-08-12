@@ -46,7 +46,7 @@ class Absensi extends BaseController
     {
         // Cek session
         $session = \Config\Services::session();
-        if (!$session->get('isLoggedIn') || strtolower($session->get('role')) !== 'admin') {
+        if (!$session->get('isLoggedIn') || !in_array(strtolower($session->get('role') ?? ''), ['admin', 'hrd'])) {
             return redirect()->to(base_url('login'));
         }
         
@@ -190,7 +190,7 @@ class Absensi extends BaseController
     public function create()
     {
         $session = \Config\Services::session();
-        if (!$session->get('isLoggedIn') || strtolower($session->get('role')) !== 'admin') {
+        if (!$session->get('isLoggedIn') || !in_array(strtolower($session->get('role') ?? ''), ['admin', 'hrd'])) {
             return redirect()->to(base_url('login'));
         }
         
@@ -227,7 +227,7 @@ class Absensi extends BaseController
     public function store()
     {
         $session = \Config\Services::session();
-        if (!$session->get('isLoggedIn') || strtolower($session->get('role')) !== 'admin') {
+        if (!$session->get('isLoggedIn') || !in_array(strtolower($session->get('role') ?? ''), ['admin', 'hrd'])) {
             return redirect()->to(base_url('login'));
         }
         
@@ -1225,7 +1225,7 @@ class Absensi extends BaseController
         }
         
         $userRole = strtolower($session->get('role') ?? '');
-        if ($userRole !== 'admin') {
+        if (!in_array($userRole, ['admin', 'hrd'])) {
             return redirect()->to(base_url($userRole))->with('info', 'Anda dialihkan ke dashboard sesuai role.');
         }
         

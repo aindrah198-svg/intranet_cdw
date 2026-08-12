@@ -33,14 +33,83 @@ $routes->group('direktur', ['filter' => 'auth'], function($routes) {
     $routes->get('dashboard/print', 'Direktur\Dashboard\Dashboard::printView', ['as' => 'direktur.dashboard.print']);
     
     // ============================================
+    // KARYAWAN & SDM ROUTES
+    // ============================================
+    $routes->group('karyawan', function($routes) {
+        // Kelola Karyawan (CRUD)
+        $routes->get('/', 'Direktur\Karyawan\KaryawanController::index', ['as' => 'direktur.karyawan']);
+        $routes->get('tambah', 'Direktur\Karyawan\KaryawanController::tambah', ['as' => 'direktur.karyawan.tambah']);
+        $routes->post('simpan', 'Direktur\Karyawan\KaryawanController::simpan', ['as' => 'direktur.karyawan.simpan']);
+        $routes->get('detail/(:num)', 'Direktur\Karyawan\KaryawanController::detail/$1', ['as' => 'direktur.karyawan.detail']);
+        $routes->get('edit/(:num)', 'Direktur\Karyawan\KaryawanController::edit/$1', ['as' => 'direktur.karyawan.edit']);
+        $routes->post('update/(:num)', 'Direktur\Karyawan\KaryawanController::update/$1', ['as' => 'direktur.karyawan.update']);
+        $routes->post('delete/(:num)', 'Direktur\Karyawan\KaryawanController::delete/$1', ['as' => 'direktur.karyawan.delete']);
+        $routes->post('tambah-dummy', 'Direktur\Karyawan\KaryawanController::tambahDummy', ['as' => 'direktur.karyawan.tambahDummy']);
+        $routes->post('edit-dummy/(:num)', 'Direktur\Karyawan\KaryawanController::editDummy/$1', ['as' => 'direktur.karyawan.editDummy']);
+        
+        // Akun Karyawan
+        $routes->get('akun', 'Direktur\Karyawan\KaryawanController::akun', ['as' => 'direktur.karyawan.akun']);
+        $routes->post('generate-akun', 'Direktur\Karyawan\KaryawanController::generateAkun', ['as' => 'direktur.karyawan.generate_akun']);
+        $routes->get('edit-akun/(:num)', 'Direktur\Karyawan\KaryawanController::editAkun/$1', ['as' => 'direktur.karyawan.edit_akun']);
+        $routes->post('update-akun/(:num)', 'Direktur\Karyawan\KaryawanController::updateAkun/$1', ['as' => 'direktur.karyawan.update_akun']);
+        $routes->post('hapus-akun/(:num)', 'Direktur\Karyawan\KaryawanController::hapusAkun/$1', ['as' => 'direktur.karyawan.hapus_akun']);
+        
+        // Surat Karyawan (Kontrak/SP/Lainnya)
+        $routes->get('surat', 'Direktur\Karyawan\SuratController::index', ['as' => 'direktur.karyawan.surat']);
+        $routes->get('surat/tambah', 'Direktur\Karyawan\SuratController::tambah', ['as' => 'direktur.karyawan.surat.tambah']);
+        $routes->post('surat/simpan', 'Direktur\Karyawan\SuratController::simpan', ['as' => 'direktur.karyawan.surat.simpan']);
+        $routes->get('surat/detail/(:num)', 'Direktur\Karyawan\SuratController::detail/$1', ['as' => 'direktur.karyawan.surat.detail']);
+        $routes->get('surat/edit/(:num)', 'Direktur\Karyawan\SuratController::edit/$1', ['as' => 'direktur.karyawan.surat.edit']);
+        $routes->post('surat/update/(:num)', 'Direktur\Karyawan\SuratController::update/$1', ['as' => 'direktur.karyawan.surat.update']);
+        $routes->post('surat/delete/(:num)', 'Direktur\Karyawan\SuratController::delete/$1', ['as' => 'direktur.karyawan.surat.delete']);
+        $routes->post('surat/update-status/(:num)', 'Direktur\Karyawan\SuratController::updateStatus/$1', ['as' => 'direktur.karyawan.surat.updateStatus']);
+        
+        // Keluhan Karyawan
+        $routes->get('keluhan', 'Direktur\Karyawan\KeluhanController::index', ['as' => 'direktur.karyawan.keluhan']);
+        $routes->get('keluhan/tambah', 'Direktur\Karyawan\KeluhanController::tambah', ['as' => 'direktur.karyawan.keluhan.tambah']);
+        $routes->post('keluhan/simpan', 'Direktur\Karyawan\KeluhanController::simpan', ['as' => 'direktur.karyawan.keluhan.simpan']);
+        $routes->get('keluhan/detail/(:num)', 'Direktur\Karyawan\KeluhanController::detail/$1', ['as' => 'direktur.karyawan.keluhan.detail']);
+        $routes->post('keluhan/tanggapi/(:num)', 'Direktur\Karyawan\KeluhanController::tanggapi/$1', ['as' => 'direktur.karyawan.keluhan.tanggapi']);
+        $routes->post('keluhan/delete/(:num)', 'Direktur\Karyawan\KeluhanController::delete/$1', ['as' => 'direktur.karyawan.keluhan.delete']);
+        
+        // Permohonan & Izin Karyawan (Non-Cuti)
+        $routes->get('pengajuan', 'Direktur\Karyawan\KaryawanController::pengajuan', ['as' => 'direktur.karyawan.pengajuan']);
+        $routes->get('pengajuan/detail/(:num)', 'Direktur\Karyawan\KaryawanController::detailPengajuan/$1', ['as' => 'direktur.karyawan.pengajuan.detail']);
+        $routes->get('pengajuan/edit/(:num)', 'Direktur\Karyawan\KaryawanController::editPengajuan/$1', ['as' => 'direktur.karyawan.pengajuan.edit']);
+        $routes->post('pengajuan/update/(:num)', 'Direktur\Karyawan\KaryawanController::updatePengajuan/$1', ['as' => 'direktur.karyawan.pengajuan.update']);
+        $routes->post('pengajuan/approve/(:num)', 'Direktur\Karyawan\KaryawanController::approvePengajuan/$1', ['as' => 'direktur.karyawan.pengajuan.approve']);
+        $routes->post('pengajuan/reject/(:num)', 'Direktur\Karyawan\KaryawanController::rejectPengajuan/$1', ['as' => 'direktur.karyawan.pengajuan.reject']);
+        $routes->post('pengajuan/delete/(:num)', 'Direktur\Karyawan\KaryawanController::deletePengajuan/$1', ['as' => 'direktur.karyawan.pengajuan.delete']);
+        
+        // Cuti Karyawan & Approval
+        $routes->get('cuti', 'Direktur\Karyawan\KaryawanController::cuti', ['as' => 'direktur.karyawan.cuti']);
+        $routes->get('cuti/detail/(:num)', 'Direktur\Karyawan\KaryawanController::detailCuti/$1', ['as' => 'direktur.karyawan.cuti.detail']);
+        $routes->get('cuti/edit/(:num)', 'Direktur\Karyawan\KaryawanController::editCuti/$1', ['as' => 'direktur.karyawan.cuti.edit']);
+        $routes->post('cuti/update/(:num)', 'Direktur\Karyawan\KaryawanController::updateCuti/$1', ['as' => 'direktur.karyawan.cuti.update']);
+        $routes->post('cuti/approve/(:num)', 'Direktur\Karyawan\KaryawanController::approveCuti/$1', ['as' => 'direktur.karyawan.cuti.approve']);
+        $routes->post('cuti/reject/(:num)', 'Direktur\Karyawan\KaryawanController::rejectCuti/$1', ['as' => 'direktur.karyawan.cuti.reject']);
+        $routes->post('cuti/kuota', 'Direktur\Karyawan\KaryawanController::updateKuotaCuti', ['as' => 'direktur.karyawan.cuti.kuota']);
+        $routes->post('cuti/delete/(:num)', 'Direktur\Karyawan\KaryawanController::deleteCuti/$1', ['as' => 'direktur.karyawan.cuti.delete']);
+        
+        $routes->get('absensi', 'Direktur\Karyawan\KaryawanController::absensi', ['as' => 'direktur.karyawan.absensi']);
+    });
+
+    // ============================================
     // MONITORING ROUTES
     // ============================================
     $routes->group('monitoring', function($routes) {
         
+        // Halaman utama monitoring
+        $routes->get('/', 'Direktur\Monitoring\MonitoringController::index', ['as' => 'direktur.monitoring']);
+        
         // Absensi
         $routes->get('absensi', 'Direktur\Monitoring\Absensi::index', ['as' => 'direktur.monitoring.absensi']);
+        $routes->post('absensi/simpan', 'Direktur\Monitoring\Absensi::simpan', ['as' => 'direktur.monitoring.absensi.simpan']);
         $routes->get('absensi/detail/(:num)', 'Direktur\Monitoring\Absensi::detail/$1', ['as' => 'direktur.monitoring.absensi.detail']);
+        $routes->post('absensi/update/(:num)', 'Direktur\Monitoring\Absensi::update/$1', ['as' => 'direktur.monitoring.absensi.update']);
+        $routes->post('absensi/delete/(:num)', 'Direktur\Monitoring\Absensi::delete/$1', ['as' => 'direktur.monitoring.absensi.delete']);
         $routes->get('absensi/exportExcel', 'Direktur\Monitoring\Absensi::exportExcel', ['as' => 'direktur.monitoring.absensi.exportExcel']);
+        $routes->get('absensi/exportPdf', 'Direktur\Monitoring\Absensi::exportPdf', ['as' => 'direktur.monitoring.absensi.exportPdf']);
         $routes->get('absensi/print', 'Direktur\Monitoring\Absensi::print', ['as' => 'direktur.monitoring.absensi.print']);
         $routes->get('absensi/get-summary', 'Direktur\Monitoring\Absensi::getSummary', ['as' => 'direktur.monitoring.absensi.getSummary']);
         $routes->get('absensi/get-stats', 'Direktur\Monitoring\Absensi::getStats', ['as' => 'direktur.monitoring.absensi.getStats']);
@@ -166,6 +235,204 @@ $routes->group('direktur', ['filter' => 'auth'], function($routes) {
     $routes->group('laporan', function($routes) {
         $routes->get('keuangan', 'Direktur\Laporan::keuangan', ['as' => 'direktur.laporan.keuangan']);
         $routes->get('stok-gudang', 'Direktur\Laporan::stokGudang', ['as' => 'direktur.laporan.stok_gudang']);
+    });
+    
+    // ============================================
+    // PENUGASAN HARIAN ROUTES
+    // ============================================
+    $routes->group('penugasan', function($routes) {
+        $routes->get('/', 'Direktur\PenugasanController::index', ['as' => 'direktur.penugasan']);
+        $routes->get('harian', 'Direktur\PenugasanController::index');
+        $routes->get('tambah', 'Direktur\PenugasanController::tambah', ['as' => 'direktur.penugasan.tambah']);
+        $routes->post('store', 'Direktur\PenugasanController::store', ['as' => 'direktur.penugasan.store']);
+        $routes->get('detail/(:num)', 'Direktur\PenugasanController::detail/$1', ['as' => 'direktur.penugasan.detail']);
+        $routes->get('edit/(:num)', 'Direktur\PenugasanController::edit/$1', ['as' => 'direktur.penugasan.edit']);
+        $routes->post('update/(:num)', 'Direktur\PenugasanController::update/$1', ['as' => 'direktur.penugasan.update']);
+        $routes->post('update-item-status/(:num)', 'Direktur\PenugasanController::updateItemStatus/$1', ['as' => 'direktur.penugasan.updateItemStatus']);
+        $routes->get('delete/(:num)', 'Direktur\PenugasanController::delete/$1', ['as' => 'direktur.penugasan.delete']);
+        $routes->post('delete/(:num)', 'Direktur\PenugasanController::delete/$1');
+    });
+    
+    // ============================================
+    // PROYEK & LAPORAN ROUTES
+    // ============================================
+    $routes->group('proyek', function($routes) {
+        
+        // Project Baru & Manajemen Proyek
+        $routes->get('baru', 'Direktur\Proyek\ProyekController::baru', ['as' => 'direktur.proyek.baru']);
+        $routes->get('tambah', 'Direktur\Proyek\ProyekController::tambah_proyek', ['as' => 'direktur.proyek.tambah_proyek']);
+        $routes->get('edit/(:num)', 'Direktur\Proyek\ProyekController::edit_proyek/$1', ['as' => 'direktur.proyek.edit_proyek']);
+        $routes->get('detail/(:num)', 'Direktur\Proyek\ProyekController::detail_proyek/$1', ['as' => 'direktur.proyek.detail_proyek']);
+        $routes->post('simpan', 'Direktur\Proyek\ProyekController::simpan', ['as' => 'direktur.proyek.simpan']);
+        $routes->post('update', 'Direktur\Proyek\ProyekController::update_proyek', ['as' => 'direktur.proyek.update_proyek']);
+        $routes->post('delete/(:num)', 'Direktur\Proyek\ProyekController::delete_proyek/$1', ['as' => 'direktur.proyek.delete_proyek']);
+        $routes->post('simpan_client', 'Direktur\Proyek\ProyekController::simpan_client', ['as' => 'direktur.proyek.simpan_client']);
+        
+        // Timeline Kerja
+        $routes->get('timeline', 'Direktur\Proyek\ProyekController::timeline', ['as' => 'direktur.proyek.timeline']);
+        $routes->get('timeline/tambah', 'Direktur\Proyek\ProyekController::tambah_timeline', ['as' => 'direktur.proyek.tambah_timeline']);
+        $routes->get('timeline/edit/(:num)', 'Direktur\Proyek\ProyekController::edit_timeline/$1', ['as' => 'direktur.proyek.edit_timeline']);
+        $routes->get('timeline/(:num)', 'Direktur\Proyek\ProyekController::detail_timeline/$1', ['as' => 'direktur.proyek.detail_timeline']);
+        $routes->get('timeline/export-excel/(:num)', 'Direktur\Proyek\ProyekController::export_excel_timeline/$1', ['as' => 'direktur.proyek.export_excel_timeline']);
+        $routes->get('timeline/print-pdf/(:num)', 'Direktur\Proyek\ProyekController::print_pdf_timeline/$1', ['as' => 'direktur.proyek.print_pdf_timeline']);
+        $routes->post('timeline/aktifkan', 'Direktur\Proyek\ProyekController::aktifkan_proyek_timeline', ['as' => 'direktur.proyek.aktifkan_proyek_timeline']);
+        $routes->post('timeline/simpan', 'Direktur\Proyek\ProyekController::simpan_timeline', ['as' => 'direktur.proyek.simpan_timeline']);
+        $routes->post('timeline/update', 'Direktur\Proyek\ProyekController::update_timeline', ['as' => 'direktur.proyek.update_timeline']);
+        $routes->post('timeline/delete/(:num)', 'Direktur\Proyek\ProyekController::delete_timeline/$1', ['as' => 'direktur.proyek.delete_timeline']);
+        $routes->post('timeline/simpan_task', 'Direktur\Proyek\ProyekController::simpan_task', ['as' => 'direktur.proyek.simpan_task']);
+        $routes->post('timeline/update_task_status', 'Direktur\Proyek\ProyekController::update_task_status', ['as' => 'direktur.proyek.update_task_status']);
+        $routes->post('timeline/delete_task/(:num)', 'Direktur\Proyek\ProyekController::delete_task/$1', ['as' => 'direktur.proyek.delete_task']);
+        $routes->post('timeline/update-progress', 'Direktur\Proyek\ProyekController::update_progress', ['as' => 'direktur.proyek.update_progress']);
+        $routes->post('timeline/selesaikan/(:num)', 'Direktur\Proyek\ProyekController::selesaikan_proyek/$1', ['as' => 'direktur.proyek.selesaikan_proyek']);
+        
+        // Project Selesai & Arsip
+        $routes->get('selesai', 'Direktur\Proyek\ProyekController::selesai', ['as' => 'direktur.proyek.selesai']);
+        $routes->post('selesai/simpan', 'Direktur\Proyek\ProyekController::simpan_selesai', ['as' => 'direktur.proyek.simpan_selesai']);
+        $routes->post('selesai/delete/(:num)', 'Direktur\Proyek\ProyekController::delete_selesai/$1', ['as' => 'direktur.proyek.delete_selesai']);
+        
+        // Laporan Kerja Harian (Milik Sendiri)
+        $routes->get('laporan-harian', 'Direktur\Proyek\LaporanHarianController::index', ['as' => 'direktur.proyek.laporan_harian']);
+        $routes->post('laporan-harian/simpan', 'Direktur\Proyek\LaporanHarianController::simpan', ['as' => 'direktur.proyek.laporan_harian.simpan']);
+        
+        // Monitoring Laporan (Semua Karyawan)
+        $routes->get('monitoring-laporan', 'Direktur\Proyek\LaporanHarianController::monitoring', ['as' => 'direktur.proyek.monitoring_laporan']);
+        $routes->post('monitoring-laporan/approve', 'Direktur\Proyek\LaporanHarianController::approve', ['as' => 'direktur.proyek.monitoring_laporan.approve']);
+        
+        // Pencarian Barang / Penugasan RAB
+        $routes->get('pencarian-barang', 'Direktur\Proyek\PencarianController::index', ['as' => 'direktur.proyek.pencarian_barang']);
+        $routes->get('pencarian-barang/tambah', 'Direktur\Proyek\PencarianController::tambah', ['as' => 'direktur.proyek.pencarian_barang.tambah']);
+        $routes->post('pencarian-barang/simpan', 'Direktur\Proyek\PencarianController::simpan', ['as' => 'direktur.proyek.pencarian_barang.simpan']);
+        $routes->get('pencarian-barang/detail/(:num)', 'Direktur\Proyek\PencarianController::detail/$1', ['as' => 'direktur.proyek.pencarian_barang.detail']);
+        $routes->get('pencarian-barang/edit/(:num)', 'Direktur\Proyek\PencarianController::edit/$1', ['as' => 'direktur.proyek.pencarian_barang.edit']);
+        $routes->post('pencarian-barang/update', 'Direktur\Proyek\PencarianController::update', ['as' => 'direktur.proyek.pencarian_barang.update']);
+        $routes->post('pencarian-barang/delete/(:num)', 'Direktur\Proyek\PencarianController::delete/$1', ['as' => 'direktur.proyek.pencarian_barang.delete']);
+        $routes->post('pencarian-barang/approve-keuangan/(:num)', 'Direktur\Proyek\PencarianController::approve_keuangan/$1', ['as' => 'direktur.proyek.pencarian_barang.approve_keuangan']);
+    });
+    
+    // ============================================
+    // KEUANGAN ROUTES
+    // ============================================
+    $routes->group('keuangan', function($routes) {
+        // Penggajian Karyawan
+        $routes->get('penggajian', 'Direktur\Keuangan\PenggajianController::index', ['as' => 'direktur.keuangan.penggajian']);
+        $routes->get('penggajian/detail/(:num)', 'Direktur\Keuangan\PenggajianController::detail/$1', ['as' => 'direktur.keuangan.penggajian.detail']);
+        $routes->get('penggajian/cetak-slip/(:num)', 'Direktur\Keuangan\PenggajianController::cetak_slip/$1', ['as' => 'direktur.keuangan.penggajian.cetak_slip']);
+        $routes->get('penggajian/cetak', 'Direktur\Keuangan\PenggajianController::cetak', ['as' => 'direktur.keuangan.penggajian.cetak']);
+        $routes->get('penggajian/export-excel', 'Direktur\Keuangan\PenggajianController::export_excel', ['as' => 'direktur.keuangan.penggajian.export_excel']);
+        $routes->post('penggajian/generate', 'Direktur\Keuangan\PenggajianController::generate', ['as' => 'direktur.keuangan.penggajian.generate']);
+        $routes->post('penggajian/simpan-detail', 'Direktur\Keuangan\PenggajianController::simpanDetail', ['as' => 'direktur.keuangan.penggajian.simpanDetail']);
+        $routes->post('penggajian/bayar/(:num)', 'Direktur\Keuangan\PenggajianController::bayar/$1', ['as' => 'direktur.keuangan.penggajian.bayar']);
+        $routes->post('penggajian/delete/(:num)', 'Direktur\Keuangan\PenggajianController::delete/$1', ['as' => 'direktur.keuangan.penggajian.delete']);
+        
+        // Kasbon
+        $routes->get('kasbon', 'Direktur\Keuangan\KasbonController::index', ['as' => 'direktur.keuangan.kasbon']);
+        $routes->get('kasbon/cetak', 'Direktur\Keuangan\KasbonController::cetak', ['as' => 'direktur.keuangan.kasbon.cetak']);
+        $routes->get('kasbon/export-excel', 'Direktur\Keuangan\KasbonController::export_excel', ['as' => 'direktur.keuangan.kasbon.export_excel']);
+        $routes->post('kasbon/approve', 'Direktur\Keuangan\KasbonController::approve', ['as' => 'direktur.keuangan.kasbon.approve']);
+        $routes->post('kasbon/reject', 'Direktur\Keuangan\KasbonController::reject', ['as' => 'direktur.keuangan.kasbon.reject']);
+        $routes->post('kasbon/simpan', 'Direktur\Keuangan\KasbonController::simpan', ['as' => 'direktur.keuangan.kasbon.simpan']);
+        $routes->post('kasbon/delete/(:num)', 'Direktur\Keuangan\KasbonController::delete/$1', ['as' => 'direktur.keuangan.kasbon.delete']);
+        
+        // Pencatatan Pembelian (Purchase Requisition)
+        $routes->get('pembelian', 'Direktur\Keuangan\PembelianController::index', ['as' => 'direktur.keuangan.pembelian']);
+        $routes->get('pembelian/tambah', 'Direktur\Keuangan\PembelianController::tambah', ['as' => 'direktur.keuangan.pembelian.tambah']);
+        $routes->get('pembelian/detail/(:num)', 'Direktur\Keuangan\PembelianController::detail/$1', ['as' => 'direktur.keuangan.pembelian.detail']);
+        $routes->get('pembelian/edit/(:num)', 'Direktur\Keuangan\PembelianController::edit/$1', ['as' => 'direktur.keuangan.pembelian.edit']);
+        $routes->post('pembelian/simpan', 'Direktur\Keuangan\PembelianController::simpan', ['as' => 'direktur.keuangan.pembelian.simpan']);
+        $routes->post('pembelian/update', 'Direktur\Keuangan\PembelianController::update', ['as' => 'direktur.keuangan.pembelian.update']);
+        $routes->post('pembelian/delete/(:num)', 'Direktur\Keuangan\PembelianController::delete/$1', ['as' => 'direktur.keuangan.pembelian.delete']);
+        $routes->get('pembelian/cetak/(:num)', 'Direktur\Keuangan\PembelianController::cetak/$1', ['as' => 'direktur.keuangan.pembelian.cetak_single']);
+        $routes->get('pembelian/cetak', 'Direktur\Keuangan\PembelianController::cetak', ['as' => 'direktur.keuangan.pembelian.cetak']);
+        $routes->get('pembelian/export-excel', 'Direktur\Keuangan\PembelianController::export_excel', ['as' => 'direktur.keuangan.pembelian.export_excel']);
+        $routes->post('pembelian/approve', 'Direktur\Keuangan\PembelianController::approve', ['as' => 'direktur.keuangan.pembelian.approve']);
+        $routes->post('pembelian/reject', 'Direktur\Keuangan\PembelianController::reject', ['as' => 'direktur.keuangan.pembelian.reject']);
+        $routes->add('pembelian/reset-data-lama', 'Direktur\Keuangan\PembelianController::resetDataLama', ['as' => 'direktur.keuangan.pembelian.resetDataLama']);
+
+        
+        // Laporan Keuangan
+        $routes->get('laporan', 'Direktur\Keuangan\LaporanController::index', ['as' => 'direktur.keuangan.laporan']);
+        $routes->get('laporan/cetak', 'Direktur\Keuangan\LaporanController::cetak', ['as' => 'direktur.keuangan.laporan.cetak']);
+        $routes->get('laporan/export-excel', 'Direktur\Keuangan\LaporanController::export_excel', ['as' => 'direktur.keuangan.laporan.export_excel']);
+    });
+    
+    // ============================================
+    // PENGADAAN & ASET ROUTES
+    // ============================================
+    $routes->group('pengadaan', function($routes) {
+        // Pengajuan ATK
+        $routes->get('pengajuan-atk', 'Direktur\PengadaanController::pengajuan_atk', ['as' => 'direktur.pengadaan.pengajuan_atk']);
+        $routes->get('pengajuan-atk/review/(:num)', 'Direktur\PengadaanController::review_atk/$1', ['as' => 'direktur.pengadaan.review_atk']);
+        $routes->post('pengajuan-atk/simpan', 'Direktur\PengadaanController::simpan_atk', ['as' => 'direktur.pengadaan.simpan_atk']);
+        $routes->post('pengajuan-atk/update', 'Direktur\PengadaanController::update_atk', ['as' => 'direktur.pengadaan.update_atk']);
+        $routes->post('pengajuan-atk/delete/(:num)', 'Direktur\PengadaanController::delete_atk/$1', ['as' => 'direktur.pengadaan.delete_atk']);
+        $routes->post('pengajuan-atk/approve', 'Direktur\PengadaanController::approve_atk', ['as' => 'direktur.pengadaan.approve_atk']);
+        
+        // Monitoring Stok ATK
+        $routes->get('stok-atk', 'Direktur\PengadaanController::stok_atk', ['as' => 'direktur.pengadaan.stok_atk']);
+        $routes->get('stok-atk/detail/(:num)', 'Direktur\PengadaanController::detail_stok_atk/$1', ['as' => 'direktur.pengadaan.detail_stok_atk']);
+        $routes->post('stok-atk/simpan', 'Direktur\PengadaanController::simpan_stok_atk', ['as' => 'direktur.pengadaan.simpan_stok_atk']);
+        $routes->post('stok-atk/update', 'Direktur\PengadaanController::update_stok_atk', ['as' => 'direktur.pengadaan.update_stok_atk']);
+        $routes->post('stok-atk/delete/(:num)', 'Direktur\PengadaanController::delete_stok_atk/$1', ['as' => 'direktur.pengadaan.delete_stok_atk']);
+        
+        // Pengadaan Aset
+        $routes->get('aset', 'Direktur\PengadaanController::aset', ['as' => 'direktur.pengadaan.aset']);
+        $routes->get('aset/review/(:num)', 'Direktur\PengadaanController::review_aset/$1', ['as' => 'direktur.pengadaan.review_aset']);
+        $routes->get('aset/cetak', 'Direktur\PengadaanController::cetak_aset', ['as' => 'direktur.pengadaan.cetak_aset']);
+        $routes->post('aset/simpan', 'Direktur\PengadaanController::simpan_aset', ['as' => 'direktur.pengadaan.simpan_aset']);
+        $routes->post('aset/update', 'Direktur\PengadaanController::update_aset', ['as' => 'direktur.pengadaan.update_aset']);
+        $routes->post('aset/approve', 'Direktur\PengadaanController::approve_aset', ['as' => 'direktur.pengadaan.approve_aset']);
+        $routes->post('aset/delete/(:num)', 'Direktur\PengadaanController::delete_aset/$1', ['as' => 'direktur.pengadaan.delete_aset']);
+        
+        // Kerusakan Alat
+        $routes->get('kerusakan', 'Direktur\PengadaanController::kerusakan', ['as' => 'direktur.pengadaan.kerusakan']);
+        $routes->get('kerusakan/tambah', 'Direktur\PengadaanController::tambah_kerusakan', ['as' => 'direktur.pengadaan.tambah_kerusakan']);
+        $routes->get('kerusakan/edit/(:num)', 'Direktur\PengadaanController::edit_kerusakan/$1', ['as' => 'direktur.pengadaan.edit_kerusakan']);
+        $routes->get('kerusakan/detail/(:num)', 'Direktur\PengadaanController::detail_kerusakan/$1', ['as' => 'direktur.pengadaan.detail_kerusakan']);
+        $routes->post('kerusakan/simpan', 'Direktur\PengadaanController::simpan_kerusakan', ['as' => 'direktur.pengadaan.simpan_kerusakan']);
+        $routes->post('kerusakan/update', 'Direktur\PengadaanController::update_kerusakan', ['as' => 'direktur.pengadaan.update_kerusakan']);
+        $routes->post('kerusakan/delete/(:num)', 'Direktur\PengadaanController::delete_kerusakan/$1', ['as' => 'direktur.pengadaan.delete_kerusakan']);
+        
+        // Monitoring Gudang & Material
+        $routes->get('gudang', 'Direktur\PengadaanController::gudang', ['as' => 'direktur.pengadaan.gudang']);
+        $routes->get('gudang/tambah', 'Direktur\PengadaanController::tambah_gudang', ['as' => 'direktur.pengadaan.tambah_gudang']);
+        $routes->get('gudang/edit/(:num)', 'Direktur\PengadaanController::edit_gudang/$1', ['as' => 'direktur.pengadaan.edit_gudang']);
+        $routes->get('gudang/detail/(:num)', 'Direktur\PengadaanController::detail_gudang/$1', ['as' => 'direktur.pengadaan.detail_gudang']);
+        $routes->post('gudang/simpan', 'Direktur\PengadaanController::simpan_gudang', ['as' => 'direktur.pengadaan.simpan_gudang']);
+        $routes->post('gudang/update', 'Direktur\PengadaanController::update_gudang', ['as' => 'direktur.pengadaan.update_gudang']);
+        $routes->post('gudang/delete/(:num)', 'Direktur\PengadaanController::delete_gudang/$1', ['as' => 'direktur.pengadaan.delete_gudang']);
+        
+    });
+    
+    // ============================================
+    // DOKUMEN ROUTES
+    // ============================================
+    $routes->group('dokumen', function($routes) {
+        // Dokumen Penting
+        $routes->get('penting', 'Direktur\DokumenController::penting', ['as' => 'direktur.dokumen.penting']);
+        $routes->get('penting/tambah', 'Direktur\DokumenController::tambah_penting', ['as' => 'direktur.dokumen.tambah_penting']);
+        $routes->get('penting/edit/(:num)', 'Direktur\DokumenController::edit_penting/$1', ['as' => 'direktur.dokumen.edit_penting']);
+        $routes->get('penting/detail/(:num)', 'Direktur\DokumenController::detail_penting/$1', ['as' => 'direktur.dokumen.detail_penting']);
+        $routes->post('penting/simpan', 'Direktur\DokumenController::simpan_penting', ['as' => 'direktur.dokumen.simpan_penting']);
+        $routes->post('penting/update', 'Direktur\DokumenController::update_penting', ['as' => 'direktur.dokumen.update_penting']);
+        $routes->post('penting/delete/(:num)', 'Direktur\DokumenController::delete_penting/$1', ['as' => 'direktur.dokumen.delete_penting']);
+        
+        // Dokumen Sertifikat
+        $routes->get('sertifikat', 'Direktur\DokumenController::sertifikat', ['as' => 'direktur.dokumen.sertifikat']);
+        $routes->get('sertifikat/tambah', 'Direktur\DokumenController::tambah_sertifikat', ['as' => 'direktur.dokumen.tambah_sertifikat']);
+        $routes->get('sertifikat/edit/(:num)', 'Direktur\DokumenController::edit_sertifikat/$1', ['as' => 'direktur.dokumen.edit_sertifikat']);
+        $routes->get('sertifikat/detail/(:num)', 'Direktur\DokumenController::detail_sertifikat/$1', ['as' => 'direktur.dokumen.detail_sertifikat']);
+        $routes->post('sertifikat/simpan', 'Direktur\DokumenController::simpan_sertifikat', ['as' => 'direktur.dokumen.simpan_sertifikat']);
+        $routes->post('sertifikat/update', 'Direktur\DokumenController::update_sertifikat', ['as' => 'direktur.dokumen.update_sertifikat']);
+        $routes->post('sertifikat/delete/(:num)', 'Direktur\DokumenController::delete_sertifikat/$1', ['as' => 'direktur.dokumen.delete_sertifikat']);
+        
+        // Kontak Project
+        $routes->get('kontak', 'Direktur\DokumenController::kontak', ['as' => 'direktur.dokumen.kontak']);
+        $routes->get('kontak/tambah', 'Direktur\DokumenController::tambah_kontak', ['as' => 'direktur.dokumen.tambah_kontak']);
+        $routes->get('kontak/edit/(:num)', 'Direktur\DokumenController::edit_kontak/$1', ['as' => 'direktur.dokumen.edit_kontak']);
+        $routes->get('kontak/detail/(:num)', 'Direktur\DokumenController::detail_kontak/$1', ['as' => 'direktur.dokumen.detail_kontak']);
+        $routes->post('kontak/simpan', 'Direktur\DokumenController::simpan_kontak', ['as' => 'direktur.dokumen.simpan_kontak']);
+        $routes->post('kontak/update', 'Direktur\DokumenController::update_kontak', ['as' => 'direktur.dokumen.update_kontak']);
+        $routes->post('kontak/delete/(:num)', 'Direktur\DokumenController::delete_kontak/$1', ['as' => 'direktur.dokumen.delete_kontak']);
     });
     
     // ============================================

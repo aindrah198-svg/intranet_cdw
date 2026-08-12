@@ -54,8 +54,9 @@ abstract class BaseController extends Controller
         $role = strtolower(session()->get('role'));
         
         switch ($role) {
-            case 'admin':
             case 'hrd':
+                return base_url('hrd');
+            case 'admin':
                 return base_url('admin');
             case 'teknisi':
                 return base_url('teknisi');

@@ -257,15 +257,51 @@ class AsetTetapKategoriModel extends Model
         return $kategori;
     }
 
+    public function __construct()
+    {
+        parent::__construct();
+        $db = \Config\Database::connect();
+        if ($db->tableExists('aset_tetap_kategori')) {
+            $cols = [
+                'masa_manfaat' => "INT DEFAULT 4",
+                'persentase_penyusutan' => "DECIMAL(5,2) DEFAULT 0.00",
+                'is_active' => "TINYINT(1) DEFAULT 1",
+                'coa_aset_id' => "INT DEFAULT NULL",
+                'coa_akumulasi_id' => "INT DEFAULT NULL",
+                'coa_beban_id' => "INT DEFAULT NULL",
+            ];
+            foreach ($cols as $col => $type) {
+                if (!$db->fieldExists($col, 'aset_tetap_kategori')) {
+                    $db->query("ALTER TABLE `aset_tetap_kategori` ADD COLUMN `{$col}` {$type}");
+                }
+            }
+        }
+    }
+
     /**
      * Get active kategori for dropdown
      */
     public function getActiveOptions()
     {
-        return $this->select('id, kode_kategori, nama_kategori, masa_manfaat, metode_penyusutan, persentase_penyusutan')
-                    ->where('is_active', 1)
-                    ->orderBy('kode_kategori', 'ASC')
-                    ->findAll();
+        $db = \Config\Database::connect();
+        $builder = $db->table($this->table);
+        $fields = $db->getFieldNames($this->table);
+        
+        $selectCols = ['id', 'kode_kategori', 'nama_kategori'];
+        foreach (['masa_manfaat', 'metode_penyusutan', 'persentase_penyusutan'] as $col) {
+            if (in_array($col, $fields)) {
+                $selectCols[] = $col;
+            }
+        }
+        
+        $builder->select(implode(', ', $selectCols));
+        if (in_array('is_active', $fields)) {
+            $builder->where('is_active', 1);
+        }
+        if (in_array('deleted_at', $fields)) {
+            $builder->where('deleted_at IS NULL');
+        }
+        return $builder->orderBy('kode_kategori', 'ASC')->get()->getResultArray();
     }
 
     /**

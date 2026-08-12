@@ -131,8 +131,8 @@
         }
         
         /* Main Content */
-        .main-content {
-            margin-left: var(--sidebar-width);
+        .main-content, .content-wrapper {
+            margin-left: 260px;
             padding: 20px;
             transition: all 0.3s;
             min-height: 100vh;
@@ -140,19 +140,15 @@
         
         @media (max-width: 768px) {
             .sidebar {
-                left: -250px;
+                left: -260px;
             }
             
             .sidebar.show {
                 left: 0;
             }
             
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .main-content.expanded {
-                margin-left: 250px;
+            .main-content, .content-wrapper {
+                margin-left: 0 !important;
             }
         }
         

@@ -30,13 +30,45 @@ class Rekonsiliasi extends BaseController
 
     public function __construct()
     {
+        $this->db = \Config\Database::connect();
+        if (!$this->db->tableExists('rekonsiliasi')) {
+            $this->db->query("
+                CREATE TABLE IF NOT EXISTS `rekonsiliasi` (
+                  `id` INT AUTO_INCREMENT PRIMARY KEY,
+                  `periode` DATE NOT NULL,
+                  `coa_bank_id` INT NOT NULL,
+                  `nomor_rekening_bank` VARCHAR(50) DEFAULT NULL,
+                  `nama_bank` VARCHAR(100) DEFAULT NULL,
+                  `saldo_awal_bank` DECIMAL(15,2) DEFAULT 0.00,
+                  `saldo_akhir_bank` DECIMAL(15,2) DEFAULT 0.00,
+                  `saldo_awal_buku` DECIMAL(15,2) DEFAULT 0.00,
+                  `saldo_akhir_buku` DECIMAL(15,2) DEFAULT 0.00,
+                  `tanggal_rekonsiliasi` DATE DEFAULT NULL,
+                  `data_setoran_dalam_perjalanan` TEXT DEFAULT NULL,
+                  `data_cek_dalam_edar` TEXT DEFAULT NULL,
+                  `data_penyesuaian_bank` TEXT DEFAULT NULL,
+                  `data_penyesuaian_buku` TEXT DEFAULT NULL,
+                  `total_setoran_dalam_perjalanan` DECIMAL(15,2) DEFAULT 0.00,
+                  `total_cek_dalam_edar` DECIMAL(15,2) DEFAULT 0.00,
+                  `total_penyesuaian_bank` DECIMAL(15,2) DEFAULT 0.00,
+                  `total_penyesuaian_buku` DECIMAL(15,2) DEFAULT 0.00,
+                  `keterangan` TEXT DEFAULT NULL,
+                  `lampiran_rekening_koran` VARCHAR(255) DEFAULT NULL,
+                  `status` ENUM('Draft','Selesai','Dibatalkan') DEFAULT 'Draft',
+                  `created_by` INT DEFAULT NULL,
+                  `updated_by` INT DEFAULT NULL,
+                  `created_at` DATETIME DEFAULT NULL,
+                  `updated_at` DATETIME DEFAULT NULL,
+                  `deleted_at` DATETIME DEFAULT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
         $this->rekonsiliasiModel = new RekonsiliasiModel();
         $this->coaModel = new CoaModel();
         $this->jurnalModel = new JurnalModel();
         $this->jurnalDetailModel = new JurnalDetailModel();
         $this->bukuBesarModel = new BukuBesarModel();
         $this->mutasiBankModel = new MutasiBankModel();
-        $this->db = \Config\Database::connect();
         
         helper(['form', 'url', 'text', 'number']);
         

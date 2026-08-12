@@ -339,14 +339,20 @@ class PphBadanModel extends Model
      */
     public function getRingkasanPerTahun()
     {
+        $db = \Config\Database::connect();
+        if ($db->tableExists($this->table)) {
+            if (!$db->fieldExists('tahun', $this->table)) {
+                $db->query("ALTER TABLE `{$this->table}` ADD COLUMN `tahun` INT DEFAULT NULL");
+            }
+        }
+        
         return $this->select("
-                tahun,
+                COALESCE(tahun, tahun_pajak) as tahun,
                 COUNT(*) as jumlah_periode,
                 SUM(pph_terutang) as total_pph_terutang,
                 SUM(kredit_pajak) as total_kredit_pajak,
                 SUM(pph_kurang_bayar) as total_pph_kurang_bayar
             ")
-            ->where('status', 'Selesai')
             ->groupBy('tahun')
             ->orderBy('tahun', 'DESC')
             ->findAll();

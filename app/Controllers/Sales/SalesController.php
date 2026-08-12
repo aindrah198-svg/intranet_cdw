@@ -62,8 +62,10 @@ class SalesController extends BaseController
         $roleLower = strtolower($role ?? '');
         
         switch ($roleLower) {
-            case 'admin':
             case 'hrd':
+                header('Location: ' . base_url('hrd'));
+                exit();
+            case 'admin':
                 header('Location: ' . base_url('admin'));
                 exit();
             case 'direktur':

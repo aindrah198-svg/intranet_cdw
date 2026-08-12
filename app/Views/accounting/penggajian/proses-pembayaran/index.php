@@ -1,10 +1,4 @@
-<?php
-// app/Views/accounting/penggajian/proses-pembayaran/index.php
-$data['active'] = 'proses-pembayaran';
-$this->extend('accounting/templates/header');
-?>
-
-<?php $this->section('content'); ?>
+<div class="main-content">
 <div class="container-fluid px-4">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -369,4 +363,4 @@ $(document).ready(function() {
 });
 </script>
 
-<?php $this->endSection(); ?>
+</div>

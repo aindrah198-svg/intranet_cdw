@@ -39,8 +39,10 @@ class TeknisiFilter implements FilterInterface
             
             // Redirect ke dashboard sesuai role
             switch ($roleLower) {
-                case 'admin':
                 case 'hrd':
+                    log_message('debug', 'TEKNISI FILTER: Redirecting to HRD dashboard');
+                    return redirect()->to(base_url('hrd'));
+                case 'admin':
                     log_message('debug', 'TEKNISI FILTER: Redirecting to ADMIN dashboard');
                     return redirect()->to(base_url('admin'));
                 case 'direktur':
