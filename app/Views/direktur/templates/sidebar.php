@@ -18,84 +18,57 @@ $isKeuanganActive = (in_array($active, ['keuangan']) || $segment1 == 'keuangan')
 $isPengadaanActive = (in_array($active, ['pengadaan', 'aset']) || in_array($segment1, ['pengadaan', 'aset']) || ($segment1 == 'keuangan' && $segment2 == 'pembelian'));
 $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
 
+// Safe Notification Counter Helper
+if (!function_exists('getSafeNotifCount')) {
+    function getSafeNotifCount($db, $table, $columns, $values) {
+        if (!$db->tableExists($table)) return 0;
+        foreach ((array)$columns as $col) {
+            if ($db->fieldExists($col, $table)) {
+                return $db->table($table)->whereIn($col, (array)$values)->countAllResults();
+            }
+        }
+        return 0;
+    }
+}
+
 // REALTIME NOTIFICATION COUNTS FOR SIDEBAR & NAVBAR
 $db = \Config\Database::connect();
 
 // 1. Karyawan & SDM Notifs
-$notifSurat = 0;
-if ($db->tableExists('surat_karyawan')) {
-    $notifSurat = $db->table('surat_karyawan')->where('status', 'draft')->countAllResults();
+$notifSurat = getSafeNotifCount($db, 'surat_karyawan', ['status', 'status_surat'], ['draft', 'Draft']);
+$notifIzin  = getSafeNotifCount($db, 'form_izin', ['status_keseluruhan', 'status_atasan', 'status'], ['menunggu', 'pending', 'Menunggu', 'Pending']);
+if ($notifIzin === 0) {
+    $notifIzin = getSafeNotifCount($db, 'pengajuan_izin', ['status', 'status_pengajuan'], ['menunggu', 'pending', 'Menunggu']);
 }
 
-$notifIzin = 0;
-if ($db->tableExists('form_izin')) {
-    $notifIzin = $db->table('form_izin')->whereIn('status', ['menunggu', 'pending', 'Menunggu'])->countAllResults();
-} elseif ($db->tableExists('pengajuan_izin')) {
-    $notifIzin = $db->table('pengajuan_izin')->whereIn('status', ['menunggu', 'pending', 'Menunggu'])->countAllResults();
+$notifCuti  = getSafeNotifCount($db, 'cuti', ['status_direktur', 'status_pengajuan', 'status'], ['menunggu', 'pending', 'Menunggu', 'Pending']);
+if ($notifCuti === 0) {
+    $notifCuti = getSafeNotifCount($db, 'form_cuti', ['status_direktur', 'status_pengajuan', 'status'], ['menunggu', 'pending', 'Menunggu', 'Pending']);
 }
 
-$notifCuti = 0;
-if ($db->tableExists('cuti')) {
-    $notifCuti = $db->table('cuti')->whereIn('status', ['menunggu', 'pending', 'Menunggu'])->countAllResults();
-} elseif ($db->tableExists('form_cuti')) {
-    $notifCuti = $db->table('form_cuti')->whereIn('status', ['menunggu', 'pending', 'Menunggu'])->countAllResults();
-}
-
-$notifKeluhan = 0;
-if ($db->tableExists('keluhan_karyawan')) {
-    $notifKeluhan = $db->table('keluhan_karyawan')->whereIn('status', ['dikirim', 'menunggu', 'pending', 'Menunggu'])->countAllResults();
-}
+$notifKeluhan = getSafeNotifCount($db, 'keluhan_karyawan', ['status'], ['dikirim', 'menunggu', 'pending', 'Menunggu', 'Pending']);
 
 $notifKaryawanTotal = $notifSurat + $notifIzin + $notifCuti + $notifKeluhan;
 
 // 2. Penugasan & Proyek Notifs
-$notifPenugasan = 0;
-if ($db->tableExists('penugasan_harian')) {
-    $notifPenugasan = $db->table('penugasan_harian')->whereIn('status', ['pending', 'baru', 'Menunggu'])->countAllResults();
-}
-
-$notifLaporanHarian = 0;
-if ($db->tableExists('laporan_harian')) {
-    $notifLaporanHarian = $db->table('laporan_harian')->where('status', 'menunggu_review')->countAllResults();
-}
-
-$notifProjectBaru = 0;
-if ($db->tableExists('project')) {
-    $notifProjectBaru = $db->table('project')->whereIn('status', ['perencanaan', 'baru', 'draft'])->countAllResults();
-} elseif ($db->tableExists('proyek')) {
-    $notifProjectBaru = $db->table('proyek')->whereIn('status', ['perencanaan', 'baru', 'draft'])->countAllResults();
+$notifPenugasan     = getSafeNotifCount($db, 'penugasan_harian', ['status'], ['pending', 'baru', 'Menunggu', 'Pending']);
+$notifLaporanHarian = getSafeNotifCount($db, 'laporan_harian', ['status'], ['menunggu_review', 'pending', 'Menunggu']);
+$notifProjectBaru   = getSafeNotifCount($db, 'project', ['status'], ['perencanaan', 'baru', 'draft', 'Draft']);
+if ($notifProjectBaru === 0) {
+    $notifProjectBaru = getSafeNotifCount($db, 'proyek', ['status'], ['perencanaan', 'baru', 'draft', 'Draft']);
 }
 
 $notifProyekTotal = $notifPenugasan + $notifLaporanHarian + $notifProjectBaru;
 
 // 3. Keuangan Notifs
-$notifKasbon = 0;
-if ($db->tableExists('form_kasbon')) {
-    $notifKasbon = $db->table('form_kasbon')->where('status_direktur', 'Menunggu')->countAllResults();
-}
-
+$notifKasbon = getSafeNotifCount($db, 'form_kasbon', ['status_direktur', 'status'], ['Menunggu', 'menunggu', 'pending']);
 $notifKeuanganTotal = $notifKasbon;
 
 // 4. Pengadaan & Aset Notifs
-$notifATK = 0;
-if ($db->tableExists('pengajuan_atk')) {
-    $notifATK = $db->table('pengajuan_atk')->where('status', 'menunggu')->countAllResults();
-}
-
-$notifAset = 0;
-if ($db->tableExists('pengadaan_aset')) {
-    $notifAset = $db->table('pengadaan_aset')->where('status', 'menunggu')->countAllResults();
-}
-
-$notifPembelianPR = 0;
-if ($db->tableExists('form_pembelian')) {
-    $notifPembelianPR = $db->table('form_pembelian')->where('status_direktur', 'Menunggu')->countAllResults();
-}
-
-$notifKerusakan = 0;
-if ($db->tableExists('laporan_kerusakan')) {
-    $notifKerusakan = $db->table('laporan_kerusakan')->where('status_tindakan', 'dilaporkan')->countAllResults();
-}
+$notifATK         = getSafeNotifCount($db, 'pengajuan_atk', ['status'], ['menunggu', 'pending', 'Menunggu']);
+$notifAset        = getSafeNotifCount($db, 'pengadaan_aset', ['status'], ['menunggu', 'pending', 'Menunggu']);
+$notifPembelianPR = getSafeNotifCount($db, 'form_pembelian', ['status_direktur', 'status'], ['Menunggu', 'menunggu', 'pending']);
+$notifKerusakan   = getSafeNotifCount($db, 'laporan_kerusakan', ['status_tindakan', 'status'], ['dilaporkan', 'menunggu', 'pending']);
 
 $notifPengadaanTotal = $notifATK + $notifAset + $notifPembelianPR + $notifKerusakan;
 ?>
