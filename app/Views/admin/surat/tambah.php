@@ -599,11 +599,11 @@ let blocks = [];
 let blockCounter = 0;
 
 const PAPER_BODY_PX = {
-    A4:     { page1: 670, cont: 870 },
-    A3:     { page1: 1250, cont: 1450 },
-    Letter: { page1: 630, cont: 830 },
-    Legal:  { page1: 900, cont: 1100 },
-    Folio:  { page1: 800, cont: 1000 },
+    A4:     { page1: 760, cont: 950 },
+    A3:     { page1: 1300, cont: 1500 },
+    Letter: { page1: 720, cont: 910 },
+    Legal:  { page1: 1000, cont: 1200 },
+    Folio:  { page1: 900, cont: 1100 },
 };
 
 function genBlkId() { return 'blk_' + (++blockCounter); }
@@ -1091,9 +1091,9 @@ function renderLivePreview() {
         const div = document.createElement('div');
         div.innerHTML = blockToDocHtml(b);
         measurer.appendChild(div);
-        const h = div.getBoundingClientRect().height || 40;
+        const h = div.getBoundingClientRect().height || 30;
         measurer.removeChild(div);
-        return Math.ceil(h) + 16;
+        return Math.ceil(h) + 4;
     });
     document.body.removeChild(measurer);
 

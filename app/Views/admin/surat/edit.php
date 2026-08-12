@@ -469,7 +469,7 @@ const nomorSuratText    = '<?= esc($surat['nomor_surat']) ?>';
 const existingIsiSurat  = <?= json_encode($surat['isi_surat'] ?? '') ?>;
 
 let blocks = [], blockCounter = 0;
-const PAPER_BODY_PX = { A4:{page1:670,cont:870}, A3:{page1:1250,cont:1450}, Letter:{page1:630,cont:830}, Legal:{page1:900,cont:1100}, Folio:{page1:800,cont:1000} };
+const PAPER_BODY_PX = { A4:{page1:760,cont:950}, A3:{page1:1300,cont:1500}, Letter:{page1:720,cont:910}, Legal:{page1:1000,cont:1200}, Folio:{page1:900,cont:1100} };
 
 function genBlkId() { return 'blk_' + (++blockCounter); }
 function escHtml(s) { if(s===undefined||s===null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
@@ -725,7 +725,7 @@ function renderLivePreview() {
     const measurer=document.createElement('div');
     measurer.style.cssText=`position:absolute;visibility:hidden;left:-9999px;top:0;width:${(paper.clientWidth||794)-120}px;font-family:Inter,Arial,sans-serif;font-size:0.9rem;`;
     document.body.appendChild(measurer);
-    const blockHeights=renderBlocks.map(b=>{const div=document.createElement('div');div.innerHTML=blockToDocHtml(b);measurer.appendChild(div);const h=div.getBoundingClientRect().height||40;measurer.removeChild(div);return Math.ceil(h)+16;});
+    const blockHeights=renderBlocks.map(b=>{const div=document.createElement('div');div.innerHTML=blockToDocHtml(b);measurer.appendChild(div);const h=div.getBoundingClientRect().height||30;measurer.removeChild(div);return Math.ceil(h)+4;});
     document.body.removeChild(measurer);
 
     const pages=[[]]; let curH=0, pNum=1;
