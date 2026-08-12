@@ -85,9 +85,22 @@ class SuratKaryawanModel extends Model
 
     public function getCompanyLogoBase64()
     {
-        $logoPath = WRITEPATH . 'uploads/logo/logo.png';
-        if (file_exists($logoPath)) {
-            return 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+        $possibleNames = ['logo.png', 'logo.jpg', 'logo.jpeg', 'logo.PNG', 'logo.JPG'];
+        $possibleDirs  = [
+            FCPATH . 'uploads/logo/',
+            ROOTPATH . 'public/uploads/logo/',
+            WRITEPATH . 'uploads/logo/',
+        ];
+
+        foreach ($possibleDirs as $dir) {
+            foreach ($possibleNames as $file) {
+                $fullPath = $dir . $file;
+                if (file_exists($fullPath)) {
+                    $ext  = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                    $mime = ($ext === 'jpg' || $ext === 'jpeg') ? 'image/jpeg' : 'image/png';
+                    return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($fullPath));
+                }
+            }
         }
         return '';
     }
