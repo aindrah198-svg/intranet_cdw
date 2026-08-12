@@ -410,24 +410,6 @@ $notifPengadaanTotal = $notifATK + $notifAset + $notifPembelianPR + $notifKerusa
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= ($segment1 == 'proyek' && $segment2 == 'laporan-harian') ? 'active fw-bold' : '' ?>" 
-                               href="<?= base_url('direktur/proyek/laporan-harian') ?>"
-                               style="
-                                   color: rgba(255,255,255,0.8); 
-                                   padding: 10px 15px 10px 45px;
-                                   font-size: 0.9rem;
-                                   border-left: 2px solid transparent;
-                                   display: flex;
-                                   align-items: center;
-                                   text-decoration: none;
-                                   transition: all 0.2s;
-                                   <?= ($segment1 == 'proyek' && $segment2 == 'laporan-harian') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
-                               ">
-                                <i class="fas fa-clipboard-check me-2" style="width: 20px;"></i>
-                                <span>Laporan Kerja Harian</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link <?= ($segment1 == 'proyek' && $segment2 == 'monitoring-laporan') ? 'active fw-bold' : '' ?>" 
                                href="<?= base_url('direktur/proyek/monitoring-laporan') ?>"
                                style="
