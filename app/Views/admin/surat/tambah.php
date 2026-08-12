@@ -1,6 +1,15 @@
-<?= view('admin/templates/header') ?>
-<?= view('admin/templates/sidebar') ?>
-<?= view('admin/templates/navbar') ?>
+<?php
+$templateData = [
+    'title'  => $title ?? 'Buat Surat Baru',
+    'user'   => $user ?? (session()->get('user') ?? ['name' => session()->get('name') ?? 'Admin', 'role' => 'admin']),
+    'active' => 'karyawan'
+];
+?>
+
+<?= view('admin/templates/header', $templateData) ?>
+<?= view('admin/templates/sidebar', $templateData) ?>
+<?= view('admin/templates/navbar', $templateData) ?>
+
 
 <style>
     /* Styling Premium Modern Material & Glassmorphism */
@@ -40,43 +49,28 @@
 
     /* Document Live Preview Paper Box - Standard Vertical Dimensions */
     .letter-paper-preview {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12);
+        padding: 55px 60px;
         position: relative;
         width: 100%;
         max-width: 794px;
         margin: 0 auto;
         font-family: 'Inter', Arial, sans-serif;
         color: #1e293b;
+        overflow: hidden;
         box-sizing: border-box;
         transition: all 0.3s ease;
     }
 
-    .doc-page-sheet {
-        position: relative !important;
-        background: #ffffff !important;
-        min-height: 1123px !important;
-        max-height: 1123px !important;
-        height: 1123px !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
-        margin: 0 auto 30px auto !important;
-        border-radius: 4px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        box-sizing: border-box !important;
-        padding: 45px 50px 75px 50px !important;
-        width: 100% !important;
-        overflow: hidden !important;
-    }
-
     /* Standard Paper Height Dimensions at 96 DPI */
-    .paper-size-A4 .doc-page-sheet { min-height: 1123px; max-width: 794px; }
-    .paper-size-A3 .doc-page-sheet { min-height: 1587px; max-width: 1123px; }
-    .paper-size-Letter .doc-page-sheet { min-height: 1056px; max-width: 816px; }
-    .paper-size-Legal .doc-page-sheet { min-height: 1344px; max-width: 816px; }
-    .paper-size-Folio .doc-page-sheet { min-height: 1247px; max-width: 813px; }
+    .paper-size-A4 { min-height: 1123px; max-width: 794px; }
+    .paper-size-A3 { min-height: 1587px; max-width: 1123px; }
+    .paper-size-Letter { min-height: 1056px; max-width: 816px; }
+    .paper-size-Legal { min-height: 1344px; max-width: 816px; }
+    .paper-size-Folio { min-height: 1247px; max-width: 813px; }
 
     .blue-header-banner {
         background: #1e40af;
@@ -87,6 +81,32 @@
         text-transform: uppercase;
         border-radius: 4px;
         margin-bottom: 20px;
+    }
+
+    /* Page Break Divider for Screen & Print */
+    .doc-page-break {
+        page-break-before: always;
+        break-before: page;
+        margin-top: 45px;
+        padding-top: 35px;
+        border-top: 2px dashed #94a3b8;
+        position: relative;
+        clear: both;
+    }
+    .doc-page-break::before {
+        content: "📄 HALAMAN SELANJUTNYA (PAGE BREAK)";
+        display: block;
+        text-align: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        letter-spacing: 1.5px;
+        background: #f1f5f9;
+        padding: 4px 16px;
+        border-radius: 20px;
+        width: fit-content;
+        margin: -48px auto 25px auto;
+        border: 1px solid #cbd5e1;
     }
 
     /* Rendered Table Styles inside Document */
@@ -203,11 +223,11 @@
     <!-- Header Section Terpadu -->
     <div class="d-flex justify-content-between align-items-center bg-white rounded-3 shadow-sm p-3 mb-4 border border-light">
         <div class="d-flex align-items-center">
-            <div class="bg-gradient-primary text-white rounded-3 p-2.5 me-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 46px; height: 46px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+            <div class="bg-gradient-primary text-white rounded-3 p-2.5 me-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 46px; height: 46px;">
                 <i class="fas fa-file-signature fs-4"></i>
             </div>
             <div>
-                <h4 class="mb-0 fw-bold text-dark">Buat Surat Baru</h4>
+                <h4 class="mb-0 fw-bold text-dark">Buat Surat & Kustomisasi Template</h4>
                 <small class="text-muted d-none d-sm-inline">Pilih jenis surat, ukuran kertas (A4, A3, Legal, Folio), posisi logo, aksen, dan generator tabel dinamis.</small>
             </div>
         </div>
@@ -246,8 +266,8 @@
                             <label class="form-label text-sm fw-semibold text-dark">Pilih Preset Template</label>
                             <select name="template_layout" id="templateLayout" class="form-select form-select-custom fw-bold text-primary" onchange="applyPresetTemplate()">
                                 <option value="standard" selected>📄 Preset 1: Standard Kop Atas (Line Black)</option>
-                                <option value="accent_yellow">✨ Preset 2: Aksen Kuning Modern (Footer Alamat)</option>
-                                <option value="blue_header">🔷 Preset 3: Bilah Biru Formal</option>
+                                <option value="accent_yellow">✨ Preset 2: Aksen Kuning Modern (Footer Alamat - Sample 2)</option>
+                                <option value="blue_header">🔷 Preset 3: Bilah Biru Formal (Sample 3 & 4)</option>
                                 <option value="compact_left">📌 Preset 4: Kop Ringkas Kiri</option>
                             </select>
                         </div>
@@ -390,9 +410,10 @@
                                 <?php endforeach; ?>
                             </select>
 
+                            <!-- Input jenis surat custom jika 'Lainnya' dipilih -->
                             <div id="jenisSuratLainnyaWrapper" class="mt-2 d-none">
                                 <label class="form-label text-xs fw-bold text-primary">Ketikkan Jenis Surat Khusus:</label>
-                                <input type="text" id="jenisSuratLainnya" name="jenis_surat_custom" class="form-control form-control-custom text-uppercase fw-bold border-primary" placeholder="Misal: BERITA ACARA SERAH TERIMA (BAST)..." value="<?= old('jenis_surat_custom') ?>" oninput="renderLivePreview()">
+                                <input type="text" id="jenisSuratLainnya" name="jenis_surat_custom" class="form-control form-control-custom text-uppercase fw-bold border-primary" placeholder="Misal: SURAT TEGURAN LISAN / BAST..." value="<?= old('jenis_surat_custom') ?>" oninput="renderLivePreview()">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -413,6 +434,7 @@
                         </div>
                     </div>
 
+                    <!-- Info Preview Karyawan Selected -->
                     <div id="infoKaryawan" class="alert alert-info border-0 rounded-3 shadow-xs d-none mb-3">
                         <div class="d-flex align-items-center gap-2">
                             <i class="fas fa-id-card fs-5 text-primary"></i>
@@ -438,7 +460,7 @@
                             <label class="form-label text-sm fw-semibold text-dark">Status Penerbitan</label>
                             <select name="status" id="statusSurat" class="form-select form-select-custom" onchange="renderLivePreview()">
                                 <option value="draft" <?= old('status') == 'draft' ? 'selected' : '' ?>>Draft</option>
-                                <option value="diterbitkan" <?= old('status') == 'diterbitkan' || !old('status') ? 'selected' : '' ?>>Terbitkan Sekarang</option>
+                                <option value="diterbitkan" <?= old('status') == 'diterbitkan' ? 'selected' : '' ?>>Terbitkan Sekarang</option>
                             </select>
                         </div>
                     </div>
@@ -454,7 +476,7 @@
                                 <i class="fas fa-paragraph me-1"></i> + Paragraf
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" onclick="addBlock('table')">
-                                <i class="fas fa-table me-1"></i> + Tabel Data
+                                <i class="fas fa-table me-1"></i> + Tabel
                             </button>
                         </div>
                     </div>
@@ -464,6 +486,7 @@
                         <!-- Blocks rendered by JS -->
                     </div>
 
+                    <!-- Hidden textarea: assembled from blocks before submit -->
                     <textarea name="isi_surat" id="isiSurat" class="d-none"></textarea>
 
                     <div class="mb-4">
@@ -474,7 +497,7 @@
                     <!-- Action Buttons -->
                     <div class="pt-3 border-top d-flex justify-content-end gap-2">
                         <a href="<?= base_url('admin/surat') ?>" class="btn btn-light rounded-pill px-4 fw-semibold border">Batal</a>
-                        <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border: none;">
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
                             <i class="fas fa-save me-1.5"></i> Simpan Dokumen Surat
                         </button>
                     </div>
@@ -487,7 +510,7 @@
         <div class="col-12 col-xl-7">
             <div class="sticky-top" style="top: 20px; z-index: 10;">
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="badge bg-primary px-3 py-2 rounded-pill font-weight-bold text-sm shadow-xs" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;">
+                    <span class="badge bg-primary px-3 py-2 rounded-pill font-weight-bold text-sm shadow-xs">
                         <i class="fas fa-eye me-1.5"></i> Pratinjau Kertas Realistis
                     </span>
                     <div class="d-flex gap-2 align-items-center">
@@ -502,13 +525,46 @@
 
     </div>
 </div>
+</div><!-- /#mainEditorView -->
+
+<!-- Halaman Khusus Pratinjau & Cetak Surat (Dedicated Print View) -->
+<div id="dedicatedPrintView" class="d-none min-vh-100" style="display: none !important; background: #0f172a; padding-bottom: 60px;">
+    <!-- Top Sticky Header Control Bar (Hidden on Print) -->
+    <div class="no-print sticky-top bg-dark border-bottom border-secondary px-4 py-3 shadow-lg d-flex justify-content-between align-items-center flex-wrap gap-2" style="z-index: 1050; background: #1e293b !important;">
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3.5 py-2 fw-semibold" onclick="closeDedicatedPrintView()">
+                <i class="fas fa-arrow-left me-1.5"></i> Kembali ke Form Editor
+            </button>
+            <span class="badge bg-primary rounded-pill px-3 py-2 text-xs d-none d-md-inline">
+                Mode Pratinjau Cetak Khusus
+            </span>
+        </div>
+        <div class="text-white text-center d-none d-lg-block">
+            <h6 class="mb-0 text-white fw-bold"><i class="fas fa-file-alt text-warning me-2"></i> Pratinjau Cetak Dokumen Surat</h6>
+            <small class="text-slate-400" style="font-size:0.75rem; color: #94a3b8;">Format ini siap dicetak langsung atau disimpan sebagai PDF</small>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-warning btn-sm rounded-pill px-4 py-2 fw-bold shadow text-dark" onclick="triggerActualPrint()">
+                <i class="fas fa-print me-1.5"></i> Cetak Sekarang / Simpan PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Paper Centered Display Area -->
+    <div class="container py-4">
+        <div class="d-flex justify-content-center">
+            <div id="dedicatedPrintPaper" class="letter-paper-preview paper-size-A4 shadow-lg">
+                <!-- Copy of previewPaper rendered dynamically -->
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Modal Konfirmasi Cetak -->
+<!-- Modal Konfirmasi Sebelum Masuk Ke Pratinjau Cetak -->
 <div class="modal fade" id="confirmPrintModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow-lg">
-            <div class="modal-header text-white border-0 rounded-top-4 py-3" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+            <div class="modal-header bg-gradient-primary text-white border-0 rounded-top-4 py-3">
                 <h6 class="modal-title fw-bold text-white" id="confirmPrintModalLabel">
                     <i class="fas fa-file-invoice me-2"></i> Konfirmasi Pratinjau & Cetak Dokumen
                 </h6>
@@ -516,13 +572,13 @@
             </div>
             <div class="modal-body p-4 text-center">
                 <div class="mb-3">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle p-3 mb-2" style="width: 70px; height: 70px;">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning rounded-circle p-3 mb-2" style="width: 70px; height: 70px;">
                         <i class="fas fa-question-circle fa-2x"></i>
                     </div>
                 </div>
                 <h5 class="fw-bold text-dark mb-2">Apakah Dokumen Sudah Benar?</h5>
                 <p class="text-muted text-sm mb-4">
-                    Mohon periksa kembali data naskah dan susunan surat Anda. Jika sudah yakin benar, Anda dapat melanjutkan mencetak/menyimpan PDF.
+                    Mohon periksa kembali data naskah dan susunan surat Anda. Jika sudah yakin benar, Anda akan masuk ke <strong>Halaman Pratinjau Cetak Khusus</strong>.
                 </p>
 
                 <div class="card bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 p-3 text-start mb-3">
@@ -555,15 +611,17 @@
 
                 <div class="d-flex justify-content-center gap-2">
                     <button type="button" class="btn btn-light rounded-pill px-4 fw-semibold border" data-bs-dismiss="modal">
-                        <i class="fas fa-edit me-1"></i> Edit Lagi
+                        <i class="fas fa-edit me-1"></i> Periksa / Edit Lagi
                     </button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border: none;" onclick="proceedToDedicatedPrintView()">
+                    <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" onclick="proceedToDedicatedPrintView()">
                         <i class="fas fa-arrow-right me-1"></i> Ya, Lanjut Cetak ➔
                     </button>
                 </div>
             </div>
         </div>
     </div>
+</div>
+ </div>
 </div>
 
 <!-- Modal Paste / Impor Tabel dari Word / Excel / Web / PDF -->
@@ -616,12 +674,18 @@
     </div>
 </div>
 
+<!-- Data Base64 Logo dari Server -->
 <script>
 const companyLogoBase64 = '<?= $logoBase64 ?>';
 
+// =====================================================================
+// CONTENT BLOCKS SYSTEM
+// =====================================================================
 let blocks = [];
 let blockCounter = 0;
 
+// Usable body content heights (px) per paper size
+// page1 = after full kop header, cont = continuation pages with mini-header
 const PAPER_BODY_PX = {
     A4:     { page1: 760, cont: 950 },
     A3:     { page1: 1300, cont: 1500 },
@@ -639,6 +703,7 @@ function escHtml(str) {
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+// ---- Block Management ----
 function addBlock(type) {
     const id = genBlkId();
     if (type === 'text') {
@@ -647,12 +712,17 @@ function addBlock(type) {
         blocks.push({
             id, type: 'table',
             style: 'blue_header',
-            headers: ['No', 'Deskripsi / Uraian Pekerjaan', 'Volume / Satuan', 'Keterangan'],
-            rows: [['1','Pengadaan & Pemasangan Material','1 Paket','Selesai 100%'],['2','Pemeriksaan & Pengujian Lapangan','1 Laporan','Baik & Layak']]
+            headers: ['No', 'Deskripsi / Uraian', 'Keterangan'],
+            rows: [['1','',''],['2','',''],['3','','']]
         });
     }
     renderBlocksEditor();
     renderLivePreview();
+    // Scroll the new block into view
+    setTimeout(() => {
+        const last = document.querySelector('#contentBlocksEditor .content-block-card:last-child');
+        if (last) last.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
 }
 
 function removeBlock(id) {
@@ -728,6 +798,7 @@ function updateTableStyle(id, style) {
     if (b) { b.style = style; renderLivePreview(); }
 }
 
+// Re-render a single block editor in place (for add/remove row/col)
 function renderBlockEditor(id) {
     const container = document.getElementById('contentBlocksEditor');
     if (!container) return;
@@ -740,6 +811,7 @@ function renderBlockEditor(id) {
     el.replaceWith(tmp.firstElementChild);
 }
 
+// ---- Block HTML Builder ----
 function buildBlockHtml(b, idx) {
     const first = idx === 0;
     const last  = idx === blocks.length - 1;
@@ -757,7 +829,7 @@ function buildBlockHtml(b, idx) {
             </div>
             <div class="block-body-area">
                 <textarea class="form-control block-textarea" rows="4"
-                    placeholder="Tulis paragraf, kalimat, atau rincian naskah surat di sini..."
+                    placeholder="Tulis paragraf, kalimat, atau baris teks di sini..."
                     oninput="updateBlockText('${b.id}',this.value)">${escHtml(b.content)}</textarea>
             </div>
         </div>`;
@@ -809,6 +881,9 @@ function buildBlockHtml(b, idx) {
                         <tbody>${bodyTr}</tbody>
                     </table>
                 </div>
+                <small class="text-muted mt-1 d-block" style="font-size:0.7rem">
+                    <i class="fas fa-info-circle me-1"></i>${b.rows.length} baris × ${b.headers.length} kolom
+                </small>
             </div>
         </div>`;
     }
@@ -822,17 +897,20 @@ function renderBlocksEditor() {
         container.innerHTML = `
             <div class="block-empty-state">
                 <i class="fas fa-layer-group fa-2x mb-2" style="color:#c7d2fe"></i>
-                <p class="mb-1 fw-bold" style="color:#1e3c72">Belum ada konten naskah</p>
-                <p class="mb-0 text-sm">Klik <strong>+ Paragraf</strong> atau <strong>+ Tabel Data</strong> untuk menambah naskah.</p>
+                <p class="mb-1 fw-bold" style="color:#6366f1">Belum ada konten surat</p>
+                <p class="mb-0 text-sm">Klik <strong>+ Paragraf</strong> untuk menulis teks, atau <strong>+ Tabel</strong> untuk membuat tabel data.</p>
             </div>`;
         return;
     }
     container.innerHTML = blocks.map((b, i) => buildBlockHtml(b, i)).join('');
 }
 
+// Assemble blocks → HTML string for hidden isi_surat textarea
 function assembleIsiSurat() {
     return blocks.map(b => {
-        if (b.type === 'text') return b.content || '';
+        if (b.type === 'text') {
+            return b.content || '';
+        }
         if (b.type === 'table') {
             let html = `\n<table class="custom-doc-table table-style-${b.style}">\n<thead>\n<tr>\n`;
             b.headers.forEach(h => { html += `  <th>${h}</th>\n`; });
@@ -849,34 +927,63 @@ function assembleIsiSurat() {
     }).join('\n');
 }
 
+// Parse stored HTML → blocks array (for edit mode)
+function parseHtmlToBlocks(html) {
+    if (!html || !html.trim()) return [];
+    const result = [];
+    const tableRegex = /(<table[\s\S]*?<\/table>)/gi;
+    const parts = html.split(tableRegex);
+    parts.forEach(part => {
+        const trimmed = part.trim();
+        if (!trimmed) return;
+        if (/^<table/i.test(trimmed)) {
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(trimmed, 'text/html');
+                const tbl = doc.querySelector('table');
+                if (tbl) {
+                    const styleM = (tbl.className || '').match(/table-style-(\w+)/);
+                    const style = styleM ? styleM[1] : 'blue_header';
+                    const headers = Array.from(tbl.querySelectorAll('thead th')).map(x => x.textContent.trim());
+                    const rows = Array.from(tbl.querySelectorAll('tbody tr')).map(tr =>
+                        Array.from(tr.querySelectorAll('td')).map(td => td.textContent.trim())
+                    );
+                    if (headers.length) {
+                        result.push({ id: genBlkId(), type: 'table', style,
+                            headers, rows: rows.length ? rows : [new Array(headers.length).fill('')] });
+                    }
+                }
+            } catch(e) { /* skip bad table */ }
+        } else {
+            const txt = trimmed
+                .replace(/<div[^>]*doc-page-break[^>]*>.*?<\/div>/gi, '')
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<[^>]+>/g, '')
+                .trim();
+            if (txt) result.push({ id: genBlkId(), type: 'text', content: txt });
+        }
+    });
+    return result;
+}
+
+// =====================================================================
+// RENDER LIVE PREVIEW with AUTO PAGE BREAK
+// =====================================================================
 const templates = {
-    'Kontrak Kerja Karyawan': `Dengan hormat,\n\nBersama surat ini kami menyatakan bahwa:\n\nNama    : [NAMA KARYAWAN]\nJabatan : [JABATAN]\nDivisi  : [DIVISI]\n\nDinyatakan sebagai karyawan dengan status Kontrak terhitung mulai tanggal [TANGGAL].\n\nAdapun hak dan kewajiban karyawan mengikuti peraturan perusahaan yang berlaku.\n\nDemikian surat kontrak ini dibuat untuk dapat dipergunakan sebagaimana mestinya.`,
+    'Kontrak Kerja': `Dengan hormat,\n\nBersama surat ini kami menyatakan bahwa:\n\nNama    : [NAMA KARYAWAN]\nJabatan : [JABATAN]\nDivisi  : [DIVISI]\n\nDinyatakan sebagai karyawan dengan status Kontrak terhitung mulai tanggal [TANGGAL].\n\nAdapun hak dan kewajiban karyawan mengikuti peraturan perusahaan yang berlaku.\n\nDemikian surat kontrak ini dibuat untuk dapat dipergunakan sebagaimana mestinya.`,
     'Surat Peringatan (SP1)': `Dengan hormat,\n\nBersama surat ini kami memberikan Surat Peringatan Pertama (SP-1) kepada:\n\nNama    : [NAMA KARYAWAN]\nJabatan : [JABATAN]\nDivisi  : [DIVISI]\n\nDengan alasan:\n[Jelaskan alasan / pelanggaran yang dilakukan]\n\nKami berharap Saudara/i dapat memperbaiki perilaku dan kinerja ke depannya.\n\nApabila dalam waktu 30 hari ke depan tidak ada perbaikan, maka akan diberikan Surat Peringatan berikutnya.`,
     'Surat Peringatan (SP2)': `Dengan hormat,\n\nBersama surat ini kami memberikan Surat Peringatan Kedua (SP-2) kepada:\n\nNama    : [NAMA KARYAWAN]\nJabatan : [JABATAN]\nDivisi  : [DIVISI]\n\nMerujuk pada SP-1 yang telah dikeluarkan sebelumnya, dan atas pelanggaran:\n[Jelaskan pelanggaran lanjutan]\n\nIni merupakan peringatan terakhir sebelum tindakan lebih lanjut diambil.`,
-    'Surat Keterangan Kerja (Paklaring)': `Yang bertanda tangan di bawah ini, menerangkan bahwa:\n\nNama    : [NAMA KARYAWAN]\nJabatan : [JABATAN]\nDivisi  : [DIVISI]\n\nBenar-benar merupakan karyawan aktif di perusahaan kami.\n\nSurat keterangan ini dibuat atas permintaan yang bersangkutan dan untuk dipergunakan sebagaimana mestinya.`,
-    'Berita Acara Serah Terima (BAST)': `BERITA ACARA SERAH TERIMA PEKERJAAN (BAST)\n\nPada hari ini, kami yang bertanda tangan di bawah ini:\n\nNama    : [NAMA KARYAWAN]\nJabatan : [JABATAN]\nDivisi  : [DIVISI]\n\nDengan ini menyatakan telah menyelesaikan seluruh rangkaian pekerjaan / pengadaan barang sesuai ketentuan yang berlaku dalam keadaan baik dan lengkap.`,
-    'Surat Jalan (Pengantar Barang)': `SURAT JALAN / PENGANTAR BARANG\n\nKepada Yth. Penerima Barang,\nBersama ini kami kirimkan barang-barang operasional berikut dengan kendaraan pengangkut resmi CDW Engineering.\n\nMohon diperiksa kembali kelengkapan barang saat diterima.`,
-    'Surat Penawaran Harga (Quotation)': `Dengan hormat,\n\nSehubungan dengan kebutuhan pengadaan barang/jasa perusahaan Anda, bersama ini PT Cipta Duta Wacana Engineering menyampaikan Surat Penawaran Harga (Quotation) untuk menjadi bahan pertimbangan kerja sama.`,
-    'Surat Perintah Kerja (SPK)': `SURAT PERINTAH KERJA (SPK)\n\nDengan ini PT Cipta Duta Wacana Engineering memberikan penugasan pelaksanaan proyek kepada:\n\nNama    : [NAMA KARYAWAN]\nJabatan : [JABATAN]\nDivisi  : [DIVISI]\n\nUntuk melaksanakan pekerjaan sebagaimana terlampir dalam rincian tugas proyek.`
+    'Surat Keterangan Kerja': `Yang bertanda tangan di bawah ini, menerangkan bahwa:\n\nNama    : [NAMA KARYAWAN]\nJabatan : [JABATAN]\nDivisi  : [DIVISI]\n\nBenar-benar merupakan karyawan aktif di perusahaan kami.\n\nSurat keterangan ini dibuat atas permintaan yang bersangkutan dan untuk dipergunakan sebagaimana mestinya.`,
 };
 
 const perihalDefaults = {
-    'Kontrak Kerja Karyawan': 'Surat Kontrak Kerja Karyawan (PKWT)',
+    'Kontrak Kerja': 'Surat Kontrak Kerja',
     'Surat Peringatan (SP1)': 'Surat Peringatan Pertama (SP-1)',
     'Surat Peringatan (SP2)': 'Surat Peringatan Kedua (SP-2)',
     'Surat Peringatan (SP3)': 'Surat Peringatan Ketiga (SP-3)',
-    'Surat Keterangan Kerja (Paklaring)': 'Surat Keterangan Kerja / Paklaring',
-    'Berita Acara Serah Terima (BAST)': 'Berita Acara Serah Terima (BAST) Pekerjaan',
-    'Surat Jalan (Pengantar Barang)': 'Surat Jalan Pengiriman Barang',
-    'Surat Penawaran Harga (Quotation)': 'Penawaran Harga Produk & Jasa (Quotation)',
-    'Surat Perintah Kerja (SPK)': 'Surat Perintah Kerja (SPK) Proyek',
-    'Surat Perjanjian Kerja Sama (MOU)': 'Memorandum of Understanding (MOU) Kerja Sama',
-    'Surat Keterangan Domisili Perusahaan (SKDP)': 'Surat Keterangan Domisili Perusahaan',
-    'Surat Perintah Tugas (SPT)': 'Surat Perintah Penugasan Dinas (SPT)',
-    'Surat Keputusan (SK Direksi)': 'Surat Keputusan Direksi (SK)',
-    'Surat Edaran / Memo Internal': 'Memo Internal / Surat Edaran Direksi',
-    'Surat Permintaan Dana / Kas Kecil (Requisition)': 'Pengajuan Dana Operasional Kas Kecil',
-    'Invois / Faktur Tagihan': 'Surat Tagihan Pembayaran / Invoice',
+    'Surat Keterangan Kerja': 'Surat Keterangan Kerja',
+    'Surat Tugas': 'Surat Penugasan',
+    'Surat Pernyataan': 'Surat Pernyataan',
 };
 
 function applyPresetTemplate() {
@@ -936,6 +1043,7 @@ function updateKaryawanText() {
     renderLivePreview();
 }
 
+// ---- Build block HTML for document preview (not editor) ----
 function blockToDocHtml(b) {
     if (b.type === 'text') {
         if (!b.content || !b.content.trim()) return '';
@@ -1012,6 +1120,7 @@ function toggleSignatureFields() {
     }
 }
 
+// Build kop surat (full header for page 1)
 function buildKopHtml(logoPos, addrPos, accent, logoHtml, addressHtml) {
     let hTop = '';
     if (logoPos === 'top_right') {
@@ -1026,6 +1135,7 @@ function buildKopHtml(logoPos, addrPos, accent, logoHtml, addressHtml) {
     return hTop;
 }
 
+// Build mini kop for continuation pages
 function buildMiniKopHtml() {
     return '';
 }
@@ -1096,6 +1206,12 @@ function renderLivePreview() {
     if (accent === 'line') accentHtml = `<div style="border-bottom:2px solid #0f172a;margin-bottom:22px;"></div>`;
     else if (accent === 'blue_bar') accentHtml = `<div class="blue-header-banner text-center my-3">${jenis}</div>`;
 
+    let cornerAccents = '';
+    if (accent === 'yellow_corner') {
+        cornerAccents = `<svg style="position:absolute;top:0;left:0;width:200px;height:200px;pointer-events:none;z-index:1;opacity:0.85;" viewBox="0 0 280 280"><path d="M 0 0 L 280 0 Q 70 70 0 280 Z" fill="#f5a600"/></svg>
+        <svg style="position:absolute;bottom:0;right:0;width:160px;height:160px;pointer-events:none;z-index:1;opacity:0.85;" viewBox="0 0 260 260"><path d="M 260 260 L 0 260 Q 190 190 260 0 Z" fill="#f5a600"/></svg>`;
+    }
+
     let footerAddrHtml = '';
     if (addrPos === 'footer') {
         footerAddrHtml = `
@@ -1111,6 +1227,7 @@ function renderLivePreview() {
     const paperWidthPx = paper.clientWidth || 794;
     const bodyLimits = PAPER_BODY_PX[paperSizeVal] || PAPER_BODY_PX.A4;
 
+    // Decompose blocks for pagination so multi-paragraph/line text blocks split gracefully across pages
     const renderBlocks = [];
     blocks.forEach(b => {
         if (b.type === 'text') {
@@ -1125,6 +1242,7 @@ function renderLivePreview() {
         }
     });
 
+    // Measure each block height using offscreen div
     const measurer = document.createElement('div');
     measurer.style.cssText = `position:absolute;visibility:hidden;left:-9999px;top:0;
         width:${paperWidthPx - 120}px;font-family:Inter,Arial,sans-serif;font-size:0.9rem;`;
@@ -1136,10 +1254,11 @@ function renderLivePreview() {
         measurer.appendChild(div);
         const h = div.getBoundingClientRect().height || 30;
         measurer.removeChild(div);
-        return Math.ceil(h) + 4;
+        return Math.ceil(h) + 4; // +4px minimal margin buffer
     });
     document.body.removeChild(measurer);
 
+    // Group blocks into pages
     const pages = [[]];
     let curPageHeight = 0;
     let pageNum = 1;
@@ -1149,6 +1268,7 @@ function renderLivePreview() {
         const limit = pageNum === 1 ? bodyLimits.page1 : bodyLimits.cont;
 
         if (curPageHeight + bh > limit && curPageHeight > 0) {
+            // Start new page
             pages.push([]);
             pageNum++;
             curPageHeight = bh;
@@ -1160,6 +1280,7 @@ function renderLivePreview() {
 
     const totalPages = pages.length;
 
+    // Update page count badge
     const badge = document.getElementById('pageCountBadge');
     if (badge) {
         if (totalPages > 1) {
@@ -1169,8 +1290,10 @@ function renderLivePreview() {
         }
     }
 
+    // Build full kop surat HTML for page 1
     const kopTopHtml = buildKopHtml(logoPos, addrPos, accent, logoHtml, addressHtml);
 
+    // Signature block
     const sigLayout = (document.getElementById('signatureLayout') || {value:'1_pihak'}).value;
     const mbStyle = addrPos === 'footer' ? 'margin-bottom:70px;' : 'margin-bottom:15px;';
 
@@ -1183,6 +1306,7 @@ function renderLivePreview() {
     const p2Jab   = (document.getElementById('pihak2Jabatan') || {}).value || 'Direktur Utama';
 
     const p3Title = (document.getElementById('pihak3Title') || {}).value || 'Pihak Ketiga,';
+    const p3Nama  = (document.getElementById('pihak3Nama') || {}).value || 'PT. CIPTA DUTA WACANA';
     const p1Img = (document.getElementById('pihak1ImgVal') || {}).value || '';
     const p2Img = (document.getElementById('pihak2ImgVal') || {}).value || '';
     const p3Img = (document.getElementById('pihak3ImgVal') || {}).value || '';
@@ -1245,12 +1369,14 @@ function renderLivePreview() {
         </div>`;
     }
 
+    // Catatan block
     const catatanHtml = catatan
         ? `<div class="alert alert-warning border-0 rounded-3 text-dark text-xs p-2 mb-3" style="font-size:0.78rem;">
               <strong>Catatan Internal:</strong> ${catatan}
            </div>`
         : '';
 
+    // Build pages HTML
     let paperHtml = '';
 
     pages.forEach((pageBlocks, pi) => {
@@ -1258,10 +1384,12 @@ function renderLivePreview() {
         const isLastPage  = (pi === pages.length - 1);
         const pageNum     = pi + 1;
 
+        // Break indicator before page 2+
         if (!isFirstPage) {
             paperHtml += `<div class="page-break-indicator" data-label="📄 HALAMAN ${pageNum}"></div>`;
         }
 
+        // Page Corner Accents
         let pageCornerTop = '';
         let pageCornerBottom = '';
         if (accent === 'yellow_corner') {
@@ -1271,6 +1399,7 @@ function renderLivePreview() {
             pageCornerBottom = `<svg style="position:absolute;bottom:0;right:0;width:160px;height:160px;pointer-events:none;z-index:1;opacity:0.85;" viewBox="0 0 260 260"><path d="M 260 260 L 0 260 Q 190 190 260 0 Z" fill="#f5a600"/></svg>`;
         }
 
+        // Footer Address for this page
         let pageFooterAddr = '';
         if (addrPos === 'footer') {
             pageFooterAddr = `
@@ -1281,8 +1410,10 @@ function renderLivePreview() {
             </div>`;
         }
 
+        // Page number at bottom-right
         let pageNumIndicator = `<div style="position:absolute;bottom:18px;right:30px;font-size:0.82rem;font-weight:700;color:#1e3c72;z-index:5;text-align:right;">Halaman ${pageNum} dari ${totalPages}</div>`;
 
+        // Start sheet
         paperHtml += `<div class="doc-page-sheet">`;
         paperHtml += pageCornerTop;
         paperHtml += pageCornerBottom;
@@ -1290,6 +1421,7 @@ function renderLivePreview() {
         paperHtml += `<div style="position:relative;z-index:2;display:flex;flex-direction:column;flex-grow:1;height:100%;">`;
 
         if (isFirstPage) {
+            // Page 1 — Full Header
             paperHtml += `<div style="margin-bottom:16px;position:relative;z-index:3;">${kopTopHtml}</div>`;
             paperHtml += accentHtml;
             paperHtml += accent !== 'blue_bar' ? `<h5 class="text-center fw-bold text-dark text-uppercase mb-3" style="letter-spacing:0.5px;">${jenis}</h5>` : '';
@@ -1299,15 +1431,18 @@ function renderLivePreview() {
             </div>`;
             paperHtml += `<div class="mb-3"><strong class="text-dark">Perihal: ${perihal}</strong></div>`;
         } else {
+            // Continuation Page Mini Header
             paperHtml += buildMiniKopHtml(pageNum);
         }
 
+        // Content Blocks
         paperHtml += `<div class="page-content-area" style="flex-grow:1;">`;
         pageBlocks.forEach(b => {
             paperHtml += blockToDocHtml(b);
         });
         paperHtml += `</div>`;
 
+        // Signature Block & Catatan only on Last Page
         if (isLastPage) {
             paperHtml += `<div style="margin-top:auto;padding-top:20px;">`;
             paperHtml += catatanHtml;
@@ -1323,6 +1458,7 @@ function renderLivePreview() {
         paperHtml += `</div>`; // end .doc-page-sheet
     });
 
+    // Empty State if no blocks
     if (blocks.length === 0) {
         paperHtml = `<div class="doc-page-sheet">
             <div style="position:relative;z-index:2;display:flex;flex-direction:column;flex-grow:1;">
@@ -1350,8 +1486,10 @@ function renderLivePreview() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Start with one empty text block
     addBlock('text');
 
+    // Assemble isi_surat from blocks before form submit
     const form = document.getElementById('suratForm');
     if (form) {
         form.addEventListener('submit', function () {
@@ -1368,6 +1506,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Re-render preview on any design field change
     ['templateLayout','paperSize','logoPosition','addressPosition','accentStyle','signatureLayout',
      'jenisSurat','jenisSuratLainnya','karyawanSelect','tanggalSurat','perihalInput','statusSurat','catatanInput',
      'pihak1Title','pihak1Nama','pihak1Jabatan','pihak2Title','pihak2Nama','pihak2Jabatan','pihak3Title','pihak3Nama','pihak3Jabatan'
@@ -1381,6 +1520,9 @@ document.addEventListener('DOMContentLoaded', function () {
     renderLivePreview();
 });
 
+// =====================================================================
+// DEDICATED PRINT VIEW & CONFIRMATION MODAL HANDLERS
+// =====================================================================
 function openPrintConfirmation() {
     const jenisSel = (document.getElementById('jenisSurat') || {}).value || 'Surat Karyawan';
     const sel = document.getElementById('karyawanSelect');
@@ -1388,7 +1530,7 @@ function openPrintConfirmation() {
     const nama = opt && opt.value ? (opt.dataset.nama || opt.text.split(' - ')[0]) : '-';
     const tanggal = (document.getElementById('tanggalSurat') || {}).value || '-';
     const paper = (document.getElementById('paperSize') || {}).value || 'A4';
-
+    
     const sheets = document.querySelectorAll('#previewPaper .doc-page-sheet');
     const pageCount = sheets.length > 0 ? sheets.length : 1;
     const pageTxt = pageCount + ' Halaman';
@@ -1421,16 +1563,74 @@ function openPrintConfirmation() {
 }
 
 function proceedToDedicatedPrintView() {
+    const modalEl = document.getElementById('confirmPrintModal');
+    if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    }
+
     const form = document.getElementById('suratForm');
     if (form) {
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        let printFlag = document.getElementById('printNowFlag');
+        if (!printFlag) {
+            printFlag = document.createElement('input');
+            printFlag.type = 'hidden';
+            printFlag.name = 'print_now';
+            printFlag.id = 'printNowFlag';
+            form.appendChild(printFlag);
+        }
+        printFlag.value = '1';
+
         const hidden = document.getElementById('isiSurat');
         const htmlFull = document.getElementById('htmlFull');
         const paper = document.getElementById('previewPaper');
-        if (hidden) hidden.value = assembleIsiSurat();
-        if (htmlFull && paper) htmlFull.value = paper.innerHTML;
+        if (hidden && typeof assembleIsiSurat === 'function') {
+            hidden.value = assembleIsiSurat();
+        }
+        if (htmlFull && paper) {
+            htmlFull.value = paper.innerHTML;
+        }
+
+        Swal.fire({
+            title: 'Menyimpan Dokumen...',
+            text: 'Sistem sedang menyimpan surat dan menyiapkan pratinjau cetak...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
         form.submit();
     }
 }
+
+function closeDedicatedPrintView() {
+    const mainView = document.getElementById('mainEditorView');
+    const printView = document.getElementById('dedicatedPrintView');
+    if (mainView && printView) {
+        printView.style.setProperty('display', 'none', 'important');
+        printView.classList.add('d-none');
+        mainView.style.removeProperty('display');
+        mainView.classList.remove('d-none');
+    }
+}
+
+function triggerActualPrint() {
+    window.print();
+}
+
+window.addEventListener('beforeprint', function () {
+    const printView = document.getElementById('dedicatedPrintView');
+    if (printView && printView.classList.contains('d-none')) {
+        proceedToDedicatedPrintView();
+    }
+});
 
 // =====================================================================
 // TABLE COPY-PASTE & SMART PARSER SYSTEM
@@ -1819,4 +2019,144 @@ function submitPastedTableModal() {
 }
 </script>
 
-<?= view('admin/templates/footer') ?>
+<style>
+.letter-paper-preview {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+.doc-page-sheet {
+    position: relative !important;
+    background: #ffffff !important;
+    min-height: 1123px !important;
+    max-height: 1123px !important;
+    height: 1123px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+    margin: 0 auto 30px auto !important;
+    border-radius: 4px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
+    padding: 45px 50px 75px 50px !important;
+    width: 100% !important;
+    overflow: hidden !important;
+}
+
+@media print {
+    @page { size: A4 portrait; margin: 0; }
+    html, body {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    .sidebar,
+    .main-content > *:not(#dedicatedPrintView),
+    .top-navbar,
+    .navbar,
+    .sidenav,
+    #mainEditorView,
+    header,
+    footer,
+    .no-print,
+    .modal,
+    .modal-backdrop,
+    .sidebar-overlay,
+    nav,
+    #ci-debug-bar,
+    .ci-debug-bar,
+    .debug-bar {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    #dedicatedPrintView {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+        z-index: 1 !important;
+    }
+    #dedicatedPrintPaper, #previewPaper {
+        position: relative !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: #ffffff !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+    .doc-page-sheet {
+        position: relative !important;
+        width: 210mm !important;
+        max-width: 210mm !important;
+        min-height: 296mm !important;
+        max-height: 296mm !important;
+        height: 296mm !important;
+        margin: 0 auto !important;
+        padding: 35px 45px 75px 45px !important;
+        box-sizing: border-box !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        page-break-before: always !important;
+        break-before: page !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    .doc-page-sheet:first-child {
+        page-break-before: auto !important;
+        break-before: auto !important;
+    }
+    .accent-top-left {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 160px !important;
+        height: 160px !important;
+        z-index: 1 !important;
+    }
+    .accent-bottom-right {
+        position: absolute !important;
+        bottom: 0 !important;
+        right: 0 !important;
+        width: 160px !important;
+        height: 160px !important;
+        z-index: 1 !important;
+    }
+    .custom-doc-table, tr, td, th, table {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+    .mini-page-header-repeat {
+        display: none !important;
+        visibility: hidden !important;
+    }
+}
+</style>
+
+<?= view('admin/templates/footer', $templateData) ?>
+
