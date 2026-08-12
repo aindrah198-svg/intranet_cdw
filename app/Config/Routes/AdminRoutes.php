@@ -121,9 +121,16 @@ $routes->group('admin', ['filter' => 'auth', 'namespace' => 'App\Controllers\Adm
         $routes->get('stok-atk', 'Inventaris::stokAtk');
         $routes->get('aset', 'Inventaris::aset');
         $routes->get('pembelian', 'Inventaris::pembelian');
+        $routes->get('pencarian-barang', 'PencarianBarang::index', ['as' => 'admin.pengadaan.pencarian_barang']);
+        $routes->get('pencarian-barang/detail/(:num)', 'PencarianBarang::detail/$1', ['as' => 'admin.pengadaan.pencarian_barang.detail']);
+        $routes->post('pencarian-barang/update-hasil/(:num)', 'PencarianBarang::updateHasil/$1', ['as' => 'admin.pengadaan.pencarian_barang.update_hasil']);
         $routes->get('kerusakan', 'Inventaris::kerusakan');
         $routes->get('gudang', 'Inventaris::gudang');
     });
+
+    // Fallback alias for Admin Penugasan Pencarian Barang
+    $routes->get('proyek/pencarian-barang', 'PencarianBarang::index');
+    $routes->get('pengadaan/pencarian-barang', 'PencarianBarang::index');
 
     // ============================================
     // DOKUMEN ROUTES (Dokumen Penting, Sertifikat, Kontak Project)

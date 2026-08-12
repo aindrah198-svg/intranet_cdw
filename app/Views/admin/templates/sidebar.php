@@ -50,7 +50,14 @@ if ($db->tableExists('laporan_kerusakan')) {
     $notifKerusakan = $q->countAllResults();
 }
 
-$notifInventarisTotal = $notifATK + $notifAset + $notifPR + $notifKerusakan;
+$notifPencarianBarang = 0;
+if ($db->tableExists('pencarian_barang')) {
+    $q = $db->table('pencarian_barang')->whereIn('status', ['baru', 'proses', 'pending']);
+    if ($db->fieldExists('deleted_at', 'pencarian_barang')) $q->where('deleted_at', null);
+    $notifPencarianBarang = $q->countAllResults();
+}
+
+$notifInventarisTotal = $notifATK + $notifAset + $notifPR + $notifKerusakan + $notifPencarianBarang;
 
 $notifCuti = 0;
 if ($db->tableExists('cuti')) {
@@ -170,6 +177,7 @@ function adminSubLink($href, $icon, $label, $isActive, $badgeCount = 0) {
                 <?= adminSubLink(base_url('admin/inventaris/stok-atk'),       'fas fa-clipboard-list', 'Monitoring Stok ATK',                $seg2==='stok-atk') ?>
                 <?= adminSubLink(base_url('admin/inventaris/aset'),           'fas fa-desktop',        'Pengadaan Aset',                      $seg2==='aset' || $seg2==='inventaris-kantor', $notifAset) ?>
                 <?= adminSubLink(base_url('admin/inventaris/pembelian'),      'fas fa-shopping-cart',  'Pencatatan & Tracking Pembelian (PR)',$seg2==='pembelian', $notifPR) ?>
+                <?= adminSubLink(base_url('admin/pengadaan/pencarian-barang'), 'fas fa-search-dollar',  'Penugasan Pencarian Barang (RAB)',    ($seg1==='pengadaan'||$seg1==='proyek') && $seg2==='pencarian-barang', $notifPencarianBarang) ?>
                 <?= adminSubLink(base_url('admin/inventaris/kerusakan'),      'fas fa-tools',          'Kerusakan Alat',                      $seg2==='kerusakan', $notifKerusakan) ?>
                 <?= adminSubLink(base_url('admin/inventaris/gudang'),         'fas fa-warehouse',      'Monitoring Gudang',                   $seg2==='gudang') ?>
             </div>

@@ -141,6 +141,21 @@ if ($db->tableExists('laporan_harian')) {
     }
 }
 
+if ($db->tableExists('pencarian_barang')) {
+    $q = $db->table('pencarian_barang')->whereIn('status', ['baru', 'proses', 'pending']);
+    if ($db->fieldExists('deleted_at', 'pencarian_barang')) $q->where('deleted_at', null);
+    $pencarianCount = $q->countAllResults();
+    if ($pencarianCount > 0) {
+        $adminNotifList[] = [
+            'icon'  => 'fas fa-search-dollar',
+            'bg'    => 'bg-info text-white',
+            'title' => "$pencarianCount Penugasan Pencarian Barang",
+            'desc'  => 'Instruksi pencarian barang & RAB dari Direktur',
+            'url'   => base_url('admin/pengadaan/pencarian-barang')
+        ];
+    }
+}
+
 $totalAdminNotif = count($adminNotifList);
 ?>
 <div class="main-content">
