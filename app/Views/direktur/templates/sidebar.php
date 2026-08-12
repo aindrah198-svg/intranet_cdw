@@ -53,7 +53,9 @@ $notifKaryawanTotal = $notifSurat + $notifIzin + $notifCuti + $notifKeluhan;
 // 2. Penugasan & Proyek Notifs
 $notifPenugasan = 0;
 if ($db->tableExists('penugasan_harian')) {
-    $q = $db->table('penugasan_harian')->whereIn('status', ['pending', 'baru']);
+    $q = $db->table('penugasan_harian')
+        ->where('tanggal_tugas', date('Y-m-d'))
+        ->whereIn('status', ['pending', 'baru']);
     if ($db->fieldExists('deleted_at', 'penugasan_harian')) $q->where('deleted_at', null);
     $notifPenugasan = $q->countAllResults();
 }
