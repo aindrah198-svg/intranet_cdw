@@ -213,16 +213,14 @@ function adminSubLink($href, $icon, $label, $isActive, $badgeCount = 0) {
         <div>
             <a data-bs-toggle="collapse" href="#pengajuanMenu"
                style="color:rgba(255,255,255,0.85);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-left:3px solid <?= $isPengajuanActive ? '#ce93d8' : 'transparent' ?>;<?= $isPengajuanActive ? 'background:rgba(255,255,255,0.15);' : '' ?>">
-                <div style="display:flex;align-items:center;">
+                <div style="display:flex;align-items:center;flex-grow:1;margin-right:8px;">
                     <i class="fas fa-clipboard-list" style="width:24px;text-align:center;margin-right:8px;"></i>
                     <span style="font-size:0.875rem;">Pengajuan</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:6px;">
                     <?php if ($notifPengajuanTotal > 0): ?>
-                        <span class="badge bg-danger rounded-pill px-2 py-0.5" style="font-size:0.72rem;font-weight:700;box-shadow:0 2px 6px rgba(220,53,69,0.4);"><?= $notifPengajuanTotal ?></span>
+                        <span class="badge bg-danger rounded-pill ms-auto me-2 px-2 py-0.5" style="font-size:0.72rem;font-weight:700;box-shadow:0 2px 6px rgba(220,53,69,0.4);"><?= $notifPengajuanTotal ?></span>
                     <?php endif; ?>
-                    <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
                 </div>
+                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
             </a>
             <div class="collapse <?= $isPengajuanActive ? 'show' : '' ?>" id="pengajuanMenu" style="background:rgba(0,0,0,0.15);">
                 <?= adminSubLink(base_url('admin/pengajuan/semua'),    'fas fa-list-alt',        'Pengajuan', $seg1==='pengajuan' && ($seg2==='' || $seg2==='semua'), $notifPengajuanTotal) ?>
@@ -236,16 +234,14 @@ function adminSubLink($href, $icon, $label, $isActive, $badgeCount = 0) {
         <div>
             <a data-bs-toggle="collapse" href="#laporanMenu"
                style="color:rgba(255,255,255,0.85);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-left:3px solid <?= $isLaporanActive ? '#ce93d8' : 'transparent' ?>;<?= $isLaporanActive ? 'background:rgba(255,255,255,0.15);' : '' ?>">
-                <div style="display:flex;align-items:center;">
+                <div style="display:flex;align-items:center;flex-grow:1;margin-right:8px;">
                     <i class="fas fa-chart-bar" style="width:24px;text-align:center;margin-right:8px;"></i>
                     <span style="font-size:0.875rem;">Laporan & Keluhan</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:6px;">
                     <?php if ($notifLaporanTotal > 0): ?>
-                        <span class="badge bg-danger rounded-pill px-2 py-0.5" style="font-size:0.72rem;font-weight:700;box-shadow:0 2px 6px rgba(220,53,69,0.4);"><?= $notifLaporanTotal ?></span>
+                        <span class="badge bg-danger rounded-pill ms-auto me-2 px-2 py-0.5" style="font-size:0.72rem;font-weight:700;box-shadow:0 2px 6px rgba(220,53,69,0.4);"><?= $notifLaporanTotal ?></span>
                     <?php endif; ?>
-                    <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
                 </div>
+                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
             </a>
             <div class="collapse <?= $isLaporanActive ? 'show' : '' ?>" id="laporanMenu" style="background:rgba(0,0,0,0.15);">
                 <?= adminSubLink(base_url('admin/laporan/kerja-harian'),  'fas fa-tasks',          'Laporan Kerja Harian',$seg1==='laporan' && ($seg2==='kerja-harian' || $seg1==='laporan-harian-saya'), $notifLaporanHarian) ?>
@@ -262,16 +258,14 @@ function adminSubLink($href, $icon, $label, $isActive, $badgeCount = 0) {
         <div>
             <a data-bs-toggle="collapse" href="#pribadiMenu"
                style="color:rgba(255,255,255,0.85);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-left:3px solid <?= $isPribadiActive ? '#ce93d8' : 'transparent' ?>;<?= $isPribadiActive ? 'background:rgba(255,255,255,0.15);' : '' ?>">
-                <div style="display:flex;align-items:center;">
+                <div style="display:flex;align-items:center;flex-grow:1;margin-right:8px;">
                     <i class="fas fa-user-circle" style="width:24px;text-align:center;margin-right:8px;"></i>
                     <span style="font-size:0.875rem;">Menu Pribadi</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:6px;">
                     <?php if ($notifPribadiTotal > 0): ?>
-                        <span class="badge bg-danger rounded-pill px-2 py-0.5" style="font-size:0.72rem;font-weight:700;box-shadow:0 2px 6px rgba(220,53,69,0.4);"><?= $notifPribadiTotal ?></span>
+                        <span class="badge bg-danger rounded-pill ms-auto me-2 px-2 py-0.5" style="font-size:0.72rem;font-weight:700;box-shadow:0 2px 6px rgba(220,53,69,0.4);"><?= $notifPribadiTotal ?></span>
                     <?php endif; ?>
-                    <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
                 </div>
+                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
             </a>
             <div class="collapse <?= $isPribadiActive ? 'show' : '' ?>" id="pribadiMenu" style="background:rgba(0,0,0,0.15);">
                 <?= adminSubLink(base_url('admin/absensi-saya'),      'fas fa-fingerprint',   'Absensi',          $seg1==='absensi-saya') ?>
