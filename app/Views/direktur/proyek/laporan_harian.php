@@ -219,6 +219,9 @@ $templateData = [
                                         <!-- Tag ID -->
                                         <span class="id-tag">ID: <?= $lapIdTag ?></span>
                                     </div>
+                                    <small class="text-primary fw-semibold d-block mt-0.5">
+                                        <i class="fas fa-user-circle me-1"></i> Pelapor: <?= esc($lap['nama_lengkap'] ?? 'Admin / Karyawan') ?> <?= !empty($lap['jabatan']) ? '('.esc($lap['jabatan']).')' : '' ?>
+                                    </small>
                                     <!-- Lencana Status Chip Frosted Glass -->
                                     <div class="mt-1.5 d-flex align-items-center gap-2 flex-wrap">
                                         <span class="status-pill <?= $statusPillClass ?>">
@@ -291,8 +294,25 @@ $templateData = [
                                     </div>
                                 <?php endif; ?>
                             </div>
-                            <div class="modal-footer bg-light border-top py-3 px-4 rounded-bottom-4">
-                                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
+                            <div class="modal-footer bg-light border-top p-4 rounded-bottom-4 flex-column align-items-stretch">
+                                <form action="<?= base_url('direktur/proyek/laporan-harian/approve') ?>" method="POST" class="w-100 mb-2">
+                                    <input type="hidden" name="id" value="<?= $lap['id'] ?>">
+                                    <div class="mb-3 text-start">
+                                        <label class="form-label fw-bold text-dark small"><i class="fas fa-comment-dots text-primary me-1"></i> Catatan & Review Direktur:</label>
+                                        <textarea class="form-control text-sm" name="komentar" rows="2" placeholder="Tuliskan masukan atau catatan review untuk pelapor..."><?= esc($lap['komentar_direktur'] ?? '') ?></textarea>
+                                    </div>
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <button type="submit" name="status" value="revisi" class="btn btn-warning rounded-pill px-3.5 py-1.5 fw-semibold text-xs">
+                                            <i class="fas fa-exclamation-triangle me-1"></i> Minta Revisi
+                                        </button>
+                                        <button type="submit" name="status" value="disetujui" class="btn btn-success rounded-pill px-3.5 py-1.5 fw-semibold text-xs shadow-sm">
+                                            <i class="fas fa-check-circle me-1"></i> Setujui Laporan
+                                        </button>
+                                    </div>
+                                </form>
+                                <div class="text-end border-top pt-2">
+                                    <button type="button" class="btn btn-secondary rounded-pill px-4 text-xs" data-bs-dismiss="modal">Tutup</button>
+                                </div>
                             </div>
                         </div>
                     </div>

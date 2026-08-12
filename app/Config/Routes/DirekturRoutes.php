@@ -294,6 +294,7 @@ $routes->group('direktur', ['filter' => 'auth'], function($routes) {
         // Laporan Kerja Harian (Milik Sendiri)
         $routes->get('laporan-harian', 'Direktur\Proyek\LaporanHarianController::index', ['as' => 'direktur.proyek.laporan_harian']);
         $routes->post('laporan-harian/simpan', 'Direktur\Proyek\LaporanHarianController::simpan', ['as' => 'direktur.proyek.laporan_harian.simpan']);
+        $routes->post('laporan-harian/approve', 'Direktur\Proyek\LaporanHarianController::approve', ['as' => 'direktur.proyek.laporan_harian.approve']);
         
         // Monitoring Laporan (Semua Karyawan)
         $routes->get('monitoring-laporan', 'Direktur\Proyek\LaporanHarianController::monitoring', ['as' => 'direktur.proyek.monitoring_laporan']);

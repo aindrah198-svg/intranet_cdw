@@ -20,11 +20,27 @@ class LaporanHarianController extends BaseController
 
     public function index()
     {
-        $karyawan_id = session()->get('karyawan_id') ?? session()->get('id');
+        $search  = $this->request->getGet('search');
+        $status  = $this->request->getGet('status');
+        $tanggal = $this->request->getGet('tanggal');
+
+        $filters = [];
+        if (!empty($status)) $filters['status'] = $status;
+        if (!empty($tanggal)) $filters['tanggal'] = $tanggal;
+
+        $laporan = $this->laporanModel->getLaporanWithKaryawan($filters);
         
+        // Normalize status if empty or 'Terkirim'
+        foreach ($laporan as &$lap) {
+            if (empty($lap['status']) || $lap['status'] === 'Terkirim') {
+                $lap['status'] = 'menunggu_review';
+            }
+        }
+        unset($lap);
+
         $data = [
-            'title' => 'Laporan Kerja Harian',
-            'laporan' => $this->laporanModel->where('karyawan_id', $karyawan_id)->orderBy('tanggal', 'DESC')->findAll()
+            'title'   => 'Laporan Kerja Harian',
+            'laporan' => $laporan
         ];
         
         return view('direktur/proyek/laporan_harian', $data);

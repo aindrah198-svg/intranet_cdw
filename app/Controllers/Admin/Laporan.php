@@ -138,7 +138,7 @@ class Laporan extends BaseController
             'tanggal'     => $this->request->getPost('tanggal') ?: date('Y-m-d'),
             'judul'       => $this->request->getPost('judul'),
             'deskripsi'   => $this->request->getPost('deskripsi'),
-            'status'      => 'Terkirim',
+            'status'      => 'menunggu_review',
             'created_at'  => date('Y-m-d H:i:s')
         ]);
 
