@@ -83,6 +83,23 @@ if ($db->tableExists('laporan_harian')) {
 }
 
 $notifLaporanTotal = $notifLaporanHarian + $notifKeluhan;
+$notifTugasSaya = 0;
+if ($db->tableExists('penugasan_harian')) {
+    $sessUserId = session()->get('user_id') ?? session()->get('karyawan_id');
+    $q = $db->table('penugasan_harian')
+        ->where('deleted_at', null)
+        ->whereIn('status', ['pending', 'baru', 'proses'])
+        ->groupStart()
+            ->where('penerima_role', 'admin')
+            ->orWhere('penerima_role', 'all');
+    if ($sessUserId) {
+        $q->orWhere('penerima_id', $sessUserId);
+    }
+    $q->groupEnd();
+    $notifTugasSaya = $q->countAllResults();
+}
+
+$notifPribadiTotal = $notifTugasSaya;
 
 function adminSidebarLink($href, $icon, $label, $isActive, $badgeCount = 0) {
     $style = $isActive ? 'background:rgba(255,255,255,0.18);border-left-color:#60a5fa;color:white;' : '';
@@ -249,7 +266,12 @@ function adminSubLink($href, $icon, $label, $isActive, $badgeCount = 0) {
                     <i class="fas fa-user-circle" style="width:24px;text-align:center;margin-right:8px;"></i>
                     <span style="font-size:0.875rem;">Menu Pribadi</span>
                 </div>
-                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <?php if ($notifPribadiTotal > 0): ?>
+                        <span class="badge bg-danger rounded-pill px-2 py-0.5" style="font-size:0.72rem;font-weight:700;box-shadow:0 2px 6px rgba(220,53,69,0.4);"><?= $notifPribadiTotal ?></span>
+                    <?php endif; ?>
+                    <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+                </div>
             </a>
             <div class="collapse <?= $isPribadiActive ? 'show' : '' ?>" id="pribadiMenu" style="background:rgba(0,0,0,0.15);">
                 <?= adminSubLink(base_url('admin/absensi-saya'),      'fas fa-fingerprint',   'Absensi',          $seg1==='absensi-saya') ?>

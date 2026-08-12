@@ -190,14 +190,15 @@ class Pribadi extends BaseController
         $penugasanModel = new \App\Models\PenugasanHarianModel();
         $penugasanModel->ensureTableExists();
 
-        $rawTasks = $this->db->table('penugasan_harian')
+        $rawTasks = $penugasanModel
             ->where('deleted_at', null)
             ->groupStart()
-                ->where('penerima_id', $karyawanId)
-                ->orWhereIn('penerima_role', ['admin', 'all'])
+                ->where('penerima_role', 'admin')
+                ->orWhere('penerima_role', 'all')
+                ->orWhere('penerima_id', $karyawanId)
             ->groupEnd()
             ->orderBy('id', 'DESC')
-            ->get()->getResultArray();
+            ->findAll();
 
         $tasks = [];
         foreach ($rawTasks as $t) {
