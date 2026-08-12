@@ -105,11 +105,6 @@ echo view('admin/templates/navbar', $data);
                                         <i class="fas fa-edit me-1"></i> Detail & Edit Checklist
                                     </a>
 
-                                    <!-- Hapus Button -->
-                                    <a href="<?= base_url('admin/tugas-saya/hapus/'.$t['id']) ?>" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold text-xs" onclick="return confirm('Apakah Anda yakin ingin menghapus penugasan harian ini?')" title="Hapus Penugasan">
-                                        <i class="fas fa-trash me-1"></i> Hapus
-                                    </a>
-
                                     <!-- Convert to Daily Report Button (Only Active if All Items Completed) -->
                                     <?php if($isAllCompleted): ?>
                                         <a href="<?= base_url('admin/tugas-saya/buat-laporan/'.$t['id']) ?>" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm font-semibold text-xs" title="Konversi & Pratinjau Laporan Harian">
