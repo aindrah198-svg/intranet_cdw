@@ -246,11 +246,13 @@ class Surat extends BaseController
         return view('admin/surat/edit', $data);
     }
 
-    public function update()
+    public function update($id = null)
     {
         if ($r = $this->checkAccess()) return $r;
 
-        $id    = $this->request->getPost('id');
+        if (!$id) {
+            $id = $this->request->getPost('id');
+        }
         $surat = $this->suratModel->find($id);
         if (!$surat) {
             return redirect()->to(base_url('admin/surat'))->with('error', 'Surat tidak ditemukan.');

@@ -38,6 +38,7 @@ $routes->group('admin', ['filter' => 'auth', 'namespace' => 'App\Controllers\Adm
         $routes->get('pratinjau/(:num)', 'Surat::pratinjau/$1', ['as' => 'admin.surat.pratinjau']);
         $routes->get('edit/(:num)', 'Surat::edit/$1');
         $routes->post('update', 'Surat::update');
+        $routes->post('update/(:num)', 'Surat::update/$1');
         $routes->get('hapus/(:num)', 'Surat::hapus/$1');
         $routes->post('update-status/(:num)', 'Surat::updateStatus/$1');
         $routes->get('clear-html-full', 'Surat::clearHtmlFull'); // One-time cleanup
