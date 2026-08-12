@@ -86,6 +86,58 @@ if ($db->tableExists('laporan_kerusakan')) {
     }
 }
 
+if ($db->tableExists('surat_karyawan')) {
+    $suratCount = $db->table('surat_karyawan')->where('status', 'draft')->countAllResults();
+    if ($suratCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-envelope-open-text',
+            'bg' => 'bg-info text-white',
+            'title' => "$suratCount Draft Surat (Kontrak/SP)",
+            'desc' => 'Draft surat karyawan siap diterbitkan',
+            'url' => base_url('direktur/karyawan/surat')
+        ];
+    }
+}
+
+if ($db->tableExists('form_izin')) {
+    $izinCount = $db->table('form_izin')->whereIn('status', ['menunggu', 'pending', 'Menunggu'])->countAllResults();
+    if ($izinCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-clipboard-check',
+            'bg' => 'bg-primary text-white',
+            'title' => "$izinCount Permohonan Izin",
+            'desc' => 'Pengajuan izin karyawan butuh approval',
+            'url' => base_url('direktur/karyawan/pengajuan')
+        ];
+    }
+}
+
+if ($db->tableExists('cuti')) {
+    $cutiCount = $db->table('cuti')->whereIn('status', ['menunggu', 'pending', 'Menunggu'])->countAllResults();
+    if ($cutiCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-umbrella-beach',
+            'bg' => 'bg-warning text-dark',
+            'title' => "$cutiCount Pengajuan Cuti",
+            'desc' => 'Permohonan cuti karyawan butuh persetujuan',
+            'url' => base_url('direktur/karyawan/cuti')
+        ];
+    }
+}
+
+if ($db->tableExists('keluhan_karyawan')) {
+    $keluhanCount = $db->table('keluhan_karyawan')->whereIn('status', ['dikirim', 'menunggu', 'pending', 'Menunggu'])->countAllResults();
+    if ($keluhanCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-comments',
+            'bg' => 'bg-danger text-white',
+            'title' => "$keluhanCount Keluhan Karyawan",
+            'desc' => 'Laporan keluhan karyawan baru masuk',
+            'url' => base_url('direktur/karyawan/keluhan')
+        ];
+    }
+}
+
 $totalNotif = count($notifList);
 ?>
 <!-- Main Content Area -->

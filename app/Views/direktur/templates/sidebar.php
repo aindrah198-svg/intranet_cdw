@@ -17,6 +17,87 @@ $isProyekActive = (in_array($active, ['penugasan', 'proyek']) || in_array($segme
 $isKeuanganActive = (in_array($active, ['keuangan']) || $segment1 == 'keuangan') && !($segment1 == 'keuangan' && $segment2 == 'pembelian');
 $isPengadaanActive = (in_array($active, ['pengadaan', 'aset']) || in_array($segment1, ['pengadaan', 'aset']) || ($segment1 == 'keuangan' && $segment2 == 'pembelian'));
 $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
+
+// REALTIME NOTIFICATION COUNTS FOR SIDEBAR & NAVBAR
+$db = \Config\Database::connect();
+
+// 1. Karyawan & SDM Notifs
+$notifSurat = 0;
+if ($db->tableExists('surat_karyawan')) {
+    $notifSurat = $db->table('surat_karyawan')->where('status', 'draft')->countAllResults();
+}
+
+$notifIzin = 0;
+if ($db->tableExists('form_izin')) {
+    $notifIzin = $db->table('form_izin')->whereIn('status', ['menunggu', 'pending', 'Menunggu'])->countAllResults();
+} elseif ($db->tableExists('pengajuan_izin')) {
+    $notifIzin = $db->table('pengajuan_izin')->whereIn('status', ['menunggu', 'pending', 'Menunggu'])->countAllResults();
+}
+
+$notifCuti = 0;
+if ($db->tableExists('cuti')) {
+    $notifCuti = $db->table('cuti')->whereIn('status', ['menunggu', 'pending', 'Menunggu'])->countAllResults();
+} elseif ($db->tableExists('form_cuti')) {
+    $notifCuti = $db->table('form_cuti')->whereIn('status', ['menunggu', 'pending', 'Menunggu'])->countAllResults();
+}
+
+$notifKeluhan = 0;
+if ($db->tableExists('keluhan_karyawan')) {
+    $notifKeluhan = $db->table('keluhan_karyawan')->whereIn('status', ['dikirim', 'menunggu', 'pending', 'Menunggu'])->countAllResults();
+}
+
+$notifKaryawanTotal = $notifSurat + $notifIzin + $notifCuti + $notifKeluhan;
+
+// 2. Penugasan & Proyek Notifs
+$notifPenugasan = 0;
+if ($db->tableExists('penugasan_harian')) {
+    $notifPenugasan = $db->table('penugasan_harian')->whereIn('status', ['pending', 'baru', 'Menunggu'])->countAllResults();
+}
+
+$notifLaporanHarian = 0;
+if ($db->tableExists('laporan_harian')) {
+    $notifLaporanHarian = $db->table('laporan_harian')->where('status', 'menunggu_review')->countAllResults();
+}
+
+$notifProjectBaru = 0;
+if ($db->tableExists('project')) {
+    $notifProjectBaru = $db->table('project')->whereIn('status', ['perencanaan', 'baru', 'draft'])->countAllResults();
+} elseif ($db->tableExists('proyek')) {
+    $notifProjectBaru = $db->table('proyek')->whereIn('status', ['perencanaan', 'baru', 'draft'])->countAllResults();
+}
+
+$notifProyekTotal = $notifPenugasan + $notifLaporanHarian + $notifProjectBaru;
+
+// 3. Keuangan Notifs
+$notifKasbon = 0;
+if ($db->tableExists('form_kasbon')) {
+    $notifKasbon = $db->table('form_kasbon')->where('status_direktur', 'Menunggu')->countAllResults();
+}
+
+$notifKeuanganTotal = $notifKasbon;
+
+// 4. Pengadaan & Aset Notifs
+$notifATK = 0;
+if ($db->tableExists('pengajuan_atk')) {
+    $notifATK = $db->table('pengajuan_atk')->where('status', 'menunggu')->countAllResults();
+}
+
+$notifAset = 0;
+if ($db->tableExists('pengadaan_aset')) {
+    $notifAset = $db->table('pengadaan_aset')->where('status', 'menunggu')->countAllResults();
+}
+
+$notifPembelianPR = 0;
+if ($db->tableExists('form_pembelian')) {
+    $notifPembelianPR = $db->table('form_pembelian')->where('status_direktur', 'Menunggu')->countAllResults();
+}
+
+$notifKerusakan = 0;
+if ($db->tableExists('laporan_kerusakan')) {
+    $notifKerusakan = $db->table('laporan_kerusakan')->where('status_tindakan', 'dilaporkan')->countAllResults();
+}
+
+$notifPengadaanTotal = $notifATK + $notifAset + $notifPembelianPR + $notifKerusakan;
 ?>
 <style>
 @media print {
@@ -108,7 +189,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                    ">
                     <div style="display: flex; align-items: center;">
                         <i class="fas fa-users" style="width: 25px; text-align: center;"></i>
-                        <span>Karyawan & SDM</span>
+                        <span>Karyawan & SDM</span><?php if ($notifKaryawanTotal > 0): ?><span class="badge bg-danger rounded-pill ms-auto me-2 px-2 py-0.5" style="font-size: 0.72rem; font-weight: 700; box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4);"><?= $notifKaryawanTotal ?></span><?php endif; ?>
                     </div>
                     <i class="fas fa-chevron-down" style="
                         transition: transform 0.3s; 
@@ -174,7 +255,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                                    <?= ($segment1 == 'karyawan' && $segment2 == 'surat') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
                                ">
                                 <i class="fas fa-envelope-open-text me-2" style="width: 20px;"></i>
-                                <span>Surat (Kontrak/SP)</span>
+                                <span>Surat (Kontrak/SP)</span><?php if ($notifSurat > 0): ?><span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.35); me-1;"><?= $notifSurat ?></span><?php endif; ?>
                             </a>
                         <!-- Permohonan & Izin Karyawan -->
                         <li class="nav-item">
@@ -192,7 +273,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                                    <?= ($segment1 == 'karyawan' && $segment2 == 'pengajuan') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
                                ">
                                 <i class="fas fa-clipboard-check me-2" style="width: 20px;"></i>
-                                <span>Permohonan & Izin</span>
+                                <span>Permohonan & Izin</span><?php if ($notifIzin > 0): ?><span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.35); me-1;"><?= $notifIzin ?></span><?php endif; ?>
                             </a>
                         </li>
                         <!-- Cuti Karyawan & Approval -->
@@ -211,7 +292,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                                    <?= ($segment1 == 'karyawan' && $segment2 == 'cuti') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
                                ">
                                 <i class="fas fa-umbrella-beach me-2" style="width: 20px;"></i>
-                                <span>Cuti Karyawan</span>
+                                <span>Cuti Karyawan</span><?php if ($notifCuti > 0): ?><span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.35); me-1;"><?= $notifCuti ?></span><?php endif; ?>
                             </a>
                         </li>
                         <!-- Keluhan Karyawan -->
@@ -230,7 +311,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                                    <?= ($segment1 == 'karyawan' && $segment2 == 'keluhan') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
                                ">
                                 <i class="fas fa-comments me-2" style="width: 20px;"></i>
-                                <span>Keluhan Karyawan</span>
+                                <span>Keluhan Karyawan</span><?php if ($notifKeluhan > 0): ?><span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.35); me-1;"><?= $notifKeluhan ?></span><?php endif; ?>
                             </a>
                         </li>
                         <!-- Monitoring Absensi -->
@@ -275,7 +356,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                    ">
                     <div style="display: flex; align-items: center;">
                         <i class="fas fa-project-diagram" style="width: 25px; text-align: center;"></i>
-                        <span>Penugasan & Proyek</span>
+                        <span>Penugasan & Proyek</span><?php if ($notifProyekTotal > 0): ?><span class="badge bg-danger rounded-pill ms-auto me-2 px-2 py-0.5" style="font-size: 0.72rem; font-weight: 700; box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4);"><?= $notifProyekTotal ?></span><?php endif; ?>
                     </div>
                     <i class="fas fa-chevron-down" style="
                         transition: transform 0.3s; 
@@ -303,7 +384,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                                    <?= ($segment1 == 'penugasan' && $segment2 == '') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
                                ">
                                 <i class="fas fa-tasks me-2" style="width: 20px;"></i>
-                                <span>Penugasan Harian</span>
+                                <span>Penugasan Harian</span><?php if ($notifPenugasan > 0): ?><span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.35); me-1;"><?= $notifPenugasan ?></span><?php endif; ?>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -339,7 +420,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                                    <?= ($segment1 == 'proyek' && $segment2 == 'monitoring-laporan') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
                                ">
                                 <i class="fas fa-chart-line me-2" style="width: 20px;"></i>
-                                <span>Monitoring Laporan</span>
+                                <span>Monitoring Laporan</span><?php if ($notifLaporanHarian > 0): ?><span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.35); me-1;"><?= $notifLaporanHarian ?></span><?php endif; ?>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -357,7 +438,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                                    <?= ($segment1 == 'proyek' && $segment2 == 'baru') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
                                ">
                                 <i class="fas fa-folder-plus me-2" style="width: 20px;"></i>
-                                <span>Project Baru</span>
+                                <span>Project Baru</span><?php if ($notifProjectBaru > 0): ?><span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.35); me-1;"><?= $notifProjectBaru ?></span><?php endif; ?>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -437,7 +518,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                    ">
                     <div style="display: flex; align-items: center;">
                         <i class="fas fa-money-bill-wave" style="width: 25px; text-align: center;"></i>
-                        <span>Keuangan</span>
+                        <span>Keuangan</span><?php if ($notifKeuanganTotal > 0): ?><span class="badge bg-danger rounded-pill ms-auto me-2 px-2 py-0.5" style="font-size: 0.72rem; font-weight: 700; box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4);"><?= $notifKeuanganTotal ?></span><?php endif; ?>
                     </div>
                     <i class="fas fa-chevron-down" style="
                         transition: transform 0.3s; 
@@ -482,7 +563,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                                    <?= ($segment1 == 'keuangan' && $segment2 == 'kasbon') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
                                ">
                                 <i class="fas fa-wallet me-2" style="width: 20px;"></i>
-                                <span>Kasbon</span>
+                                <span>Kasbon</span><?php if ($notifKasbon > 0): ?><span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.35); me-1;"><?= $notifKasbon ?></span><?php endif; ?>
                             </a>
                          </li>
                         <li class="nav-item">
@@ -526,7 +607,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                    ">
                     <div style="display: flex; align-items: center;">
                         <i class="fas fa-boxes" style="width: 25px; text-align: center;"></i>
-                        <span>Pengadaan & Aset</span>
+                        <span>Pengadaan & Aset</span><?php if ($notifPengadaanTotal > 0): ?><span class="badge bg-danger rounded-pill ms-auto me-2 px-2 py-0.5" style="font-size: 0.72rem; font-weight: 700; box-shadow: 0 2px 6px rgba(220, 53, 69, 0.4);"><?= $notifPengadaanTotal ?></span><?php endif; ?>
                     </div>
                     <i class="fas fa-chevron-down" style="
                         transition: transform 0.3s; 
@@ -553,7 +634,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                                    <?= ($segment1 == 'pengadaan' && $segment2 == 'pengajuan-atk') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
                                ">
                                 <i class="fas fa-pen-nib me-2" style="width: 20px;"></i>
-                                <span>Pengajuan ATK</span>
+                                <span>Pengajuan ATK</span><?php if ($notifATK > 0): ?><span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.35); me-1;"><?= $notifATK ?></span><?php endif; ?>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -589,7 +670,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                                    <?= ($segment1 == 'pengadaan' && $segment2 == 'aset') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
                                ">
                                 <i class="fas fa-desktop me-2" style="width: 20px;"></i>
-                                <span>Pengadaan Aset</span>
+                                <span>Pengadaan Aset</span><?php if ($notifAset > 0): ?><span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.35); me-1;"><?= $notifAset ?></span><?php endif; ?>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -607,7 +688,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                                    <?= ($segment1 == 'keuangan' && $segment2 == 'pembelian') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
                                ">
                                 <i class="fas fa-shopping-cart me-2" style="width: 20px;"></i>
-                                <span>Pencatatan & Tracking Pembelian (PR)</span>
+                                <span>Pencatatan & Tracking Pembelian (PR)</span><?php if ($notifPembelianPR > 0): ?><span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.35); me-1;"><?= $notifPembelianPR ?></span><?php endif; ?>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -625,7 +706,7 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
                                    <?= ($segment1 == 'pengadaan' && $segment2 == 'kerusakan') ? 'background: rgba(255,255,255,0.15); border-left-color: #69db7c; color: white;' : '' ?>
                                ">
                                 <i class="fas fa-tools me-2" style="width: 20px;"></i>
-                                <span>Kerusakan Alat</span>
+                                <span>Kerusakan Alat</span><?php if ($notifKerusakan > 0): ?><span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size: 0.7rem; font-weight: 700; box-shadow: 0 2px 5px rgba(220, 53, 69, 0.35); me-1;"><?= $notifKerusakan ?></span><?php endif; ?>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -806,5 +887,15 @@ $isDokumenActive = (in_array($active, ['dokumen']) || $segment1 == 'dokumen');
     
     .sidebar-menu::-webkit-scrollbar-thumb:hover {
         background: rgba(255,255,255,0.3);
+    }
+</style>
+<style>
+    @keyframes badgePulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+    .sidebar .badge.bg-danger {
+        animation: badgePulse 2s infinite;
     }
 </style>
