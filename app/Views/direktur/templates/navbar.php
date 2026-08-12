@@ -4,15 +4,155 @@ $title = $title ?? 'Dashboard Direktur';
 $subtitle = $subtitle ?? date('l, d F Y');
 $user = $user ?? ['name' => 'Direktur', 'role' => 'direktur'];
 
-if (!function_exists('getSafeNotifCount')) {
-    function getSafeNotifCount($db, $table, $columns, $values) {
-        if (!$db->tableExists($table)) return 0;
-        foreach ((array)$columns as $col) {
-            if ($db->fieldExists($col, $table)) {
-                return $db->table($table)->whereIn($col, (array)$values)->countAllResults();
-            }
-        }
-        return 0;
+// Real-time Notifications Query (Matching Direktur Actionable Lists)
+$db = \Config\Database::connect();
+$notifList = [];
+
+if ($db->tableExists('form_kasbon')) {
+    $q = $db->table('form_kasbon')->where('status_direktur', 'Menunggu');
+    if ($db->fieldExists('deleted_at', 'form_kasbon')) $q->where('deleted_at', null);
+    $kasbonCount = $q->countAllResults();
+    if ($kasbonCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-wallet',
+            'bg' => 'bg-warning text-dark',
+            'title' => "$kasbonCount Kasbon Menunggu Approval",
+            'desc' => 'Pengajuan kasbon karyawan membutuhkan persetujuan',
+            'url' => base_url('direktur/keuangan/kasbon?status=pending')
+        ];
+    }
+}
+
+if ($db->tableExists('form_pembelian')) {
+    $q = $db->table('form_pembelian')->where('status_direktur', 'Menunggu');
+    if ($db->fieldExists('deleted_at', 'form_pembelian')) $q->where('deleted_at', null);
+    $pembelianCount = $q->countAllResults();
+    if ($pembelianCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-shopping-cart',
+            'bg' => 'bg-info text-white',
+            'title' => "$pembelianCount Form Pembelian (PR)",
+            'desc' => 'Pengajuan pengadaan barang butuh review',
+            'url' => base_url('direktur/keuangan/pembelian?status=pending')
+        ];
+    }
+}
+
+if ($db->tableExists('laporan_harian')) {
+    $q = $db->table('laporan_harian')->where('status', 'menunggu_review');
+    if ($db->fieldExists('deleted_at', 'laporan_harian')) $q->where('deleted_at', null);
+    $laporanCount = $q->countAllResults();
+    if ($laporanCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-file-alt',
+            'bg' => 'bg-primary text-white',
+            'title' => "$laporanCount Laporan Harian Masuk",
+            'desc' => 'Laporan kerja staf belum direview',
+            'url' => base_url('direktur/proyek/monitoring-laporan?status=menunggu_review')
+        ];
+    }
+}
+
+if ($db->tableExists('pengajuan_atk')) {
+    $q = $db->table('pengajuan_atk')->where('status', 'menunggu');
+    if ($db->fieldExists('deleted_at', 'pengajuan_atk')) $q->where('deleted_at', null);
+    $atkCount = $q->countAllResults();
+    if ($atkCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-pen-nib',
+            'bg' => 'bg-success text-white',
+            'title' => "$atkCount Pengajuan ATK Baru",
+            'desc' => 'Pengajuan alat tulis kantor butuh persetujuan',
+            'url' => base_url('direktur/pengadaan/pengajuan-atk')
+        ];
+    }
+}
+
+if ($db->tableExists('pengadaan_aset')) {
+    $q = $db->table('pengadaan_aset')->where('status', 'menunggu');
+    if ($db->fieldExists('deleted_at', 'pengadaan_aset')) $q->where('deleted_at', null);
+    $asetCount = $q->countAllResults();
+    if ($asetCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-desktop',
+            'bg' => 'bg-secondary text-white',
+            'title' => "$asetCount Usulan Aset Baru",
+            'desc' => 'Pengadaan aset perusahaan butuh approval',
+            'url' => base_url('direktur/pengadaan/aset')
+        ];
+    }
+}
+
+if ($db->tableExists('laporan_kerusakan')) {
+    $q = $db->table('laporan_kerusakan')->where('status_tindakan', 'dilaporkan');
+    if ($db->fieldExists('deleted_at', 'laporan_kerusakan')) $q->where('deleted_at', null);
+    $kerusakanCount = $q->countAllResults();
+    if ($kerusakanCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-tools',
+            'bg' => 'bg-danger text-white',
+            'title' => "$kerusakanCount Kerusakan Alat",
+            'desc' => 'Laporan kerusakan barang perlu tindakan',
+            'url' => base_url('direktur/pengadaan/kerusakan')
+        ];
+    }
+}
+
+if ($db->tableExists('surat_karyawan')) {
+    $suratCount = $db->table('surat_karyawan')->where('status', 'draft')->countAllResults();
+    if ($suratCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-envelope-open-text',
+            'bg' => 'bg-info text-white',
+            'title' => "$suratCount Draft Surat (Kontrak/SP)",
+            'desc' => 'Draft surat karyawan siap diterbitkan',
+            'url' => base_url('direktur/karyawan/surat')
+        ];
+    }
+}
+
+if ($db->tableExists('form_izin')) {
+    $q = $db->table('form_izin')->where('status_hrd', 'Disetujui')->where('status_keseluruhan', 'Menunggu');
+    if ($db->fieldExists('deleted_at', 'form_izin')) $q->where('deleted_at', null);
+    $izinCount = $q->countAllResults();
+    if ($izinCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-clipboard-check',
+            'bg' => 'bg-primary text-white',
+            'title' => "$izinCount Permohonan Izin",
+            'desc' => 'Pengajuan izin (disetujui HRD) membutuhkan persetujuan Direktur',
+            'url' => base_url('direktur/karyawan/pengajuan')
+        ];
+    }
+}
+
+if ($db->tableExists('cuti')) {
+    $q = $db->table('cuti')->where('status_hrd', 'Disetujui')->where('status_direktur', 'Menunggu');
+    if ($db->fieldExists('deleted_at', 'cuti')) $q->where('deleted_at', null);
+    $cutiCount = $q->countAllResults();
+    if ($cutiCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-umbrella-beach',
+            'bg' => 'bg-warning text-dark',
+            'title' => "$cutiCount Pengajuan Cuti",
+            'desc' => 'Permohonan cuti (disetujui HRD) membutuhkan persetujuan Direktur',
+            'url' => base_url('direktur/karyawan/cuti')
+        ];
+    }
+}
+
+if ($db->tableExists('keluhan_karyawan')) {
+    $q = $db->table('keluhan_karyawan')->whereIn('status', ['dikirim', 'menunggu', 'pending', 'Menunggu', 'Pending']);
+    if ($db->fieldExists('deleted_at', 'keluhan_karyawan')) $q->where('deleted_at', null);
+    $keluhanCount = $q->countAllResults();
+    if ($keluhanCount > 0) {
+        $notifList[] = [
+            'icon' => 'fas fa-comments',
+            'bg' => 'bg-danger text-white',
+            'title' => "$keluhanCount Keluhan Karyawan",
+            'desc' => 'Laporan keluhan karyawan baru masuk',
+            'url' => base_url('direktur/karyawan/keluhan')
+        ];
     }
 }
 
