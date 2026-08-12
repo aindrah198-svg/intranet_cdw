@@ -795,8 +795,8 @@ window.addEventListener('load', function() {
         page-break-inside: avoid !important;
     }
     .mini-page-header-repeat {
-        display: flex !important;
-        visibility: visible !important;
+        display: none !important;
+        visibility: hidden !important;
     }
 }
 </style>

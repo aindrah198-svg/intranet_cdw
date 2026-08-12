@@ -1113,9 +1113,7 @@ function buildKopHtml(logoPos, addrPos, accent, logoHtml, addressHtml) {
 
 // Build mini kop for continuation pages
 function buildMiniKopHtml() {
-    return `<div class="mini-page-header-repeat">
-        <small style="font-size:0.78rem;font-weight:700;color:#1e293b;">PT. CIPTA DUTA WACANA</small>
-    </div>`;
+    return '';
 }
 
 function renderLivePreview() {
