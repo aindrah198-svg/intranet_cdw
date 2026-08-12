@@ -776,4 +776,20 @@ class Pribadi extends BaseController
 
         return redirect()->to(base_url('admin/profil'))->with('success', 'Profil dan informasi akun Anda berhasil diperbarui!');
     }
+
+    public function hapusTugas($id = null)
+    {
+        if ($r = $this->checkAccess()) return $r;
+
+        $penugasanModel = new \App\Models\PenugasanHarianModel();
+        $penugasanModel->ensureTableExists();
+
+        $task = $penugasanModel->find($id);
+        if (!$task) {
+            return redirect()->to(base_url('admin/tugas-saya'))->with('error', 'Penugasan tidak ditemukan.');
+        }
+
+        $penugasanModel->delete($id);
+        return redirect()->to(base_url('admin/tugas-saya'))->with('success', 'Penugasan harian berhasil dihapus.');
+    }
 }

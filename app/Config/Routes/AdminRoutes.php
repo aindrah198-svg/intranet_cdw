@@ -267,6 +267,7 @@ $routes->group('admin', ['filter' => 'auth', 'namespace' => 'App\Controllers\Adm
     $routes->post('tugas-saya/update-status/(:num)', 'Pribadi::updateStatusTugas/$1', ['as' => 'admin.pribadi.tugas.update_status']);
     $routes->post('tugas-saya/update-subitems/(:num)', 'Pribadi::updateSubItemStatus/$1', ['as' => 'admin.pribadi.tugas.update_subitems']);
     $routes->get('tugas-saya/buat-laporan/(:num)', 'Pribadi::buatLaporanFromTugas/$1', ['as' => 'admin.pribadi.tugas.buat_laporan']);
+    $routes->get('tugas-saya/hapus/(:num)', 'Pribadi::hapusTugas/$1', ['as' => 'admin.pribadi.tugas.hapus']);
 
     // Timeline Kerja & Project Saat Ini (Terhubung & Berbagi Fitur Penuh dari Direktur)
     $routes->get('timeline-kerja', 'Pribadi::timelineKerja', ['as' => 'admin.pribadi.timeline_kerja']);
