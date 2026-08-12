@@ -14,20 +14,93 @@ $isPengajuanActive  = in_array($seg1, ['pengajuan', 'form-pengajuan', 'keluhan-s
 $isLaporanActive    = in_array($seg1, ['laporan', 'laporan-harian-saya', 'slip-gaji']);
 $isPribadiActive    = in_array($seg1, ['absensi-saya', 'tugas-saya', 'timeline-kerja', 'project-saat-ini', 'profil']);
 
-function adminSidebarLink($href, $icon, $label, $isActive) {
+// Real-time Notification Queries for Admin
+$db = \Config\Database::connect();
+
+$notifSurat = 0;
+if ($db->tableExists('surat_karyawan')) {
+    $notifSurat = $db->table('surat_karyawan')->where('status', 'draft')->countAllResults();
+}
+
+$notifATK = 0;
+if ($db->tableExists('pengajuan_atk')) {
+    $q = $db->table('pengajuan_atk')->where('status', 'menunggu');
+    if ($db->fieldExists('deleted_at', 'pengajuan_atk')) $q->where('deleted_at', null);
+    $notifATK = $q->countAllResults();
+}
+
+$notifAset = 0;
+if ($db->tableExists('pengadaan_aset')) {
+    $q = $db->table('pengadaan_aset')->where('status', 'menunggu');
+    if ($db->fieldExists('deleted_at', 'pengadaan_aset')) $q->where('deleted_at', null);
+    $notifAset = $q->countAllResults();
+}
+
+$notifPR = 0;
+if ($db->tableExists('form_pembelian')) {
+    $q = $db->table('form_pembelian')->whereIn('status_direktur', ['Menunggu', 'pending', 'menunggu']);
+    if ($db->fieldExists('deleted_at', 'form_pembelian')) $q->where('deleted_at', null);
+    $notifPR = $q->countAllResults();
+}
+
+$notifKerusakan = 0;
+if ($db->tableExists('laporan_kerusakan')) {
+    $q = $db->table('laporan_kerusakan')->where('status_tindakan', 'dilaporkan');
+    if ($db->fieldExists('deleted_at', 'laporan_kerusakan')) $q->where('deleted_at', null);
+    $notifKerusakan = $q->countAllResults();
+}
+
+$notifInventarisTotal = $notifATK + $notifAset + $notifPR + $notifKerusakan;
+
+$notifCuti = 0;
+if ($db->tableExists('cuti')) {
+    $q = $db->table('cuti')->whereIn('status_hrd', ['menunggu', 'pending', 'Menunggu', 'Pending']);
+    if ($db->fieldExists('deleted_at', 'cuti')) $q->where('deleted_at', null);
+    $notifCuti = $q->countAllResults();
+}
+
+$notifKasbon = 0;
+if ($db->tableExists('form_kasbon')) {
+    $q = $db->table('form_kasbon')->whereIn('status_direktur', ['Menunggu', 'pending', 'menunggu']);
+    if ($db->fieldExists('deleted_at', 'form_kasbon')) $q->where('deleted_at', null);
+    $notifKasbon = $q->countAllResults();
+}
+
+$notifKeluhan = 0;
+if ($db->tableExists('keluhan_karyawan')) {
+    $q = $db->table('keluhan_karyawan')->whereIn('status', ['dikirim', 'menunggu', 'pending', 'Menunggu']);
+    if ($db->fieldExists('deleted_at', 'keluhan_karyawan')) $q->where('deleted_at', null);
+    $notifKeluhan = $q->countAllResults();
+}
+
+$notifPengajuanTotal = $notifCuti + $notifKasbon + $notifKeluhan;
+
+$notifLaporanHarian = 0;
+if ($db->tableExists('laporan_harian')) {
+    $q = $db->table('laporan_harian')->where('status', 'menunggu_review');
+    if ($db->fieldExists('deleted_at', 'laporan_harian')) $q->where('deleted_at', null);
+    $notifLaporanHarian = $q->countAllResults();
+}
+
+$notifLaporanTotal = $notifLaporanHarian + $notifKeluhan;
+
+function adminSidebarLink($href, $icon, $label, $isActive, $badgeCount = 0) {
     $style = $isActive ? 'background:rgba(255,255,255,0.18);border-left-color:#60a5fa;color:white;' : '';
+    $badgeHtml = $badgeCount > 0 ? '<span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size:0.72rem;font-weight:700;box-shadow:0 2px 6px rgba(220,53,69,0.4);">'.$badgeCount.'</span>' : '';
     return '
         <a href="'.$href.'" style="color:rgba(255,255,255,0.85);padding:10px 20px;display:flex;align-items:center;text-decoration:none;transition:all 0.3s;border-left:3px solid transparent;'.$style.'">
             <i class="'.$icon.'" style="width:24px;text-align:center;margin-right:8px;"></i>
             <span style="font-size:0.875rem;">'.$label.'</span>
+            '.$badgeHtml.'
         </a>';
 }
 
-function adminSubLink($href, $icon, $label, $isActive) {
+function adminSubLink($href, $icon, $label, $isActive, $badgeCount = 0) {
     $fw = $isActive ? 'font-weight:600;color:white;' : '';
+    $badgeHtml = $badgeCount > 0 ? '<span class="badge bg-danger rounded-pill ms-auto px-2 py-0.5" style="font-size:0.7rem;font-weight:700;box-shadow:0 2px 5px rgba(220,53,69,0.35);">'.$badgeCount.'</span>' : '';
     return '
         <a href="'.$href.'" style="color:rgba(255,255,255,0.78);padding:8px 10px 8px 48px;font-size:0.82rem;display:flex;align-items:center;text-decoration:none;transition:all 0.25s;'.$fw.'">
-            <i class="'.$icon.'" style="width:18px;margin-right:7px;"></i>'.$label.'
+            <i class="'.$icon.'" style="width:18px;margin-right:7px;"></i><span style="flex-grow:1;">'.$label.'</span>'.$badgeHtml.'
         </a>';
 }
 ?>
@@ -57,7 +130,7 @@ function adminSubLink($href, $icon, $label, $isActive) {
 
         <!-- Surat Menyurat (Unified Module) -->
         <div style="padding: 2px 0;">
-            <?= adminSidebarLink(base_url('admin/surat'), 'fas fa-envelope', 'Surat Menyurat', $seg1 === 'surat') ?>
+            <?= adminSidebarLink(base_url('admin/surat'), 'fas fa-envelope', 'Surat Menyurat', $seg1 === 'surat', $notifSurat) ?>
         </div>
 
         <!-- Pengadaan & Aset / ATK & Inventaris -->
@@ -68,14 +141,19 @@ function adminSubLink($href, $icon, $label, $isActive) {
                     <i class="fas fa-boxes" style="width:24px;text-align:center;margin-right:8px;"></i>
                     <span style="font-size:0.875rem;">Pengadaan & Aset</span>
                 </div>
-                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <?php if ($notifInventarisTotal > 0): ?>
+                        <span class="badge bg-danger rounded-pill px-2 py-0.5" style="font-size:0.72rem;font-weight:700;box-shadow:0 2px 6px rgba(220,53,69,0.4);"><?= $notifInventarisTotal ?></span>
+                    <?php endif; ?>
+                    <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+                </div>
             </a>
             <div class="collapse <?= $isInventarisActive ? 'show' : '' ?>" id="inventarisMenu" style="background:rgba(0,0,0,0.15);">
-                <?= adminSubLink(base_url('admin/inventaris/pengajuan-atk'),  'fas fa-pen-nib',        'Pengajuan ATK',                       $seg2==='pengajuan-atk') ?>
+                <?= adminSubLink(base_url('admin/inventaris/pengajuan-atk'),  'fas fa-pen-nib',        'Pengajuan ATK',                       $seg2==='pengajuan-atk', $notifATK) ?>
                 <?= adminSubLink(base_url('admin/inventaris/stok-atk'),       'fas fa-clipboard-list', 'Monitoring Stok ATK',                $seg2==='stok-atk') ?>
-                <?= adminSubLink(base_url('admin/inventaris/aset'),           'fas fa-desktop',        'Pengadaan Aset',                      $seg2==='aset' || $seg2==='inventaris-kantor') ?>
-                <?= adminSubLink(base_url('admin/inventaris/pembelian'),      'fas fa-shopping-cart',  'Pencatatan & Tracking Pembelian (PR)',$seg2==='pembelian') ?>
-                <?= adminSubLink(base_url('admin/inventaris/kerusakan'),      'fas fa-tools',          'Kerusakan Alat',                      $seg2==='kerusakan') ?>
+                <?= adminSubLink(base_url('admin/inventaris/aset'),           'fas fa-desktop',        'Pengadaan Aset',                      $seg2==='aset' || $seg2==='inventaris-kantor', $notifAset) ?>
+                <?= adminSubLink(base_url('admin/inventaris/pembelian'),      'fas fa-shopping-cart',  'Pencatatan & Tracking Pembelian (PR)',$seg2==='pembelian', $notifPR) ?>
+                <?= adminSubLink(base_url('admin/inventaris/kerusakan'),      'fas fa-tools',          'Kerusakan Alat',                      $seg2==='kerusakan', $notifKerusakan) ?>
                 <?= adminSubLink(base_url('admin/inventaris/gudang'),         'fas fa-warehouse',      'Monitoring Gudang',                   $seg2==='gudang') ?>
             </div>
         </div>
@@ -122,13 +200,18 @@ function adminSubLink($href, $icon, $label, $isActive) {
                     <i class="fas fa-clipboard-list" style="width:24px;text-align:center;margin-right:8px;"></i>
                     <span style="font-size:0.875rem;">Pengajuan</span>
                 </div>
-                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <?php if ($notifPengajuanTotal > 0): ?>
+                        <span class="badge bg-danger rounded-pill px-2 py-0.5" style="font-size:0.72rem;font-weight:700;box-shadow:0 2px 6px rgba(220,53,69,0.4);"><?= $notifPengajuanTotal ?></span>
+                    <?php endif; ?>
+                    <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+                </div>
             </a>
             <div class="collapse <?= $isPengajuanActive ? 'show' : '' ?>" id="pengajuanMenu" style="background:rgba(0,0,0,0.15);">
-                <?= adminSubLink(base_url('admin/pengajuan/semua'),    'fas fa-list-alt',        'Pengajuan', $seg1==='pengajuan' && ($seg2==='' || $seg2==='semua')) ?>
-                <?= adminSubLink(base_url('admin/pengajuan/cuti'),     'fas fa-umbrella-beach',  'Cuti',      $seg1==='pengajuan' && $seg2==='cuti') ?>
-                <?= adminSubLink(base_url('admin/pengajuan/kasbon'),   'fas fa-hand-holding-usd','Kasbon',    $seg1==='pengajuan' && $seg2==='kasbon') ?>
-                <?= adminSubLink(base_url('admin/laporan/keluhan'),      'fas fa-comment-alt',     'Keluhan',   ($seg1==='laporan' && $seg2==='keluhan') || $seg1==='keluhan-saya') ?>
+                <?= adminSubLink(base_url('admin/pengajuan/semua'),    'fas fa-list-alt',        'Pengajuan', $seg1==='pengajuan' && ($seg2==='' || $seg2==='semua'), $notifPengajuanTotal) ?>
+                <?= adminSubLink(base_url('admin/pengajuan/cuti'),     'fas fa-umbrella-beach',  'Cuti',      $seg1==='pengajuan' && $seg2==='cuti', $notifCuti) ?>
+                <?= adminSubLink(base_url('admin/pengajuan/kasbon'),   'fas fa-hand-holding-usd','Kasbon',    $seg1==='pengajuan' && $seg2==='kasbon', $notifKasbon) ?>
+                <?= adminSubLink(base_url('admin/laporan/keluhan'),      'fas fa-comment-alt',     'Keluhan',   ($seg1==='laporan' && $seg2==='keluhan') || $seg1==='keluhan-saya', $notifKeluhan) ?>
             </div>
         </div>
 
@@ -140,11 +223,16 @@ function adminSubLink($href, $icon, $label, $isActive) {
                     <i class="fas fa-chart-bar" style="width:24px;text-align:center;margin-right:8px;"></i>
                     <span style="font-size:0.875rem;">Laporan & Keluhan</span>
                 </div>
-                <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <?php if ($notifLaporanTotal > 0): ?>
+                        <span class="badge bg-danger rounded-pill px-2 py-0.5" style="font-size:0.72rem;font-weight:700;box-shadow:0 2px 6px rgba(220,53,69,0.4);"><?= $notifLaporanTotal ?></span>
+                    <?php endif; ?>
+                    <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+                </div>
             </a>
             <div class="collapse <?= $isLaporanActive ? 'show' : '' ?>" id="laporanMenu" style="background:rgba(0,0,0,0.15);">
-                <?= adminSubLink(base_url('admin/laporan/kerja-harian'),  'fas fa-tasks',          'Laporan Kerja Harian',$seg1==='laporan' && ($seg2==='kerja-harian' || $seg1==='laporan-harian-saya')) ?>
-                <?= adminSubLink(base_url('admin/laporan/keluhan'),       'fas fa-comment-dots',   'Keluhan',              $seg1==='laporan' && $seg2==='keluhan') ?>
+                <?= adminSubLink(base_url('admin/laporan/kerja-harian'),  'fas fa-tasks',          'Laporan Kerja Harian',$seg1==='laporan' && ($seg2==='kerja-harian' || $seg1==='laporan-harian-saya'), $notifLaporanHarian) ?>
+                <?= adminSubLink(base_url('admin/laporan/keluhan'),       'fas fa-comment-dots',   'Keluhan',              $seg1==='laporan' && $seg2==='keluhan', $notifKeluhan) ?>
                 <?= adminSubLink(base_url('admin/slip-gaji'),             'fas fa-money-bill-wave','Slip Gaji',           $seg1==='slip-gaji') ?>
             </div>
         </div>
@@ -182,3 +270,14 @@ function adminSubLink($href, $icon, $label, $isActive) {
 
     </nav>
 </div>
+
+<style>
+    @keyframes badgePulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(220, 53, 69, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+    }
+    .sidebar .badge.bg-danger {
+        animation: badgePulse 2s infinite;
+    }
+</style>
