@@ -116,9 +116,23 @@ $templateData = [
                         <label class="form-label fw-bold text-dark small">Upload Lampiran / Screenshot Hasil Pencarian (Opsional)</label>
                         <input type="file" name="lampiran_hasil" class="form-control rounded-3">
                         <?php if (!empty($p['lampiran_hasil'])): ?>
-                            <div class="mt-2">
-                                <a href="<?= base_url('uploads/pencarian_barang/' . $p['lampiran_hasil']) ?>" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                    <i class="fas fa-file-download me-1"></i> Lihat Lampiran Terupload
+                            <?php
+                                $admFile = $p['lampiran_hasil'];
+                                $admExt = strtolower(pathinfo($admFile, PATHINFO_EXTENSION));
+                                $admIsImage = in_array($admExt, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                                $admUrl = base_url('uploads/pencarian_barang/' . $admFile);
+                            ?>
+                            <div class="mt-3 p-3 bg-light border rounded-3 text-start">
+                                <label class="fw-bold text-dark text-xs text-uppercase mb-2 d-block"><i class="fas fa-paperclip me-1 text-primary"></i> Lampiran Terupload Saat Ini:</label>
+                                <?php if ($admIsImage): ?>
+                                    <div class="mb-2 text-center bg-white p-2 rounded border">
+                                        <a href="<?= $admUrl ?>" target="_blank" title="Klik untuk memperbesar">
+                                            <img src="<?= $admUrl ?>" alt="Lampiran Admin" class="img-fluid rounded" style="max-height: 250px; object-fit: contain;">
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+                                <a href="<?= $admUrl ?>" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+                                    <i class="fas fa-external-link-alt me-1"></i> Buka Gambar / File Full
                                 </a>
                             </div>
                         <?php endif; ?>

@@ -122,7 +122,7 @@ echo view('direktur/templates/navbar', $templateData);
 
                 <div class="mt-4">
                     <h6 class="fw-bold text-dark text-xs text-uppercase mb-2"><i class="fas fa-file-invoice-dollar me-1.5 text-success"></i> Hasil Laporan Harga / Jawaban Karyawan</h6>
-                    <div class="p-4 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 text-dark fs-6" style="white-space: pre-line; line-height: 1.6;">
+                    <div class="p-4 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 text-dark fs-6 mb-3" style="white-space: pre-line; line-height: 1.6;">
                         <?php if (!empty($p['hasil_pencarian'])): ?>
                             <?= esc($p['hasil_pencarian']) ?>
                         <?php elseif (!empty($p['nominal_estimasi']) && $p['nominal_estimasi'] > 0): ?>
@@ -131,6 +131,37 @@ echo view('direktur/templates/navbar', $templateData);
                             Belum ada laporan hasil pencarian barang yang diserahkan oleh karyawan.
                         <?php endif; ?>
                     </div>
+
+                    <?php if (!empty($p['lampiran_hasil'])): ?>
+                        <?php
+                            $lampiranFile = $p['lampiran_hasil'];
+                            $ext = strtolower(pathinfo($lampiranFile, PATHINFO_EXTENSION));
+                            $isImage = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                            
+                            $fileUrl = base_url('uploads/pencarian_barang/' . $lampiranFile);
+                            if (!file_exists(FCPATH . 'uploads/pencarian_barang/' . $lampiranFile) && file_exists(FCPATH . 'uploads/' . $lampiranFile)) {
+                                $fileUrl = base_url('uploads/' . $lampiranFile);
+                            }
+                        ?>
+                        <div class="p-3 bg-white border border-light rounded-3 shadow-sm">
+                            <h6 class="fw-bold text-dark text-xs text-uppercase mb-2.5">
+                                <i class="fas fa-paperclip text-primary me-1.5"></i> Lampiran Gambar / Foto Barang Admin:
+                            </h6>
+                            <?php if ($isImage): ?>
+                                <div class="mb-3 text-center bg-light p-2.5 rounded-3 border">
+                                    <a href="<?= $fileUrl ?>" target="_blank" title="Klik untuk membuka gambar ukuran penuh">
+                                        <img src="<?= $fileUrl ?>" alt="Hasil Pencarian Barang" class="img-fluid rounded-3 shadow-sm" style="max-height: 420px; width: auto; object-fit: contain; border: 1px solid #e2e8f0;">
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <span class="small text-dark fw-semibold"><i class="fas fa-image me-1.5 text-primary"></i> <?= esc($lampiranFile) ?></span>
+                                <a href="<?= $fileUrl ?>" target="_blank" class="btn btn-sm btn-primary rounded-pill px-3.5 fw-semibold shadow-sm">
+                                    <i class="fas fa-external-link-alt me-1.5"></i> Buka / Unduh Lampiran Full
+                                </a>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
