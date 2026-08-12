@@ -661,11 +661,11 @@ const existingIsiSurat  = <?= json_encode($surat['isi_surat'] ?? '') ?>;
 let blocks = [];
 let blockCounter = 0;
 const PAPER_BODY_PX = {
-    A4:     { page1: 670, cont: 880 },
-    A3:     { page1: 1200, cont: 1400 },
-    Letter: { page1: 630, cont: 840 },
-    Legal:  { page1: 910, cont: 1120 },
-    Folio:  { page1: 810, cont: 1020 },
+    A4:     { page1: 610, cont: 820 },
+    A3:     { page1: 1100, cont: 1350 },
+    Letter: { page1: 570, cont: 780 },
+    Legal:  { page1: 850, cont: 1060 },
+    Folio:  { page1: 750, cont: 960 },
 };
 
 function genBlkId() { return 'blk_' + (++blockCounter); }
@@ -1039,22 +1039,6 @@ function renderLivePreview() {
             const paras = (b.content || '').split(/\n+/).filter(p => p.trim() !== '');
             if (paras.length > 1) {
                 paras.forEach(p => renderBlocks.push({ type: 'text', content: p, originalId: b.id }));
-            } else {
-                renderBlocks.push(b);
-            }
-        } else if (b.type === 'table') {
-            if (b.rows && b.rows.length > 1) {
-                b.rows.forEach((row, rIdx) => {
-                    renderBlocks.push({
-                        type: 'table_row',
-                        style: b.style,
-                        headers: b.headers,
-                        row: row,
-                        isFirstRow: rIdx === 0,
-                        isLastRow: rIdx === b.rows.length - 1,
-                        originalId: b.id
-                    });
-                });
             } else {
                 renderBlocks.push(b);
             }
