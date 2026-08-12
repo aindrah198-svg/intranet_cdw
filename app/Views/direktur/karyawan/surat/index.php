@@ -587,22 +587,6 @@ $paperSizes       = $paperSizes ?? [
 
                     <!-- Tombol Aksi Terintegrasi -->
                     <div class="pt-2 border-top border-light d-flex justify-content-end align-items-center gap-2 flex-wrap">
-                        <button type="button" class="btn-action-pill btn-action-print btn-quick-preview" 
-                                data-id="<?= $s['id'] ?>"
-                                data-nomor="<?= esc($s['nomor_surat']) ?>"
-                                data-jenis="<?= esc($s['jenis_surat']) ?>"
-                                data-tanggal="<?= date('Y-m-d', strtotime($s['tanggal_surat'])) ?>"
-                                data-perihal="<?= esc($s['perihal']) ?>"
-                                data-isi="<?= esc($s['isi_surat']) ?>"
-                                data-catatan="<?= esc($s['catatan']) ?>"
-                                data-layout="<?= esc($s['template_layout'] ?? 'standard') ?>"
-                                data-logopos="<?= esc($s['logo_position'] ?? 'top_right') ?>"
-                                data-addrpos="<?= esc($s['address_position'] ?? 'top_left') ?>"
-                                data-accent="<?= esc($s['accent_style'] ?? 'line') ?>"
-                                data-paper="<?= esc($s['paper_size'] ?? 'A4') ?>"
-                                title="Pratinjau Layout & Cetak PDF">
-                            <i class="fas fa-print"></i> Pratinjau / Cetak
-                        </button>
                         <a href="<?= base_url('direktur/karyawan/surat/detail/' . $s['id']) ?>" class="btn-action-pill btn-action-view" title="Lihat Detail Surat">
                             <i class="far fa-eye"></i> Detail Surat
                         </a>

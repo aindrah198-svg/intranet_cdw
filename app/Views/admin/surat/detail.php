@@ -152,9 +152,6 @@ function adminFormatBodyTextWithTables($text) {
             <a href="<?= base_url('admin/surat/edit/' . $surat['id']) ?>" class="btn btn-outline-info rounded-pill px-3 py-2 shadow-sm d-inline-flex align-items-center text-sm fw-semibold">
                 <i class="fas fa-edit me-1"></i> <span class="d-none d-md-inline">Edit Surat</span>
             </a>
-            <button onclick="exportLetterToWord()" class="btn btn-primary rounded-pill px-3 py-2 shadow-sm d-inline-flex align-items-center text-sm fw-semibold" style="background:linear-gradient(135deg,#0052d4 0%,#4364f7 50%,#6fb1fc 100%);border:none;">
-                <i class="fas fa-file-word me-1"></i> <span class="d-none d-md-inline">Download Word (.doc)</span><span class="d-inline d-md-none">Word</span>
-            </button>
             <button onclick="openPrintConfirmation()" class="btn btn-dark rounded-pill px-3 py-2 shadow-sm d-inline-flex align-items-center text-sm fw-semibold">
                 <i class="fas fa-print me-1"></i> <span class="d-none d-md-inline">Pratinjau & Cetak PDF (<?= esc($paperSize) ?>)</span><span class="d-inline d-md-none">Cetak</span>
             </button>
@@ -455,9 +452,6 @@ function adminFormatBodyTextWithTables($text) {
             <small style="font-size:0.75rem;color:#94a3b8;">Format ini siap dicetak atau disimpan sebagai PDF</small>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-bold shadow text-white me-1" onclick="exportLetterToWord()">
-                <i class="fas fa-file-word me-1"></i> Download Word (.doc)
-            </button>
             <button type="button" class="btn btn-warning btn-sm rounded-pill px-4 py-2 fw-bold shadow text-dark" onclick="triggerActualPrint()">
                 <i class="fas fa-print me-1"></i> Cetak Sekarang / Simpan PDF
             </button>
