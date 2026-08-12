@@ -263,124 +263,175 @@ function adminFormatBodyTextWithTables($text) {
 
         </div>
 
-        <!-- Render Kertas Surat Preview – Always from PHP/isi_surat (clean, no duplicate) -->
+        <!-- Render Kertas Surat Preview -->
         <div class="col-12 col-lg-8 print-full-width">
             <div class="letter-paper-render paper-size-<?= esc($paperSize) ?>" id="previewPaper">
+                <?php if (!empty($surat['html_full'])): ?>
+                    <?= $surat['html_full'] ?>
+                <?php else: ?>
+                    <div class="doc-page-sheet">
+                        <!-- Corner Accents -->
+                        <?php if ($accent === 'yellow_corner'): ?>
+                            <svg class="accent-top-left" viewBox="0 0 280 280">
+                                <path d="M 0 0 L 280 0 Q 70 70 0 280 Z" fill="#f5a600"/>
+                            </svg>
+                            <svg class="accent-bottom-right" viewBox="0 0 260 260">
+                                <path d="M 260 260 L 0 260 Q 190 190 260 0 Z" fill="#f5a600"/>
+                            </svg>
+                        <?php endif; ?>
 
-                <div class="doc-page-sheet">
-                    <!-- Corner Accents -->
-                    <?php if ($accent === 'yellow_corner'): ?>
-                        <svg class="accent-top-left" viewBox="0 0 280 280">
-                            <path d="M 0 0 L 280 0 Q 70 70 0 280 Z" fill="#f5a600"/>
-                        </svg>
-                        <svg class="accent-bottom-right" viewBox="0 0 260 260">
-                            <path d="M 260 260 L 0 260 Q 190 190 260 0 Z" fill="#f5a600"/>
-                        </svg>
-                    <?php endif; ?>
+                        <div style="position:relative;z-index:2;">
 
-                    <div style="position:relative;z-index:2;">
+                            <!-- Header Top: Address & Logo -->
+                            <?php
+                                $addressPaddingStyle = '';
+                                if ($accent === 'yellow_corner' && $addrPos === 'top_left') {
+                                    $addressPaddingStyle = 'padding-top:40px;padding-left:55px;position:relative;z-index:3;';
+                                }
+                                $addressHtml = '';
+                                if ($addrPos === 'top_left' || $addrPos === 'top_center') {
+                                    $alignStyle = $addrPos === 'top_center' ? 'text-align:center;' : '';
+                                    $addressHtml = '
+                                        <div style="' . $alignStyle . $addressPaddingStyle . 'line-height:1.45;">
+                                            <strong style="font-size:1.05rem;color:#000;">PT. CIPTA DUTA WACANA</strong><br>
+                                            <span style="font-size:0.88rem;font-weight:600;color:#1e293b;">Beltway Office Park Tower B Lantai 5</span><br>
+                                            <span style="font-size:0.82rem;color:#334155;">Jl. TB Simatupang No. 41 Ragunan-Pasar Minggu, Jakarta Selatan</span><br>
+                                            <span style="font-size:0.78rem;color:#475569;">Phone: (+62-21) 29857462; 29215392; 29084991 | Fax: (+62-21) 29857201</span>
+                                        </div>
+                                    ';
+                                }
+                                $logoHtml = '';
+                                if ($logoPos !== 'none' && !empty($logoBase64)) {
+                                    $logoHtml = '<img src="' . $logoBase64 . '" alt="CDW Logo" style="height:90px;max-height:100px;width:auto;max-width:220px;object-fit:contain;display:block;">';
+                                }
+                            ?>
 
-                        <!-- Header Top: Address & Logo -->
-                        <?php
-                            $addressPaddingStyle = '';
-                            if ($accent === 'yellow_corner' && $addrPos === 'top_left') {
-                                $addressPaddingStyle = 'padding-top:40px;padding-left:55px;position:relative;z-index:3;';
-                            }
-                            $addressHtml = '';
-                            if ($addrPos === 'top_left' || $addrPos === 'top_center') {
-                                $alignStyle = $addrPos === 'top_center' ? 'text-align:center;' : '';
-                                $addressHtml = '
-                                    <div style="' . $alignStyle . $addressPaddingStyle . 'line-height:1.45;">
-                                        <strong style="font-size:1.05rem;color:#000;">PT. CIPTA DUTA WACANA</strong><br>
-                                        <span style="font-size:0.88rem;font-weight:600;color:#1e293b;">Beltway Office Park Tower B Lantai 5</span><br>
-                                        <span style="font-size:0.82rem;color:#334155;">Jl. TB Simatupang No. 41 Ragunan-Pasar Minggu, Jakarta Selatan</span><br>
-                                        <span style="font-size:0.78rem;color:#475569;">Phone: (+62-21) 29857462; 29215392; 29084991 | Fax: (+62-21) 29857201</span>
+                            <div style="min-height:90px;margin-bottom:8px;">
+                                <?php if ($logoPos === 'top_right'): ?>
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="flex-grow-1 me-3"><?= $addressHtml ?></div>
+                                        <div class="flex-shrink-0" style="min-width:200px;min-height:130px;text-align:right;"><?= $logoHtml ?></div>
                                     </div>
-                                ';
-                            }
-                            $logoHtml = '';
-                            if ($logoPos !== 'none' && !empty($logoBase64)) {
-                                $logoHtml = '<img src="' . $logoBase64 . '" alt="CDW Logo" style="height:90px;max-height:100px;width:auto;max-width:220px;object-fit:contain;display:block;">';
-                            }
-                        ?>
-
-                        <div style="min-height:90px;margin-bottom:8px;">
-                            <?php if ($logoPos === 'top_right'): ?>
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <div class="flex-grow-1 me-3"><?= $addressHtml ?></div>
-                                    <div class="flex-shrink-0" style="min-width:200px;min-height:130px;text-align:right;"><?= $logoHtml ?></div>
-                                </div>
-                            <?php elseif ($logoPos === 'top_left'): ?>
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <div class="flex-shrink-0 me-3" style="min-width:200px;min-height:130px;"><?= $logoHtml ?></div>
-                                    <div class="flex-grow-1"><?= $addressHtml ?></div>
-                                </div>
-                            <?php elseif ($logoPos === 'center'): ?>
-                                <div class="text-center mb-3">
-                                    <?php if ($logoHtml): ?><div class="mb-2 d-flex justify-content-center" style="min-height:130px;"><?= $logoHtml ?></div><?php endif; ?>
-                                    <div><?= $addressHtml ?></div>
-                                </div>
-                            <?php else: ?>
-                                <div class="mb-3"><?= $addressHtml ?></div>
-                            <?php endif; ?>
-                        </div>
-
-                        <!-- Accent -->
-                        <?php if ($accent === 'line'): ?>
-                            <div style="border-bottom:2px solid #0f172a;margin-bottom:22px;"></div>
-                        <?php elseif ($accent === 'blue_bar'): ?>
-                            <div class="blue-header-banner text-center my-3"><?= esc($jenisStr) ?></div>
-                        <?php endif; ?>
-
-                        <!-- Title -->
-                        <?php if ($accent !== 'blue_bar'): ?>
-                            <h5 class="text-center fw-bold text-dark text-uppercase mb-3" style="letter-spacing:0.5px;"><?= esc($jenisStr) ?></h5>
-                        <?php endif; ?>
-
-                        <!-- Nomor & Tanggal -->
-                        <div class="d-flex justify-content-between fw-semibold text-secondary mb-3 pb-2 border-bottom border-light" style="font-size:0.88rem;">
-                            <span><strong>Nomor:</strong> <?= esc($surat['nomor_surat']) ?></span>
-                            <span><strong>Tanggal:</strong> <?= date('d F Y', strtotime($surat['tanggal_surat'])) ?></span>
-                        </div>
-
-                        <!-- Perihal -->
-                        <div class="mb-3">
-                            <strong class="text-dark">Perihal: <?= esc($surat['perihal']) ?></strong>
-                        </div>
-
-                        <!-- Isi Surat – render HTML tables properly -->
-                        <div class="text-dark mb-4 page-content-area" style="line-height:1.8;flex-grow:1;font-size:0.92rem;">
-                            <?= adminFormatBodyTextWithTables($surat['isi_surat'] ?? '') ?>
-                        </div>
-
-                        <!-- Catatan Internal & Tanda Tangan -->
-                        <div style="margin-top:auto;padding-top:15px;">
-                            <?php if (!empty($surat['catatan'])): ?>
-                                <div class="alert alert-warning border-0 rounded-3 text-dark p-2 mb-3 no-print" style="font-size:0.78rem;">
-                                    <i class="fas fa-exclamation-circle me-1 text-warning"></i>
-                                    <strong>Catatan Internal:</strong> <?= esc($surat['catatan']) ?>
-                                </div>
-                            <?php endif; ?>
-                            <div class="row pt-2 text-center" style="position:relative;z-index:5;margin-bottom:<?= ($addrPos === 'footer' || $accent === 'yellow_corner') ? '45px' : '10px' ?>;">
-                                <div class="col-6 ms-auto">
-                                    <p style="font-size:0.88rem;margin-bottom:2.5rem;">Hormat kami,<br><strong>PT. CIPTA DUTA WACANA</strong></p>
-                                    <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:150px;">Direktur Utama</p>
-                                </div>
+                                <?php elseif ($logoPos === 'top_left'): ?>
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div class="flex-shrink-0 me-3" style="min-width:200px;min-height:130px;"><?= $logoHtml ?></div>
+                                        <div class="flex-grow-1"><?= $addressHtml ?></div>
+                                    </div>
+                                <?php elseif ($logoPos === 'center'): ?>
+                                    <div class="text-center mb-3">
+                                        <?php if ($logoHtml): ?><div class="mb-2 d-flex justify-content-center" style="min-height:130px;"><?= $logoHtml ?></div><?php endif; ?>
+                                        <div><?= $addressHtml ?></div>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="mb-3"><?= $addressHtml ?></div>
+                                <?php endif; ?>
                             </div>
-                        </div>
 
-                        <!-- Footer Address (If selected) -->
-                        <?php if ($addrPos === 'footer'): ?>
-                            <div style="position:absolute;bottom:25px;left:50px;z-index:4;font-size:0.75rem;line-height:1.45;color:#475569;max-width:380px;">
-                                <strong style="color:#0f172a;">PT. CIPTA DUTA WACANA</strong><br>
-                                Beltway Office Park Tower B Lt.5, Jl. Letjen TB Simatupang No.41, Ragunan, Jakarta Selatan 12550<br>
-                                Phone: (+62-21) 29857462 | www.cdw-engineering.com
+                            <!-- Accent -->
+                            <?php if ($accent === 'line'): ?>
+                                <div style="border-bottom:2px solid #0f172a;margin-bottom:22px;"></div>
+                            <?php elseif ($accent === 'blue_bar'): ?>
+                                <div class="blue-header-banner text-center my-3"><?= esc($jenisStr) ?></div>
+                            <?php endif; ?>
+
+                            <!-- Title -->
+                            <?php if ($accent !== 'blue_bar'): ?>
+                                <h5 class="text-center fw-bold text-dark text-uppercase mb-3" style="letter-spacing:0.5px;"><?= esc($jenisStr) ?></h5>
+                            <?php endif; ?>
+
+                            <!-- Nomor & Tanggal -->
+                            <div class="d-flex justify-content-between fw-semibold text-secondary mb-3 pb-2 border-bottom border-light" style="font-size:0.88rem;">
+                                <span><strong>Nomor:</strong> <?= esc($surat['nomor_surat']) ?></span>
+                                <span><strong>Tanggal:</strong> <?= date('d F Y', strtotime($surat['tanggal_surat'])) ?></span>
                             </div>
-                        <?php endif; ?>
 
-                    </div><!-- end z-index wrapper -->
+                            <!-- Perihal -->
+                            <div class="mb-3">
+                                <strong class="text-dark">Perihal: <?= esc($surat['perihal']) ?></strong>
+                            </div>
 
-                </div><!-- /.doc-page-sheet -->
+                            <!-- Isi Surat – render HTML tables properly -->
+                            <div class="text-dark mb-4 page-content-area" style="line-height:1.8;flex-grow:1;font-size:0.92rem;">
+                                <?= adminFormatBodyTextWithTables($surat['isi_surat'] ?? '') ?>
+                            </div>
+
+                            <!-- Catatan Internal & Tanda Tangan -->
+                            <div style="margin-top:auto;padding-top:15px;">
+                                <?php if (!empty($surat['catatan'])): ?>
+                                    <div class="alert alert-warning border-0 rounded-3 text-dark p-2 mb-3 no-print" style="font-size:0.78rem;">
+                                        <i class="fas fa-exclamation-circle me-1 text-warning"></i>
+                                        <strong>Catatan Internal:</strong> <?= esc($surat['catatan']) ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php
+                                    $sigLayout = $surat['signature_layout'] ?? '1_pihak';
+                                    $sigData   = json_decode($surat['signature_data'] ?? '{}', true) ?: [];
+                                    $p1Title   = !empty($sigData['p1_title']) ? $sigData['p1_title'] : 'Pihak Pertama,';
+                                    $p1Nama    = !empty($sigData['p1_nama'])  ? $sigData['p1_nama']  : ($karyawan['nama_lengkap'] ?? 'PT. CIPTA DUTA WACANA');
+                                    $p1Jab     = !empty($sigData['p1_jabatan']) ? $sigData['p1_jabatan'] : 'Direktur Utama';
+
+                                    $p2Title   = !empty($sigData['p2_title']) ? $sigData['p2_title'] : 'Pihak Kedua,';
+                                    $p2Nama    = !empty($sigData['p2_nama'])  ? $sigData['p2_nama']  : 'PT. CIPTA DUTA WACANA';
+                                    $p2Jab     = !empty($sigData['p2_jabatan']) ? $sigData['p2_jabatan'] : 'Direktur Utama';
+
+                                    $p3Title   = !empty($sigData['p3_title']) ? $sigData['p3_title'] : 'Pihak Ketiga,';
+                                    $p3Nama    = !empty($sigData['p3_nama'])  ? $sigData['p3_nama']  : 'PT. CIPTA DUTA WACANA';
+                                    $p3Jab     = !empty($sigData['p3_jabatan']) ? $sigData['p3_jabatan'] : 'Direktur Utama';
+                                    $mbStyle   = $addrPos === 'footer' ? 'margin-bottom:70px;' : 'margin-bottom:15px;';
+                                ?>
+                                <?php if ($sigLayout === '2_pihak'): ?>
+                                    <div class="row pt-4 text-center mt-auto" style="position:relative;z-index:5;<?= $mbStyle ?>">
+                                        <div class="col-6">
+                                            <p style="font-size:0.88rem;margin-bottom:2.5rem;"><?= esc($p1Title) ?><br><strong><?= esc($p1Nama) ?></strong></p>
+                                            <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:150px;"><?= esc($p1Jab) ?></p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p style="font-size:0.88rem;margin-bottom:2.5rem;"><?= esc($p2Title) ?><br><strong><?= esc($p2Nama) ?></strong></p>
+                                            <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:150px;"><?= esc($p2Jab) ?></p>
+                                        </div>
+                                    </div>
+                                <?php elseif ($sigLayout === '3_pihak'): ?>
+                                    <div class="row pt-4 text-center mt-auto" style="position:relative;z-index:5;<?= $mbStyle ?>">
+                                        <div class="col-4">
+                                            <p style="font-size:0.88rem;margin-bottom:2.5rem;"><?= esc($p1Title) ?><br><strong><?= esc($p1Nama) ?></strong></p>
+                                            <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:120px;"><?= esc($p1Jab) ?></p>
+                                        </div>
+                                        <div class="col-4">
+                                            <p style="font-size:0.88rem;margin-bottom:2.5rem;"><?= esc($p2Title) ?><br><strong><?= esc($p2Nama) ?></strong></p>
+                                            <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:120px;"><?= esc($p2Jab) ?></p>
+                                        </div>
+                                        <div class="col-4">
+                                            <p style="font-size:0.88rem;margin-bottom:2.5rem;"><?= esc($p3Title) ?><br><strong><?= esc($p3Nama) ?></strong></p>
+                                            <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:120px;"><?= esc($p3Jab) ?></p>
+                                        </div>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="row pt-2 text-center" style="position:relative;z-index:5;<?= $mbStyle ?>">
+                                        <div class="col-6 ms-auto">
+                                            <p style="font-size:0.88rem;margin-bottom:2.5rem;"><?= esc($p1Title) ?><br><strong><?= esc($p1Nama) ?></strong></p>
+                                            <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:150px;"><?= esc($p1Jab) ?></p>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Footer Address (If selected) -->
+                            <?php if ($addrPos === 'footer'): ?>
+                                <div style="position:absolute;bottom:18px;left:40px;right:180px;font-size:0.7rem;color:#475569;line-height:1.35;z-index:5;">
+                                    <strong>PT. Cipta Duta Wacana</strong><br>
+                                    Beltway Office Park Tower B Lt.5, Jl. Letjen TB Simatupang No.41, Ragunan, Pasar Minggu, Jakarta Selatan 12550<br>
+                                    Tel: +62-21 29857462 | Fax: +62-21 29857201 | <span style="color:#0284c7">www.cdw-engineering.com</span>
+                                </div>
+                            <?php endif; ?>
+                            <div style="position:absolute;bottom:18px;right:30px;font-size:0.82rem;font-weight:700;color:#1e3c72;z-index:5;text-align:right;">
+                                Halaman 1 dari 1
+                            </div>
+
+                        </div><!-- end z-index wrapper -->
+
+                    </div><!-- /.doc-page-sheet -->
+                <?php endif; ?>
 
                 </div><!-- /#previewPaper -->
             </div><!-- /.col -->
@@ -457,38 +508,7 @@ function openPrintConfirmation() {
 }
 
 function proceedToDedicatedPrintView() {
-    const modalEl = document.getElementById('confirmPrintModal');
-    if (modalEl) { const m = bootstrap.Modal.getInstance(modalEl); if (m) m.hide(); }
-
-    const previewPaper = document.getElementById('previewPaper');
-    const printPaper   = document.getElementById('dedicatedPrintPaper');
-    if (previewPaper && printPaper) {
-        printPaper.className = previewPaper.className;
-        printPaper.innerHTML = previewPaper.innerHTML;
-    }
-
-    // Hide sidebar, navbar and CI debug bar for full-screen preview
-    document.querySelectorAll('.sidebar, .sidenav, .top-navbar, nav.navbar, #ci-debug-bar, .ci-debug-bar, .debug-bar').forEach(el => {
-        el.dataset.printHidden = el.style.display || '';
-        el.style.setProperty('display', 'none', 'important');
-    });
-    document.body.style.overflow = 'hidden';
-    document.body.style.paddingLeft = '0';
-    document.body.style.marginLeft = '0';
-
-    const mainView  = document.getElementById('mainDetailView');
-    const printView = document.getElementById('dedicatedPrintView');
-    if (mainView && printView) {
-        mainView.style.setProperty('display', 'none', 'important');
-        printView.style.setProperty('display', 'block', 'important');
-        printView.classList.remove('d-none');
-        // Make print view truly full-screen
-        printView.style.cssText += ';position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;overflow-y:auto;overflow-x:hidden;';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // Force sheet height to full A4 page multiples (1123px, 2246px, etc.)
-    adjustPaperPageHeight();
+    window.location.href = "<?= base_url('admin/surat/pratinjau/' . $surat['id']) ?>?print_now=1";
 }
 
 function closeDedicatedPrintView() {
@@ -651,13 +671,10 @@ window.addEventListener('beforeprint', function () {
     const printView = document.getElementById('dedicatedPrintView');
     if (printView && printView.classList.contains('d-none')) {
         proceedToDedicatedPrintView();
-    } else {
-        adjustPaperPageHeight();
     }
 });
 
 window.addEventListener('load', function() {
-    adjustPaperPageHeight();
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('print_now')) {
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -676,52 +693,116 @@ window.addEventListener('load', function() {
 @media print {
     @page {
         size: A4 portrait;
-        margin: 15mm 15mm 20mm 15mm;
+        margin: 0;
     }
     html, body {
-        background: #ffffff !important; margin: 0 !important; padding: 0 !important;
-        width: 100% !important; height: auto !important; overflow: visible !important;
-        -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
-    .sidebar, .top-navbar, .navbar, .sidenav, header, footer,
-    .no-print, .modal, .modal-backdrop, .sidebar-overlay, nav,
-    #mainDetailView {
-        display: none !important; visibility: hidden !important;
-        width: 0 !important; height: 0 !important; opacity: 0 !important;
+    .sidebar,
+    .main-content > *:not(#dedicatedPrintView),
+    .top-navbar,
+    .navbar,
+    .sidenav,
+    #mainDetailView,
+    header,
+    footer,
+    .no-print,
+    .modal,
+    .modal-backdrop,
+    .sidebar-overlay,
+    nav,
+    #ci-debug-bar,
+    .ci-debug-bar,
+    .debug-bar {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
     }
     #dedicatedPrintView {
-        display: block !important; position: relative !important;
-        width: 100% !important; max-width: 100% !important;
-        margin: 0 !important; padding: 0 !important;
-        background: #ffffff !important; min-height: auto !important;
-        height: auto !important; overflow: visible !important; z-index: 1 !important;
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        overflow: visible !important;
+        z-index: 1 !important;
     }
-    #dedicatedPrintPaper {
-        position: relative !important; width: 100% !important;
-        max-width: 100% !important; margin: 0 !important; padding: 0 !important;
-        box-shadow: none !important; border: none !important; border-radius: 0 !important;
-        background: #ffffff !important; height: auto !important; overflow: visible !important;
+    #dedicatedPrintPaper, #previewPaper {
+        position: relative !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: #ffffff !important;
+        height: auto !important;
+        overflow: visible !important;
     }
     .doc-page-sheet {
-        position: relative !important; width: 100% !important; max-width: 100% !important;
-        box-shadow: none !important; border: none !important;
-        margin: 0 !important; padding: 0 !important;
-        page-break-after: auto !important; break-after: auto !important;
-        box-sizing: border-box !important; min-height: auto !important;
-        height: auto !important; max-height: none !important; overflow: visible !important;
+        position: relative !important;
+        width: 210mm !important;
+        max-width: 210mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
+        margin: 0 auto !important;
+        padding: 25px 35px 45px 35px !important;
+        box-sizing: border-box !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        page-break-before: always !important;
+        break-before: page !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
-    .custom-doc-table, tr, td, th, table {
-        break-inside: avoid !important; page-break-inside: avoid !important;
+    .doc-page-sheet:first-child {
+        page-break-before: auto !important;
+        break-before: auto !important;
     }
-    
-    /* In print mode, anchor SVGs to physical paper corners on every page */
     .accent-top-left {
-        position: fixed !important; top: 0 !important; left: 0 !important;
-        width: 160px !important; height: 160px !important; z-index: 100 !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 160px !important;
+        height: 160px !important;
+        z-index: 1 !important;
     }
     .accent-bottom-right {
-        position: fixed !important; bottom: 0 !important; right: 0 !important;
-        width: 160px !important; height: 160px !important; z-index: 100 !important;
+        position: absolute !important;
+        bottom: 0 !important;
+        right: 0 !important;
+        width: 160px !important;
+        height: 160px !important;
+        z-index: 1 !important;
+    }
+    .custom-doc-table, tr, td, th, table {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+    .mini-page-header-repeat {
+        display: flex !important;
+        visibility: visible !important;
     }
 }
 </style>

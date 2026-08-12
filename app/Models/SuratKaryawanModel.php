@@ -30,8 +30,17 @@ class SuratKaryawanModel extends Model
             if ($this->db && !$this->db->fieldExists('paper_size', $this->table)) {
                 $this->db->query("ALTER TABLE {$this->table} ADD COLUMN paper_size VARCHAR(20) DEFAULT 'A4'");
             }
+            if ($this->db && !$this->db->fieldExists('signature_layout', $this->table)) {
+                $this->db->query("ALTER TABLE {$this->table} ADD COLUMN signature_layout VARCHAR(20) DEFAULT '1_pihak'");
+            }
+            if ($this->db && !$this->db->fieldExists('signature_data', $this->table)) {
+                $this->db->query("ALTER TABLE {$this->table} ADD COLUMN signature_data TEXT DEFAULT NULL");
+            }
             if ($this->db && !$this->db->fieldExists('html_full', $this->table)) {
                 $this->db->query("ALTER TABLE {$this->table} ADD COLUMN html_full LONGTEXT DEFAULT NULL");
+            }
+            if ($this->db && $this->db->fieldExists('karyawan_id', $this->table)) {
+                $this->db->query("ALTER TABLE {$this->table} MODIFY karyawan_id INT UNSIGNED NULL");
             }
         } catch (\Throwable $e) {
             // Ignore if column already exists or DB error handled
@@ -41,7 +50,7 @@ class SuratKaryawanModel extends Model
     protected $allowedFields = [
         'nomor_surat', 'jenis_surat', 'karyawan_id', 'tanggal_surat',
         'perihal', 'isi_surat', 'html_full', 'catatan', 'dibuat_oleh', 'status',
-        'template_layout', 'logo_position', 'address_position', 'accent_style', 'paper_size'
+        'template_layout', 'logo_position', 'address_position', 'accent_style', 'paper_size', 'signature_layout', 'signature_data'
     ];
 
     public $jenisSurat = [

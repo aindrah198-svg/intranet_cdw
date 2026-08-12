@@ -35,6 +35,7 @@ $routes->group('admin', ['filter' => 'auth', 'namespace' => 'App\Controllers\Adm
         $routes->get('tambah', 'Surat::tambah');
         $routes->post('simpan', 'Surat::simpan');
         $routes->get('detail/(:num)', 'Surat::detail/$1');
+        $routes->get('pratinjau/(:num)', 'Surat::pratinjau/$1', ['as' => 'admin.surat.pratinjau']);
         $routes->get('edit/(:num)', 'Surat::edit/$1');
         $routes->post('update', 'Surat::update');
         $routes->get('hapus/(:num)', 'Surat::hapus/$1');

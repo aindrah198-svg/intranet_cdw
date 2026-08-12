@@ -21,7 +21,7 @@ class SuratController extends BaseController
     {
         $filter = $this->request->getGet('jenis');
         $query  = $this->suratModel->select('surat_karyawan.*, karyawan.nama_lengkap, karyawan.nik, karyawan.divisi')
-                                   ->join('karyawan', 'karyawan.id = surat_karyawan.karyawan_id', 'inner')
+                                   ->join('karyawan', 'karyawan.id = surat_karyawan.karyawan_id', 'left')
                                    ->orderBy('surat_karyawan.tanggal_surat', 'DESC');
         if ($filter) {
             $query->where('surat_karyawan.jenis_surat', $filter);
@@ -78,16 +78,29 @@ class SuratController extends BaseController
             $jenis = trim($this->request->getPost('jenis_surat_custom'));
         }
 
-        $karyawanId  = $this->request->getPost('karyawan_id');
+        $karyawanIdRaw = $this->request->getPost('karyawan_id');
+        $karyawanId    = (!empty($karyawanIdRaw) && is_numeric($karyawanIdRaw)) ? (int)$karyawanIdRaw : null;
         $tanggal     = $this->request->getPost('tanggal_surat');
         $perihal     = $this->request->getPost('perihal');
 
-        if (empty($jenis) || empty($karyawanId) || empty($tanggal) || empty($perihal)) {
-            return redirect()->back()->withInput()->with('error', 'Jenis Surat, Karyawan, Tanggal, dan Perihal wajib diisi.');
+        if (empty($jenis) || empty($tanggal) || empty($perihal)) {
+            return redirect()->back()->withInput()->with('error', 'Jenis Surat, Tanggal, dan Perihal wajib diisi.');
         }
 
         $nomor = $this->suratModel->generateNomor($jenis);
         $dibuatOleh = session('user_id') ?: (session('id') ?: (session('karyawan_id') ?: 1));
+
+        $sigData = [
+            'p1_title'   => $this->request->getPost('pihak_1_title'),
+            'p1_nama'    => $this->request->getPost('pihak_1_nama'),
+            'p1_jabatan' => $this->request->getPost('pihak_1_jabatan'),
+            'p2_title'   => $this->request->getPost('pihak_2_title'),
+            'p2_nama'    => $this->request->getPost('pihak_2_nama'),
+            'p2_jabatan' => $this->request->getPost('pihak_2_jabatan'),
+            'p3_title'   => $this->request->getPost('pihak_3_title'),
+            'p3_nama'    => $this->request->getPost('pihak_3_nama'),
+            'p3_jabatan' => $this->request->getPost('pihak_3_jabatan'),
+        ];
 
         $id = $this->suratModel->insert([
             'nomor_surat'      => $nomor,
@@ -105,6 +118,8 @@ class SuratController extends BaseController
             'address_position' => $this->request->getPost('address_position') ?: 'top_left',
             'accent_style'     => $this->request->getPost('accent_style') ?: 'line',
             'paper_size'       => $this->request->getPost('paper_size') ?: 'A4',
+            'signature_layout' => $this->request->getPost('signature_layout') ?: '1_pihak',
+            'signature_data'   => json_encode($sigData),
         ]);
 
         if (!$id) {
@@ -134,6 +149,26 @@ class SuratController extends BaseController
             'logoBase64' => $this->suratModel->getCompanyLogoBase64(),
         ];
         return view('direktur/karyawan/surat/detail', $data);
+    }
+
+    public function pratinjau($id)
+    {
+        if (function_exists('service')) {
+            try { service('toolbar')->stop(); } catch (\Throwable $e) {}
+        }
+        $surat = $this->suratModel->getDetailWithKaryawan($id);
+        if (!$surat) {
+            return redirect()->to(base_url('direktur/karyawan/surat'))->with('error', 'Surat tidak ditemukan.');
+        }
+        $data = [
+            'title'      => 'Pratinjau Cetak Surat - ' . ($surat['nomor_surat'] ?? 'SPK'),
+            'active'     => 'karyawan',
+            'user'       => session()->get('user') ?? ['name' => session()->get('name') ?? 'Direktur', 'role' => 'direktur'],
+            'surat'      => $surat,
+            'paperSizes' => $this->suratModel->paperSizes,
+            'logoBase64' => $this->suratModel->getCompanyLogoBase64(),
+        ];
+        return view('direktur/karyawan/surat/pratinjau', $data);
     }
 
     public function edit($id)
@@ -167,13 +202,26 @@ class SuratController extends BaseController
             $jenis = trim($this->request->getPost('jenis_surat_custom'));
         }
 
-        $karyawanId = $this->request->getPost('karyawan_id');
+        $karyawanIdRaw = $this->request->getPost('karyawan_id');
+        $karyawanId    = (!empty($karyawanIdRaw) && is_numeric($karyawanIdRaw)) ? (int)$karyawanIdRaw : null;
         $tanggal    = $this->request->getPost('tanggal_surat');
         $perihal    = $this->request->getPost('perihal');
 
-        if (empty($jenis) || empty($karyawanId) || empty($tanggal) || empty($perihal)) {
-            return redirect()->back()->withInput()->with('error', 'Jenis Surat, Karyawan, Tanggal, dan Perihal wajib diisi.');
+        if (empty($jenis) || empty($tanggal) || empty($perihal)) {
+            return redirect()->back()->withInput()->with('error', 'Jenis Surat, Tanggal, dan Perihal wajib diisi.');
         }
+
+        $sigData = [
+            'p1_title'   => $this->request->getPost('pihak_1_title'),
+            'p1_nama'    => $this->request->getPost('pihak_1_nama'),
+            'p1_jabatan' => $this->request->getPost('pihak_1_jabatan'),
+            'p2_title'   => $this->request->getPost('pihak_2_title'),
+            'p2_nama'    => $this->request->getPost('pihak_2_nama'),
+            'p2_jabatan' => $this->request->getPost('pihak_2_jabatan'),
+            'p3_title'   => $this->request->getPost('pihak_3_title'),
+            'p3_nama'    => $this->request->getPost('pihak_3_nama'),
+            'p3_jabatan' => $this->request->getPost('pihak_3_jabatan'),
+        ];
 
         $this->suratModel->update($id, [
             'jenis_surat'      => $jenis,
@@ -189,6 +237,8 @@ class SuratController extends BaseController
             'address_position' => $this->request->getPost('address_position') ?: 'top_left',
             'accent_style'     => $this->request->getPost('accent_style') ?: 'line',
             'paper_size'       => $this->request->getPost('paper_size') ?: 'A4',
+            'signature_layout' => $this->request->getPost('signature_layout') ?: '1_pihak',
+            'signature_data'   => json_encode($sigData),
         ]);
 
         return redirect()->to(base_url('direktur/karyawan/surat/detail/'.$id))->with('success', 'Surat berhasil diperbarui.');

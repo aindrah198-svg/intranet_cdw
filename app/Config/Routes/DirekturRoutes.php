@@ -59,6 +59,7 @@ $routes->group('direktur', ['filter' => 'auth'], function($routes) {
         $routes->get('surat/tambah', 'Direktur\Karyawan\SuratController::tambah', ['as' => 'direktur.karyawan.surat.tambah']);
         $routes->post('surat/simpan', 'Direktur\Karyawan\SuratController::simpan', ['as' => 'direktur.karyawan.surat.simpan']);
         $routes->get('surat/detail/(:num)', 'Direktur\Karyawan\SuratController::detail/$1', ['as' => 'direktur.karyawan.surat.detail']);
+        $routes->get('surat/pratinjau/(:num)', 'Direktur\Karyawan\SuratController::pratinjau/$1', ['as' => 'direktur.karyawan.surat.pratinjau']);
         $routes->get('surat/edit/(:num)', 'Direktur\Karyawan\SuratController::edit/$1', ['as' => 'direktur.karyawan.surat.edit']);
         $routes->post('surat/update/(:num)', 'Direktur\Karyawan\SuratController::update/$1', ['as' => 'direktur.karyawan.surat.update']);
         $routes->post('surat/delete/(:num)', 'Direktur\Karyawan\SuratController::delete/$1', ['as' => 'direktur.karyawan.surat.delete']);
