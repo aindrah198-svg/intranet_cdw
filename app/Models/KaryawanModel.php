@@ -281,7 +281,7 @@ class KaryawanModel extends Model
      */
     public function isNikUnique($nik)
     {
-        $karyawan = $this->where('nik', $nik)->first();
+        $karyawan = $this->withDeleted()->where('nik', $nik)->first();
         return $karyawan ? false : true;
     }
     
@@ -290,8 +290,41 @@ class KaryawanModel extends Model
      */
     public function isNikUniqueForUpdate($nik, $id)
     {
-        $karyawan = $this->where('nik', $nik)->where('id !=', $id)->first();
+        $karyawan = $this->withDeleted()->where('nik', $nik)->where('id !=', $id)->first();
         return $karyawan ? false : true;
+    }
+
+    /**
+     * Generate Auto NIK Unik Berurutan (CDW + Tahun + Suffix 3+ Digit)
+     */
+    public function generateAutoNik()
+    {
+        $prefix = 'CDW' . date('Y');
+        $allNikRows = $this->withDeleted()
+                           ->select('nik')
+                           ->like('nik', $prefix, 'after')
+                           ->findAll();
+
+        $maxNum = 0;
+        foreach ($allNikRows as $row) {
+            $numStr = substr($row['nik'], strlen($prefix));
+            if (is_numeric($numStr)) {
+                $num = intval($numStr);
+                if ($num > $maxNum) {
+                    $maxNum = $num;
+                }
+            }
+        }
+
+        $nextNum = $maxNum + 1;
+        $newNik = $prefix . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
+
+        while (!$this->isNikUnique($newNik)) {
+            $nextNum++;
+            $newNik = $prefix . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
+        }
+
+        return $newNik;
     }
 
     /**

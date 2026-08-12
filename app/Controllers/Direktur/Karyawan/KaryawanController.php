@@ -50,14 +50,16 @@ class KaryawanController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        // Cek NIK unik
-        if (!$this->karyawanModel->isNikUnique($this->request->getPost('nik'))) {
-            return redirect()->back()->withInput()->with('error', 'NIK sudah terdaftar di sistem.');
+        // Cek NIK unik (Termasuk data terhapus/arsip)
+        $nikSubmitted = trim($this->request->getPost('nik') ?? '');
+        if (!$this->karyawanModel->isNikUnique($nikSubmitted)) {
+            $recNik = $this->karyawanModel->generateAutoNik();
+            return redirect()->back()->withInput()->with('error', 'NIK "' . esc($nikSubmitted) . '" sudah pernah terdaftar di sistem (termasuk arsip Hapus). Gunakan NIK rekomendasi: <strong>' . $recNik . '</strong>');
         }
 
         // Siapkan data
         $data = [
-            'nik' => $this->request->getPost('nik'),
+            'nik' => $nikSubmitted,
             'nama_lengkap' => $this->request->getPost('nama_lengkap'),
             'tempat_lahir' => $this->request->getPost('tempat_lahir'),
             'tanggal_lahir' => $this->request->getPost('tanggal_lahir'),
@@ -69,18 +71,26 @@ class KaryawanController extends BaseController
             'jabatan' => $this->request->getPost('jabatan'),
             'status_karyawan' => $this->request->getPost('status_karyawan'),
             'tanggal_masuk' => $this->request->getPost('tanggal_masuk'),
-            'no_ktp' => $this->request->getPost('no_ktp'), // Catatan: KTP mungkin bisa ditambahkan ke model jika blm ada
+            'no_ktp' => $this->request->getPost('no_ktp'),
             'no_npwp' => $this->request->getPost('no_npwp')
         ];
 
-        if ($this->karyawanModel->insert($data)) {
-            return redirect()->to(base_url('direktur/karyawan'))->with('success', 'Data karyawan "' . esc($data['nama_lengkap']) . '" berhasil ditambahkan.');
-        } else {
-            $modelErrors = $this->karyawanModel->errors();
-            if(!empty($modelErrors)) {
-                return redirect()->back()->withInput()->with('errors', $modelErrors);
+        try {
+            if ($this->karyawanModel->insert($data)) {
+                return redirect()->to(base_url('direktur/karyawan'))->with('success', 'Data karyawan "' . esc($data['nama_lengkap']) . '" berhasil ditambahkan.');
+            } else {
+                $modelErrors = $this->karyawanModel->errors();
+                if(!empty($modelErrors)) {
+                    return redirect()->back()->withInput()->with('errors', $modelErrors);
+                }
+                return redirect()->back()->withInput()->with('error', 'Gagal menyimpan data karyawan. Silakan periksa kembali isian Anda.');
             }
-            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan data karyawan. Silakan periksa kembali isian Anda.');
+        } catch (\Throwable $e) {
+            if (strpos($e->getMessage(), 'Duplicate entry') !== false || $e->getCode() == 1062) {
+                $recNik = $this->karyawanModel->generateAutoNik();
+                return redirect()->back()->withInput()->with('error', 'NIK "' . esc($nikSubmitted) . '" sudah digunakan. Silakan gunakan NIK rekomendasi: <strong>' . $recNik . '</strong>');
+            }
+            throw $e;
         }
     }
     

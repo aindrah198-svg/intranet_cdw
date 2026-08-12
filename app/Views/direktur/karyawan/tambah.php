@@ -90,7 +90,7 @@
                         <div class="row g-3 mb-4">
                             <div class="col-12 col-md-6">
                                 <label class="form-label fw-semibold text-sm">NIK (Nomor Induk Karyawan) <span class="text-danger">*</span></label>
-                                <input type="text" name="nik" class="form-control form-control-custom" value="<?= old('nik') ?>" required placeholder="Misal: CDW2026001">
+                                <input type="text" name="nik" class="form-control form-control-custom fw-bold text-primary" value="<?= old('nik') ?: esc($autoNik ?? '') ?>" required placeholder="Misal: CDW2026001">
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="form-label fw-semibold text-sm">Nama Lengkap <span class="text-danger">*</span></label>
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const selected = dummyNames[Math.floor(Math.random() * dummyNames.length)];
         const randomNum = Math.floor(100 + Math.random() * 900);
-        const nikVal = 'CDW' + dateNowYear() + randomNum;
+        const nikVal = '<?= esc($autoNik ?? '') ?>' || ('CDW' + dateNowYear() + (Math.floor(1000 + Math.random() * 9000)));
         const nameVal = selected.name;
         const emailVal = nameVal.toLowerCase().replace(/[^a-z0-9]/g, '.') + randomNum + '@cdw-engineering.com';
         const phoneVal = '0812' + Math.floor(10000000 + Math.random() * 90000000);
