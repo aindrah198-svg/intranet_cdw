@@ -10,5 +10,6 @@ public/clean_db13.php
 public/db_check.php
 public/db_check_proj.php
 public/db_fix.php
-public/uploads/
+public/uploads/*
+!public/uploads/logo/
 uploads/
