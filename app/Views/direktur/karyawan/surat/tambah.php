@@ -687,11 +687,11 @@ let blockCounter = 0;
 // Usable body content heights (px) per paper size
 // page1 = after full kop header, cont = continuation pages with mini-header
 const PAPER_BODY_PX = {
-    A4:     { page1: 760, cont: 950 },
-    A3:     { page1: 1300, cont: 1500 },
-    Letter: { page1: 720, cont: 910 },
-    Legal:  { page1: 1000, cont: 1200 },
-    Folio:  { page1: 900, cont: 1100 },
+    A4:     { page1: 670, cont: 880 },
+    A3:     { page1: 1200, cont: 1400 },
+    Letter: { page1: 630, cont: 840 },
+    Legal:  { page1: 910, cont: 1120 },
+    Folio:  { page1: 810, cont: 1020 },
 };
 
 function genBlkId() { return 'blk_' + (++blockCounter); }
@@ -1084,6 +1084,13 @@ function blockToDocHtml(b) {
         html += '</div>';
         return html;
     }
+    if (b.type === 'table_row') {
+        const ths = b.headers.map(h => `<th>${h}</th>`).join('');
+        const tds = b.row.map(c => `<td>${c}</td>`).join('');
+        const headHtml = b.isFirstRow ? `<thead><tr>${ths}</tr></thead>` : '';
+        return `<table class="custom-doc-table table-style-${b.style}">
+        ${headHtml}<tbody><tr>${tds}</tr></tbody></table>`;
+    }
     if (b.type === 'table') {
         const ths = b.headers.map(h => `<th>${h}</th>`).join('');
         const trs = b.rows.map(row =>
@@ -1227,7 +1234,7 @@ function renderLivePreview() {
     const paperWidthPx = paper.clientWidth || 794;
     const bodyLimits = PAPER_BODY_PX[paperSizeVal] || PAPER_BODY_PX.A4;
 
-    // Decompose blocks for pagination so multi-paragraph/line text blocks split gracefully across pages
+    // Decompose blocks for pagination so multi-paragraph text & multi-row tables split gracefully
     const renderBlocks = [];
     blocks.forEach(b => {
         if (b.type === 'text') {
@@ -1237,15 +1244,31 @@ function renderLivePreview() {
             } else {
                 renderBlocks.push(b);
             }
+        } else if (b.type === 'table') {
+            if (b.rows && b.rows.length > 1) {
+                b.rows.forEach((row, rIdx) => {
+                    renderBlocks.push({
+                        type: 'table_row',
+                        style: b.style,
+                        headers: b.headers,
+                        row: row,
+                        isFirstRow: rIdx === 0,
+                        isLastRow: rIdx === b.rows.length - 1,
+                        originalId: b.id
+                    });
+                });
+            } else {
+                renderBlocks.push(b);
+            }
         } else {
             renderBlocks.push(b);
         }
     });
 
-    // Measure each block height using offscreen div
+    // Measure each block height using offscreen div with exact sheet inner width (694px for A4)
     const measurer = document.createElement('div');
     measurer.style.cssText = `position:absolute;visibility:hidden;left:-9999px;top:0;
-        width:${paperWidthPx - 120}px;font-family:Inter,Arial,sans-serif;font-size:0.9rem;`;
+        width:694px;font-family:Inter,Arial,sans-serif;font-size:0.9rem;box-sizing:border-box;`;
     document.body.appendChild(measurer);
 
     const blockHeights = renderBlocks.map(b => {
@@ -1437,9 +1460,30 @@ function renderLivePreview() {
 
         // Content Blocks
         paperHtml += `<div class="page-content-area" style="flex-grow:1;">`;
+        let currentTableGroup = null;
         pageBlocks.forEach(b => {
-            paperHtml += blockToDocHtml(b);
+            if (b.type === 'table_row') {
+                if (!currentTableGroup || currentTableGroup.originalId !== b.originalId) {
+                    if (currentTableGroup) {
+                        paperHtml += `</tbody></table>`;
+                    }
+                    const ths = b.headers.map(h => `<th>${h}</th>`).join('');
+                    paperHtml += `<table class="custom-doc-table table-style-${b.style}" style="break-inside:avoid;page-break-inside:avoid;"><thead><tr>${ths}</tr></thead><tbody>`;
+                    currentTableGroup = { originalId: b.originalId };
+                }
+                const tds = b.row.map(c => `<td>${c}</td>`).join('');
+                paperHtml += `<tr>${tds}</tr>`;
+            } else {
+                if (currentTableGroup) {
+                    paperHtml += `</tbody></table>`;
+                    currentTableGroup = null;
+                }
+                paperHtml += blockToDocHtml(b);
+            }
         });
+        if (currentTableGroup) {
+            paperHtml += `</tbody></table>`;
+        }
         paperHtml += `</div>`;
 
         // Signature Block & Catatan only on Last Page

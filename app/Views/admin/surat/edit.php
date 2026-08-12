@@ -661,11 +661,11 @@ const existingIsiSurat  = <?= json_encode($surat['isi_surat'] ?? '') ?>;
 let blocks = [];
 let blockCounter = 0;
 const PAPER_BODY_PX = {
-    A4:     { page1: 760, cont: 950 },
-    A3:     { page1: 1300, cont: 1500 },
-    Letter: { page1: 720, cont: 910 },
-    Legal:  { page1: 1000, cont: 1200 },
-    Folio:  { page1: 900, cont: 1100 },
+    A4:     { page1: 670, cont: 880 },
+    A3:     { page1: 1200, cont: 1400 },
+    Letter: { page1: 630, cont: 840 },
+    Legal:  { page1: 910, cont: 1120 },
+    Folio:  { page1: 810, cont: 1020 },
 };
 
 function genBlkId() { return 'blk_' + (++blockCounter); }
@@ -944,6 +944,13 @@ function blockToDocHtml(b) {
         html += '</div>';
         return html;
     }
+    if (b.type === 'table_row') {
+        const ths = b.headers.map(h => `<th>${h}</th>`).join('');
+        const tds = b.row.map(c => `<td>${c}</td>`).join('');
+        const headHtml = b.isFirstRow ? `<thead><tr>${ths}</tr></thead>` : '';
+        return `<table class="custom-doc-table table-style-${b.style}">
+        ${headHtml}<tbody><tr>${tds}</tr></tbody></table>`;
+    }
     if (b.type === 'table') {
         const ths = b.headers.map(h => `<th>${h}</th>`).join('');
         const trs = b.rows.map(row =>
@@ -1032,6 +1039,22 @@ function renderLivePreview() {
             const paras = (b.content || '').split(/\n+/).filter(p => p.trim() !== '');
             if (paras.length > 1) {
                 paras.forEach(p => renderBlocks.push({ type: 'text', content: p, originalId: b.id }));
+            } else {
+                renderBlocks.push(b);
+            }
+        } else if (b.type === 'table') {
+            if (b.rows && b.rows.length > 1) {
+                b.rows.forEach((row, rIdx) => {
+                    renderBlocks.push({
+                        type: 'table_row',
+                        style: b.style,
+                        headers: b.headers,
+                        row: row,
+                        isFirstRow: rIdx === 0,
+                        isLastRow: rIdx === b.rows.length - 1,
+                        originalId: b.id
+                    });
+                });
             } else {
                 renderBlocks.push(b);
             }
