@@ -1002,10 +1002,9 @@ function buildKopHtml(logoPos, addrPos, accent, logoHtml, addressHtml) {
     return hTop;
 }
 
-function buildMiniKopHtml(pageNum) {
+function buildMiniKopHtml() {
     return `<div class="mini-page-header-repeat">
         <small style="font-size:0.78rem;font-weight:700;color:#1e293b;">PT. CIPTA DUTA WACANA</small>
-        <small style="font-size:0.72rem;color:#64748b;">Halaman ${pageNum}</small>
     </div>`;
 }
 
