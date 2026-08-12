@@ -78,8 +78,7 @@ class ProyekController extends BaseController
             }
         }
 
-        // Cleanup: Revert Cleaning Tangki (PROJ202608001) status to 'deal' so it is not incorrectly archived
-        $db->table('project')->where('kode_project', 'PROJ202608001')->where('status', 'selesai')->update(['status' => 'deal']);
+        
     }
 
     public function baru()
@@ -713,7 +712,7 @@ class ProyekController extends BaseController
 
         $data = [
             'title' => 'Arsip Project Selesai / Batal',
-            'projects' => $this->projectModel->whereIn('status', ['selesai', 'batal'])->orderBy('tanggal_selesai', 'DESC')->findAll(),
+            'projects' => $this->projectModel->whereIn('status', ['selesai', 'batal', 'done', 'completed', 'Completed'])->orderBy('tanggal_selesai', 'DESC')->findAll(),
             'existing_projects' => array_column($existingProjects, 'nama_project'),
             'clients' => $this->db->table('client')->orderBy('nama_perusahaan', 'ASC')->get()->getResultArray(),
             'managers' => $this->userModel->where('status', 'active')->findAll()
