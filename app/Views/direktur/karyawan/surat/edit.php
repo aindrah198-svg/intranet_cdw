@@ -463,9 +463,6 @@
                     </span>
                     <div class="d-flex gap-2 align-items-center">
                         <small id="pageCountBadge" class="text-muted fw-semibold"></small>
-                        <button type="button" class="btn btn-sm btn-dark rounded-pill px-3.5 py-1.5 fw-bold shadow-sm" onclick="openPrintConfirmation()">
-                            <i class="fas fa-print me-1.5"></i> Pratinjau & Cetak PDF
-                        </button>
                     </div>
                 </div>
                 <div class="letter-paper-preview paper-size-A4" id="previewPaper">
@@ -637,11 +634,11 @@ const existingIsiSurat  = <?= json_encode($surat['isi_surat'] ?? '') ?>;
 let blocks = [];
 let blockCounter = 0;
 const PAPER_BODY_PX = {
-    A4:     { page1: 750, cont: 950 },
-    A3:     { page1: 1300, cont: 1500 },
-    Letter: { page1: 700, cont: 900 },
-    Legal:  { page1: 980, cont: 1180 },
-    Folio:  { page1: 880, cont: 1080 },
+    A4:     { page1: 670, cont: 870 },
+    A3:     { page1: 1250, cont: 1450 },
+    Letter: { page1: 630, cont: 830 },
+    Legal:  { page1: 900, cont: 1100 },
+    Folio:  { page1: 800, cont: 1000 },
 };
 
 function genBlkId() { return 'blk_' + (++blockCounter); }
@@ -986,7 +983,7 @@ function renderLivePreview() {
     const renderBlocks = [];
     blocks.forEach(b => {
         if (b.type === 'text') {
-            const paras = (b.content || '').split(/\n\n+/).filter(p => p.trim() !== '');
+            const paras = (b.content || '').split(/\n+/).filter(p => p.trim() !== '');
             if (paras.length > 1) {
                 paras.forEach(p => renderBlocks.push({ type: 'text', content: p, originalId: b.id }));
             } else {
@@ -1711,7 +1708,9 @@ function submitPastedTableModal() {
 .doc-page-sheet {
     position: relative !important;
     background: #ffffff !important;
-    min-height: 1120px !important;
+    min-height: 1123px !important;
+    max-height: 1123px !important;
+    height: 1123px !important;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
     margin: 0 auto 30px auto !important;
     border-radius: 4px !important;
@@ -1720,6 +1719,7 @@ function submitPastedTableModal() {
     box-sizing: border-box !important;
     padding: 45px 50px 75px 50px !important;
     width: 100% !important;
+    overflow: hidden !important;
 }
 
 @media print {

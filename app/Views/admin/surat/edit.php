@@ -321,9 +321,6 @@
                     </span>
                     <div class="d-flex gap-2 align-items-center">
                         <small id="pageCountBadge" class="text-muted fw-semibold"></small>
-                        <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold shadow-sm" onclick="openPrintConfirmation()">
-                            <i class="fas fa-print me-1"></i> Pratinjau & Cetak PDF
-                        </button>
                     </div>
                 </div>
                 <div class="letter-paper-preview paper-size-A4" id="previewPaper"></div>
@@ -472,7 +469,7 @@ const nomorSuratText    = '<?= esc($surat['nomor_surat']) ?>';
 const existingIsiSurat  = <?= json_encode($surat['isi_surat'] ?? '') ?>;
 
 let blocks = [], blockCounter = 0;
-const PAPER_BODY_PX = { A4:{page1:750,cont:950}, A3:{page1:1300,cont:1500}, Letter:{page1:700,cont:900}, Legal:{page1:980,cont:1180}, Folio:{page1:880,cont:1080} };
+const PAPER_BODY_PX = { A4:{page1:670,cont:870}, A3:{page1:1250,cont:1450}, Letter:{page1:630,cont:830}, Legal:{page1:900,cont:1100}, Folio:{page1:800,cont:1000} };
 
 function genBlkId() { return 'blk_' + (++blockCounter); }
 function escHtml(s) { if(s===undefined||s===null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
@@ -714,7 +711,7 @@ function renderLivePreview() {
     const renderBlocks = [];
     blocks.forEach(b => {
         if (b.type === 'text') {
-            const paras = (b.content || '').split(/\n\n+/).filter(p => p.trim() !== '');
+            const paras = (b.content || '').split(/\n+/).filter(p => p.trim() !== '');
             if (paras.length > 1) {
                 paras.forEach(p => renderBlocks.push({ type: 'text', content: p, originalId: b.id }));
             } else {
@@ -1318,10 +1315,12 @@ function submitPastedTableModal() {
 <style>
 .doc-page-sheet {
     position:relative !important; background:#ffffff !important;
-    min-height:1120px !important; box-shadow:0 10px 30px rgba(0,0,0,0.08) !important;
+    min-height:1123px !important; max-height:1123px !important; height:1123px !important;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08) !important;
     margin:0 auto 30px auto !important; border-radius:4px !important;
     display:flex !important; flex-direction:column !important;
     box-sizing:border-box !important; padding:45px 50px 75px 50px !important; width:100% !important;
+    overflow:hidden !important;
 }
 @media print {
     @page { size: A4 portrait; margin: 0; }
