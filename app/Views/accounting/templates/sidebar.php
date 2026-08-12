@@ -33,8 +33,34 @@ $isPiutangActive = (in_array($active, $piutangMenuItems) || in_array($segment2, 
 $laporanMenuItems = ['laba-rugi', 'neraca', 'arus-kas', 'modal-pemilik'];
 $isLaporanActive = (in_array($active, $laporanMenuItems) || in_array($segment2, $laporanMenuItems) || in_array($segment3, $laporanMenuItems) || $segment1 == 'laporan-keuangan');
 
-$pribadiMenuItems = ['absensi', 'profil', 'riwayat-audit'];
-$isPribadiActive = (in_array($active, $pribadiMenuItems) || in_array($segment2, $pribadiMenuItems) || $segment1 == 'pribadi');
+$pribadiMenuItems = ['absensi-saya', 'tugas-saya', 'timeline-kerja', 'project-saat-ini', 'profil'];
+$isPribadiActive = (in_array($active, $pribadiMenuItems) || in_array($segment2, $pribadiMenuItems) || in_array($segment2, ['absensi','profil','riwayat-audit']) || $segment1 == 'pribadi');
+
+// Notification: Tugas Saya
+$db = \Config\Database::connect();
+$notifTugasSaya = 0;
+if ($db->tableExists('penugasan_harian')) {
+    $sessUserId = session()->get('user_id') ?? session()->get('karyawan_id');
+    $q = $db->table('penugasan_harian')
+        ->where('deleted_at', null)
+        ->whereIn('status', ['pending', 'baru', 'proses'])
+        ->groupStart()
+            ->where('penerima_role', 'accounting')
+            ->orWhere('penerima_role', 'all');
+    if ($sessUserId) { $q->orWhere('penerima_id', $sessUserId); }
+    $q->groupEnd();
+    $notifTugasSaya = $q->countAllResults();
+}
+$notifPribadiTotal = $notifTugasSaya;
+
+function accSubLink($href, $icon, $label, $isActive, $badge = 0) {
+    $fw = $isActive ? 'font-weight:600;color:white;' : '';
+    $bdg = $badge > 0 ? '<span class="badge bg-danger rounded-pill ms-auto px-2" style="font-size:0.7rem;font-weight:700;">'.$badge.'</span>' : '';
+    return '
+        <a href="'.$href.'" style="color:rgba(255,255,255,0.78);padding:8px 10px 8px 48px;font-size:0.82rem;display:flex;align-items:center;text-decoration:none;transition:all 0.25s;'.$fw.'">
+            <i class="'.$icon.'" style="width:18px;margin-right:7px;"></i><span style="flex-grow:1;">'.$label.'</span>'.$bdg.'
+        </a>';
+}
 ?>
 <!-- Sidebar -->
 <div class="sidebar" style="
@@ -137,14 +163,32 @@ $isPribadiActive = (in_array($active, $pribadiMenuItems) || in_array($segment2, 
             </li>
             
             <li class="nav-item mb-1 mt-3">
-                <div style="padding: 8px 20px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;">
-                    <i class="fas fa-user me-1"></i> MENU PRIBADI
+                <div style="padding: 4px 16px 2px; font-size:0.65rem; color:rgba(255,255,255,0.45); font-weight:600; letter-spacing:1.5px; text-transform:uppercase; margin-top:10px;">
+                    MENU PRIBADI
                 </div>
             </li>
-            
-            <li><a class="nav-link py-2 px-4 text-white-50" href="<?= site_url('accounting/pribadi/absensi') ?>"><i class="fas fa-calendar-check me-2"></i>Absensi Saya</a></li>
-            <li><a class="nav-link py-2 px-4 text-white-50" href="<?= site_url('accounting/pribadi/profil') ?>"><i class="fas fa-user-cog me-2"></i>Profil</a></li>
-            <li><a class="nav-link py-2 px-4 text-white-50" href="<?= site_url('accounting/pribadi/riwayat-audit') ?>"><i class="fas fa-history me-2"></i>Riwayat Audit</a></li>
+
+            <!-- Menu Pribadi Collapsible -->
+            <li class="nav-item">
+                <a data-bs-toggle="collapse" href="#pribadiMenu"
+                   style="color:rgba(255,255,255,0.85);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;border-left:3px solid <?= $isPribadiActive ? '#ce93d8' : 'transparent' ?>;<?= $isPribadiActive ? 'background:rgba(255,255,255,0.15);' : '' ?>">
+                    <div style="display:flex;align-items:center;flex-grow:1;margin-right:8px;">
+                        <i class="fas fa-user-circle" style="width:24px;text-align:center;margin-right:8px;"></i>
+                        <span style="font-size:0.875rem;">Menu Pribadi</span>
+                        <?php if ($notifPribadiTotal > 0): ?>
+                            <span class="badge bg-danger rounded-pill ms-auto me-2 px-2" style="font-size:0.72rem;font-weight:700;"><?= $notifPribadiTotal ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <i class="fas fa-chevron-down" style="font-size:0.75rem;"></i>
+                </a>
+                <div class="collapse <?= $isPribadiActive ? 'show' : '' ?>" id="pribadiMenu" style="background:rgba(0,0,0,0.15);">
+                    <?= accSubLink(site_url('accounting/pribadi/absensi'),       'fas fa-fingerprint',     'Absensi',         $active==='absensi-saya'  || $segment2==='absensi') ?>
+                    <?= accSubLink(site_url('accounting/pribadi/tugas-saya'),    'fas fa-tasks',           'Tugas Hari Ini',  $active==='tugas-saya'    || $segment2==='tugas-saya', $notifTugasSaya) ?>
+                    <?= accSubLink(site_url('accounting/pribadi/timeline-kerja'),'fas fa-stream',          'Timeline Kerja',  $active==='timeline-kerja'|| $segment2==='timeline-kerja') ?>
+                    <?= accSubLink(site_url('accounting/pribadi/project-saat-ini'),'fas fa-project-diagram','Project Saat Ini',$active==='project-saat-ini'||$segment2==='project-saat-ini') ?>
+                    <?= accSubLink(site_url('accounting/pribadi/profil'),        'fas fa-id-badge',        'Profil',          $active==='profil'        || $segment2==='profil') ?>
+                </div>
+            </li>
             
             <li class="mt-4 px-3 mb-4">
                 <a href="<?= site_url('logout') ?>" class="btn btn-outline-light w-100 btn-sm">

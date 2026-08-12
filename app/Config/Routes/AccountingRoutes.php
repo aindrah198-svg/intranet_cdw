@@ -675,9 +675,19 @@ $routes->group('accounting', ['filter' => 'auth'], function($routes) {
     // MENU PRIBADI
     // ============================================
     $routes->group('pribadi', function($routes) {
-        $routes->get('absensi', 'Accounting\Pribadi::absensi', ['as' => 'accounting.pribadi.absensi']);
-        $routes->get('profil', 'Accounting\Pribadi::profil', ['as' => 'accounting.pribadi.profil']);
-        $routes->get('riwayat-audit', 'Accounting\Pribadi::riwayatAudit', ['as' => 'accounting.pribadi.riwayat-audit']);
+        $routes->get('absensi',              'Accounting\Pribadi::absensi',         ['as' => 'accounting.pribadi.absensi']);
+        $routes->post('checkin',             'Accounting\Pribadi::checkin',         ['as' => 'accounting.pribadi.checkin']);
+        $routes->post('checkout',            'Accounting\Pribadi::checkout',        ['as' => 'accounting.pribadi.checkout']);
+        $routes->get('tugas-saya',           'Accounting\Pribadi::tugas',           ['as' => 'accounting.pribadi.tugas-saya']);
+        $routes->get('tugas-saya/detail/(:num)', 'Accounting\Pribadi::detailTugas/$1', ['as' => 'accounting.pribadi.tugas-saya.detail']);
+        $routes->get('tugas-saya/hapus/(:num)',  'Accounting\Pribadi::hapusTugas/$1',   ['as' => 'accounting.pribadi.tugas-saya.hapus']);
+        $routes->post('tugas-saya/update-status/(:num)', 'Accounting\Pribadi::updateStatusTugas/$1');
+        $routes->post('tugas-saya/update-subitem/(:num)', 'Accounting\Pribadi::updateSubItemStatus/$1');
+        $routes->get('timeline-kerja',       'Accounting\Pribadi::timelineKerja',   ['as' => 'accounting.pribadi.timeline-kerja']);
+        $routes->get('project-saat-ini',     'Accounting\Pribadi::projectSaatIni',  ['as' => 'accounting.pribadi.project-saat-ini']);
+        $routes->get('profil',               'Accounting\Pribadi::profil',          ['as' => 'accounting.pribadi.profil']);
+        $routes->post('profil/update',       'Accounting\Pribadi::updateProfil',    ['as' => 'accounting.pribadi.profil.update']);
+        $routes->get('riwayat-audit',        'Accounting\Pribadi::riwayatAudit',    ['as' => 'accounting.pribadi.riwayat-audit']);
     });
     
 
