@@ -276,14 +276,17 @@
                         $p1Title = $sigData['p1_title'] ?? 'Hormat kami,';
                         $p1Nama  = $sigData['p1_nama']  ?? 'PT. CIPTA DUTA WACANA';
                         $p1Jab   = $sigData['p1_jabatan'] ?? 'Direktur Utama';
+                        $p1Img   = $sigData['p1_img']   ?? '';
 
                         $p2Title = $sigData['p2_title'] ?? 'Pihak Kedua,';
                         $p2Nama  = $sigData['p2_nama']  ?? 'PT. CIPTA DUTA WACANA';
                         $p2Jab   = $sigData['p2_jabatan'] ?? 'Direktur Utama';
+                        $p2Img   = $sigData['p2_img']   ?? '';
 
                         $p3Title = $sigData['p3_title'] ?? 'Pihak Ketiga,';
                         $p3Nama  = $sigData['p3_nama']  ?? 'PT. CIPTA DUTA WACANA';
                         $p3Jab   = $sigData['p3_jabatan'] ?? 'Direktur Utama';
+                        $p3Img   = $sigData['p3_img']   ?? '';
                         $sigLayoutVal = $surat['signature_layout'] ?? '1_pihak';
                     ?>
 
@@ -295,44 +298,68 @@
                         </div>
 
                         <!-- Pihak 1 -->
-                        <div id="p1Fields" class="row g-2 mb-2">
+                        <div id="p1Fields" class="row g-2 mb-3">
                             <div class="col-12"><small class="fw-bold text-primary" id="p1TitleLabel">Pihak Pertama / Hormat Kami</small></div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <input type="text" name="pihak_1_title" id="pihak1Title" class="form-control form-control-sm" placeholder="Judul (misal: Pihak Pertama,)" value="<?= esc($p1Title) ?>" oninput="renderLivePreview()">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <input type="text" name="pihak_1_nama" id="pihak1Nama" class="form-control form-control-sm" placeholder="Nama / Perusahaan" value="<?= esc($p1Nama) ?>" oninput="renderLivePreview()">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <input type="text" name="pihak_1_jabatan" id="pihak1Jabatan" class="form-control form-control-sm" placeholder="Jabatan" value="<?= esc($p1Jab) ?>" oninput="renderLivePreview()">
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <input type="file" id="pihak1ImgFile" accept="image/*" class="form-control form-control-sm" onchange="handleSigImageUpload(1, this)" title="Upload Tanda Tangan / Stempel Digital (Opsional)">
+                                    <input type="hidden" name="pihak_1_img" id="pihak1ImgVal" value="<?= esc($p1Img) ?>">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearSigImage(1)" title="Hapus Gambar TTD"><i class="fas fa-times"></i></button>
+                                </div>
+                                <small class="text-muted" style="font-size:0.68rem;"><i class="fas fa-image text-primary me-1"></i> TTD / Stempel Digital (Opsional)</small>
                             </div>
                         </div>
 
                         <!-- Pihak 2 -->
-                        <div id="p2Fields" class="row g-2 mb-2 <?= in_array($sigLayoutVal, ['2_pihak', '3_pihak']) ? '' : 'd-none' ?>">
+                        <div id="p2Fields" class="row g-2 mb-3 <?= in_array($sigLayoutVal, ['2_pihak', '3_pihak']) ? '' : 'd-none' ?>">
                             <div class="col-12"><small class="fw-bold text-primary">Pihak Kedua</small></div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <input type="text" name="pihak_2_title" id="pihak2Title" class="form-control form-control-sm" placeholder="Judul (misal: Pihak Kedua,)" value="<?= esc($p2Title) ?>" oninput="renderLivePreview()">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <input type="text" name="pihak_2_nama" id="pihak2Nama" class="form-control form-control-sm" placeholder="Nama / Perusahaan II" value="<?= esc($p2Nama) ?>" oninput="renderLivePreview()">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <input type="text" name="pihak_2_jabatan" id="pihak2Jabatan" class="form-control form-control-sm" placeholder="Jabatan II" value="<?= esc($p2Jab) ?>" oninput="renderLivePreview()">
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <input type="file" id="pihak2ImgFile" accept="image/*" class="form-control form-control-sm" onchange="handleSigImageUpload(2, this)" title="Upload Tanda Tangan II (Opsional)">
+                                    <input type="hidden" name="pihak_2_img" id="pihak2ImgVal" value="<?= esc($p2Img) ?>">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearSigImage(2)" title="Hapus Gambar TTD II"><i class="fas fa-times"></i></button>
+                                </div>
+                                <small class="text-muted" style="font-size:0.68rem;"><i class="fas fa-image text-primary me-1"></i> TTD II Digital (Opsional)</small>
                             </div>
                         </div>
 
                         <!-- Pihak 3 -->
                         <div id="p3Fields" class="row g-2 <?= $sigLayoutVal === '3_pihak' ? '' : 'd-none' ?>">
                             <div class="col-12"><small class="fw-bold text-primary">Pihak Ketiga</small></div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <input type="text" name="pihak_3_title" id="pihak3Title" class="form-control form-control-sm" placeholder="Judul (misal: Pihak Ketiga,)" value="<?= esc($p3Title) ?>" oninput="renderLivePreview()">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <input type="text" name="pihak_3_nama" id="pihak3Nama" class="form-control form-control-sm" placeholder="Nama / Perusahaan III" value="<?= esc($p3Nama) ?>" oninput="renderLivePreview()">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <input type="text" name="pihak_3_jabatan" id="pihak3Jabatan" class="form-control form-control-sm" placeholder="Jabatan III" value="<?= esc($p3Jab) ?>" oninput="renderLivePreview()">
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <input type="file" id="pihak3ImgFile" accept="image/*" class="form-control form-control-sm" onchange="handleSigImageUpload(3, this)" title="Upload Tanda Tangan III (Opsional)">
+                                    <input type="hidden" name="pihak_3_img" id="pihak3ImgVal" value="<?= esc($p3Img) ?>">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearSigImage(3)" title="Hapus Gambar TTD III"><i class="fas fa-times"></i></button>
+                                </div>
+                                <small class="text-muted" style="font-size:0.68rem;"><i class="fas fa-image text-primary me-1"></i> TTD III Digital (Opsional)</small>
                             </div>
                         </div>
                     </div>
@@ -932,6 +959,25 @@ function buildMiniKopHtml() {
     return '';
 }
 
+function handleSigImageUpload(num, input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById(`pihak${num}ImgVal`).value = e.target.result;
+            renderLivePreview();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function clearSigImage(num) {
+    const fileInput = document.getElementById(`pihak${num}ImgFile`);
+    const valInput  = document.getElementById(`pihak${num}ImgVal`);
+    if (fileInput) fileInput.value = '';
+    if (valInput)  valInput.value  = '';
+    renderLivePreview();
+}
+
 function renderLivePreview() {
     const paper=document.getElementById('previewPaper'); if(!paper) return;
     const paperSizeVal=(document.getElementById('paperSize')||{value:'A4'}).value||'A4';
@@ -1027,8 +1073,21 @@ function renderLivePreview() {
     const p2Jab   = (document.getElementById('pihak2Jabatan') || {}).value || 'Direktur Utama';
 
     const p3Title = (document.getElementById('pihak3Title') || {}).value || 'Pihak Ketiga,';
-    const p3Nama  = (document.getElementById('pihak3Nama') || {}).value || 'PT. CIPTA DUTA WACANA';
-    const p3Jab   = (document.getElementById('pihak3Jabatan') || {}).value || 'Direktur Utama';
+    const p1Img = (document.getElementById('pihak1ImgVal') || {}).value || '';
+    const p2Img = (document.getElementById('pihak2ImgVal') || {}).value || '';
+    const p3Img = (document.getElementById('pihak3ImgVal') || {}).value || '';
+
+    const p1ImgHtml = p1Img
+        ? `<div style="height:65px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;"><img src="${p1Img}" style="max-height:65px;max-width:170px;object-fit:contain;display:block;"></div>`
+        : `<div style="height:55px;"></div>`;
+
+    const p2ImgHtml = p2Img
+        ? `<div style="height:65px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;"><img src="${p2Img}" style="max-height:65px;max-width:170px;object-fit:contain;display:block;"></div>`
+        : `<div style="height:55px;"></div>`;
+
+    const p3ImgHtml = p3Img
+        ? `<div style="height:65px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;"><img src="${p3Img}" style="max-height:65px;max-width:170px;object-fit:contain;display:block;"></div>`
+        : `<div style="height:55px;"></div>`;
 
     let signatureHtml = '';
 
@@ -1036,11 +1095,13 @@ function renderLivePreview() {
         signatureHtml = `
         <div class="row pt-4 text-center mt-auto" style="position:relative;z-index:5;${mbStyle}">
             <div class="col-6">
-                <p class="text-sm mb-5">${p1Title}<br><strong>${p1Nama}</strong></p>
+                <p class="text-sm mb-1">${p1Title}<br><strong>${p1Nama}</strong></p>
+                ${p1ImgHtml}
                 <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:160px;">${p1Jab}</p>
             </div>
             <div class="col-6">
-                <p class="text-sm mb-5">${p2Title}<br><strong>${p2Nama}</strong></p>
+                <p class="text-sm mb-1">${p2Title}<br><strong>${p2Nama}</strong></p>
+                ${p2ImgHtml}
                 <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:160px;">${p2Jab}</p>
             </div>
         </div>`;
@@ -1048,15 +1109,18 @@ function renderLivePreview() {
         signatureHtml = `
         <div class="row pt-4 text-center mt-auto" style="position:relative;z-index:5;${mbStyle}">
             <div class="col-4">
-                <p class="text-sm mb-5">${p1Title}<br><strong>${p1Nama}</strong></p>
+                <p class="text-sm mb-1">${p1Title}<br><strong>${p1Nama}</strong></p>
+                ${p1ImgHtml}
                 <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:120px;">${p1Jab}</p>
             </div>
             <div class="col-4">
-                <p class="text-sm mb-5">${p2Title}<br><strong>${p2Nama}</strong></p>
+                <p class="text-sm mb-1">${p2Title}<br><strong>${p2Nama}</strong></p>
+                ${p2ImgHtml}
                 <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:120px;">${p2Jab}</p>
             </div>
             <div class="col-4">
-                <p class="text-sm mb-5">${p3Title}<br><strong>${p3Nama}</strong></p>
+                <p class="text-sm mb-1">${p3Title}<br><strong>${p3Nama}</strong></p>
+                ${p3ImgHtml}
                 <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:120px;">${p3Jab}</p>
             </div>
         </div>`;
@@ -1064,7 +1128,8 @@ function renderLivePreview() {
         signatureHtml = `
         <div class="row pt-4 text-center mt-auto" style="position:relative;z-index:5;${mbStyle}">
             <div class="col-6 ms-auto">
-                <p class="text-sm mb-5">${p1Title}<br><strong>${p1Nama}</strong></p>
+                <p class="text-sm mb-1">${p1Title}<br><strong>${p1Nama}</strong></p>
+                ${p1ImgHtml}
                 <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width:160px;">${p1Jab}</p>
             </div>
         </div>`;

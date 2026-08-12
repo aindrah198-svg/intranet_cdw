@@ -112,12 +112,15 @@ class Surat extends BaseController
             'p1_title'   => $this->request->getPost('pihak_1_title'),
             'p1_nama'    => $this->request->getPost('pihak_1_nama'),
             'p1_jabatan' => $this->request->getPost('pihak_1_jabatan'),
+            'p1_img'     => $this->request->getPost('pihak_1_img'),
             'p2_title'   => $this->request->getPost('pihak_2_title'),
             'p2_nama'    => $this->request->getPost('pihak_2_nama'),
             'p2_jabatan' => $this->request->getPost('pihak_2_jabatan'),
+            'p2_img'     => $this->request->getPost('pihak_2_img'),
             'p3_title'   => $this->request->getPost('pihak_3_title'),
             'p3_nama'    => $this->request->getPost('pihak_3_nama'),
             'p3_jabatan' => $this->request->getPost('pihak_3_jabatan'),
+            'p3_img'     => $this->request->getPost('pihak_3_img'),
         ];
 
         $id = $this->suratModel->insert([
@@ -267,12 +270,15 @@ class Surat extends BaseController
             'p1_title'   => $this->request->getPost('pihak_1_title'),
             'p1_nama'    => $this->request->getPost('pihak_1_nama'),
             'p1_jabatan' => $this->request->getPost('pihak_1_jabatan'),
+            'p1_img'     => $this->request->getPost('pihak_1_img'),
             'p2_title'   => $this->request->getPost('pihak_2_title'),
             'p2_nama'    => $this->request->getPost('pihak_2_nama'),
             'p2_jabatan' => $this->request->getPost('pihak_2_jabatan'),
+            'p2_img'     => $this->request->getPost('pihak_2_img'),
             'p3_title'   => $this->request->getPost('pihak_3_title'),
             'p3_nama'    => $this->request->getPost('pihak_3_nama'),
             'p3_jabatan' => $this->request->getPost('pihak_3_jabatan'),
+            'p3_img'     => $this->request->getPost('pihak_3_img'),
         ];
 
         $this->suratModel->update($id, [

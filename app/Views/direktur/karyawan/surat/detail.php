@@ -453,46 +453,67 @@ function formatBodyTextWithTables($text) {
                                 $p1Title   = !empty($sigData['p1_title']) ? $sigData['p1_title'] : 'Pihak Pertama,';
                                 $p1Nama    = !empty($sigData['p1_nama'])  ? $sigData['p1_nama']  : ($karyawan['nama_lengkap'] ?? 'PT. CIPTA DUTA WACANA');
                                 $p1Jab     = !empty($sigData['p1_jabatan']) ? $sigData['p1_jabatan'] : 'Direktur Utama';
+                                $p1Img     = !empty($sigData['p1_img']) ? $sigData['p1_img'] : '';
 
                                 $p2Title   = !empty($sigData['p2_title']) ? $sigData['p2_title'] : 'Pihak Kedua,';
                                 $p2Nama    = !empty($sigData['p2_nama'])  ? $sigData['p2_nama']  : 'PT. CIPTA DUTA WACANA';
                                 $p2Jab     = !empty($sigData['p2_jabatan']) ? $sigData['p2_jabatan'] : 'Direktur Utama';
+                                $p2Img     = !empty($sigData['p2_img']) ? $sigData['p2_img'] : '';
 
                                 $p3Title   = !empty($sigData['p3_title']) ? $sigData['p3_title'] : 'Pihak Ketiga,';
                                 $p3Nama    = !empty($sigData['p3_nama'])  ? $sigData['p3_nama']  : 'PT. CIPTA DUTA WACANA';
                                 $p3Jab     = !empty($sigData['p3_jabatan']) ? $sigData['p3_jabatan'] : 'Direktur Utama';
+                                $p3Img     = !empty($sigData['p3_img']) ? $sigData['p3_img'] : '';
                                 $mbStyle   = $addrPos === 'footer' ? 'margin-bottom: 70px;' : 'margin-bottom: 15px;';
+
+                                $p1ImgHtml = !empty($p1Img)
+                                    ? '<div style="height:65px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;"><img src="' . esc($p1Img) . '" style="max-height:65px;max-width:170px;object-fit:contain;display:block;"></div>'
+                                    : '<div style="height:55px;"></div>';
+
+                                $p2ImgHtml = !empty($p2Img)
+                                    ? '<div style="height:65px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;"><img src="' . esc($p2Img) . '" style="max-height:65px;max-width:170px;object-fit:contain;display:block;"></div>'
+                                    : '<div style="height:55px;"></div>';
+
+                                $p3ImgHtml = !empty($p3Img)
+                                    ? '<div style="height:65px;display:flex;align-items:center;justify-content:center;margin-bottom:6px;"><img src="' . esc($p3Img) . '" style="max-height:65px;max-width:170px;object-fit:contain;display:block;"></div>'
+                                    : '<div style="height:55px;"></div>';
                             ?>
                             <?php if ($sigLayout === '2_pihak'): ?>
                                 <div class="row pt-4 text-center mt-auto" style="position:relative; z-index:5; <?= $mbStyle ?>">
                                     <div class="col-6">
-                                        <p style="font-size: 0.88rem; margin-bottom: 2.5rem;"><?= esc($p1Title) ?><br><strong><?= esc($p1Nama) ?></strong></p>
+                                        <p style="font-size: 0.88rem; margin-bottom: 0.25rem;"><?= esc($p1Title) ?><br><strong><?= esc($p1Nama) ?></strong></p>
+                                        <?= $p1ImgHtml ?>
                                         <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width: 150px;"><?= esc($p1Jab) ?></p>
                                     </div>
                                     <div class="col-6">
-                                        <p style="font-size: 0.88rem; margin-bottom: 2.5rem;"><?= esc($p2Title) ?><br><strong><?= esc($p2Nama) ?></strong></p>
+                                        <p style="font-size: 0.88rem; margin-bottom: 0.25rem;"><?= esc($p2Title) ?><br><strong><?= esc($p2Nama) ?></strong></p>
+                                        <?= $p2ImgHtml ?>
                                         <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width: 150px;"><?= esc($p2Jab) ?></p>
                                     </div>
                                 </div>
                             <?php elseif ($sigLayout === '3_pihak'): ?>
                                 <div class="row pt-4 text-center mt-auto" style="position:relative; z-index:5; <?= $mbStyle ?>">
                                     <div class="col-4">
-                                        <p style="font-size: 0.88rem; margin-bottom: 2.5rem;"><?= esc($p1Title) ?><br><strong><?= esc($p1Nama) ?></strong></p>
+                                        <p style="font-size: 0.88rem; margin-bottom: 0.25rem;"><?= esc($p1Title) ?><br><strong><?= esc($p1Nama) ?></strong></p>
+                                        <?= $p1ImgHtml ?>
                                         <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width: 120px;"><?= esc($p1Jab) ?></p>
                                     </div>
                                     <div class="col-4">
-                                        <p style="font-size: 0.88rem; margin-bottom: 2.5rem;"><?= esc($p2Title) ?><br><strong><?= esc($p2Nama) ?></strong></p>
+                                        <p style="font-size: 0.88rem; margin-bottom: 0.25rem;"><?= esc($p2Title) ?><br><strong><?= esc($p2Nama) ?></strong></p>
+                                        <?= $p2ImgHtml ?>
                                         <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width: 120px;"><?= esc($p2Jab) ?></p>
                                     </div>
                                     <div class="col-4">
-                                        <p style="font-size: 0.88rem; margin-bottom: 2.5rem;"><?= esc($p3Title) ?><br><strong><?= esc($p3Nama) ?></strong></p>
+                                        <p style="font-size: 0.88rem; margin-bottom: 0.25rem;"><?= esc($p3Title) ?><br><strong><?= esc($p3Nama) ?></strong></p>
+                                        <?= $p3ImgHtml ?>
                                         <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width: 120px;"><?= esc($p3Jab) ?></p>
                                     </div>
                                 </div>
                             <?php else: ?>
                                 <div class="row pt-2 text-center" style="position: relative; z-index: 5; <?= $mbStyle ?>">
                                     <div class="col-6 ms-auto">
-                                        <p style="font-size: 0.88rem; margin-bottom: 2.5rem;"><?= esc($p1Title) ?><br><strong><?= esc($p1Nama) ?></strong></p>
+                                        <p style="font-size: 0.88rem; margin-bottom: 0.25rem;"><?= esc($p1Title) ?><br><strong><?= esc($p1Nama) ?></strong></p>
+                                        <?= $p1ImgHtml ?>
                                         <p class="fw-bold text-dark mb-0 border-bottom d-inline-block pb-1" style="min-width: 150px;"><?= esc($p1Jab) ?></p>
                                     </div>
                                 </div>
