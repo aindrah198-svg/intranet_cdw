@@ -8,99 +8,73 @@ class Dashboard extends BaseController
 {
     public function index()
     {
-        // Cek session
         $session = session();
         
-        // Cek login
         if (!$session->get('isLoggedIn')) {
             return redirect()->to(base_url('login'))->with('error', 'Silakan login terlebih dahulu.');
         }
-        
-        // Cek role
-        $userRole = $session->get('role');
-        $roleLower = strtolower($userRole ?? '');
-        
-        if ($roleLower !== 'accounting') {
-            // Redirect sesuai role
-            switch ($roleLower) {
-                case 'hrd':
-                    return redirect()->to(base_url('hrd'))->with('info', 'Anda dialihkan ke dashboard HRD.');
-                case 'admin':
-                    return redirect()->to(base_url('admin'))->with('info', 'Anda dialihkan ke dashboard Admin.');
-                case 'direktur':
-                    return redirect()->to(base_url('direktur'))->with('info', 'Anda dialihkan ke dashboard Direktur.');
-                case 'sales':
-                case 'marketing':
-                    return redirect()->to(base_url('sales'))->with('info', 'Anda dialihkan ke dashboard Sales.');
-                case 'teknisi':
-                    return redirect()->to(base_url('teknisi'))->with('info', 'Anda dialihkan ke dashboard Teknisi.');
-                case 'staff':
-                    return redirect()->to(base_url('staff'))->with('info', 'Anda dialihkan ke dashboard Staff.');
-                default:
-                    return redirect()->to(base_url('login'))->with('error', 'Role tidak dikenali.');
-            }
+
+        $db = \Config\Database::connect();
+
+        // Count real metrics from database
+        $totalKasbon = 0;
+        if ($db->tableExists('form_kasbon')) {
+            $q = $db->table('form_kasbon')->whereIn('status_direktur', ['Menunggu', 'pending', 'menunggu']);
+            if ($db->fieldExists('deleted_at', 'form_kasbon')) $q->where('deleted_at', null);
+            $totalKasbon = $q->countAllResults();
         }
-        
-        // Ambil user data
-        $userId = $session->get('user_id');
-        
-        // Get user data (sederhana, tanpa model dulu)
+
+        $totalPembelian = 0;
+        if ($db->tableExists('pembelian')) {
+            $q = $db->table('pembelian')->whereIn('status', ['pending', 'menunggu']);
+            if ($db->fieldExists('deleted_at', 'pembelian')) $q->where('deleted_at', null);
+            $totalPembelian = $q->countAllResults();
+        }
+
+        $totalKaryawan = 0;
+        if ($db->tableExists('karyawan')) {
+            $q = $db->table('karyawan');
+            if ($db->fieldExists('deleted_at', 'karyawan')) $q->where('deleted_at', null);
+            $totalKaryawan = $q->countAllResults();
+        }
+
+        $totalCOA = 0;
+        if ($db->tableExists('coa')) {
+            $totalCOA = $db->table('coa')->countAllResults();
+        }
+
         $userData = [
-            'user_id' => $userId,
+            'user_id' => $session->get('user_id'),
             'name' => $session->get('name') ?? 'Accounting Staff',
             'username' => $session->get('username') ?? 'accounting',
             'email' => $session->get('email') ?? '',
-            'role' => $userRole,
+            'role' => $session->get('role') ?? 'Accounting',
             'karyawan_id' => $session->get('karyawan_id') ?? null
         ];
-        
-        // Get karyawan data sederhana
+
         $karyawanData = [
-            'nik' => $session->get('nik') ?? 'N/A',
+            'nik' => $session->get('nik') ?? 'AC-001',
             'nama_lengkap' => $session->get('name') ?? 'Accounting Staff',
             'nama_panggilan' => $session->get('username') ?? 'Accounting',
             'jabatan' => 'Accounting Staff',
             'departemen' => 'Finance & Accounting',
             'divisi' => 'Finance',
-            'email' => $session->get('email') ?? '',
-            'status_karyawan' => 'Tetap'
+            'email' => $session->get('email') ?? ''
         ];
-        
-        // Data untuk view
+
         $data = [
-            'title' => 'Dashboard Accounting',
-            'subtitle' => date('l, d F Y'),
-            'active' => 'dashboard',
-            'user' => $userData,
-            'karyawan' => $karyawanData,
-             'activeMenu' => 'dashboard', // Pastikan ini ada
+            'title'          => 'Dashboard Accounting',
+            'subtitle'       => date('l, d F Y'),
+            'active'         => 'dashboard',
+            'activeMenu'     => 'dashboard',
+            'user'           => $userData,
+            'karyawan'       => $karyawanData,
+            'totalKasbon'    => $totalKasbon,
+            'totalPembelian' => $totalPembelian,
+            'totalKaryawan'  => $totalKaryawan,
+            'totalCOA'       => $totalCOA
         ];
-        
-        // Render view menggunakan template
+
         return view('accounting/dashboard/index', $data);
-    }
-    
-    /**
-     * Alternative render method
-     */
-    protected function renderView($view, $data = [])
-    {
-        // Default data
-        $defaultData = [
-            'title' => 'Accounting System',
-            'subtitle' => date('l, d F Y'),
-            'active' => 'dashboard',
-            'user' => session()->get() ?? []
-        ];
-        
-        // Merge data
-        $viewData = array_merge($defaultData, $data);
-        
-        // Load template components
-        echo view('accounting/templates/header', $viewData);
-        echo view('accounting/templates/sidebar', $viewData);
-        echo view('accounting/templates/navbar', $viewData);
-        echo view($view, $viewData);
-        echo view('accounting/templates/footer', $viewData);
     }
 }
